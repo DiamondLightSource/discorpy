@@ -10,7 +10,7 @@ setup(
     author_email='nghia.vo@diamond.ac.uk',
     description='Distortion correction in Python.',
     keywords=['Distortion correction','Tomography','Imaging'],
-    download_url='https://github.com/nghia-vo/vounwarp.git',
+    download_url='https://github.com/DiamondLightSource/vounwarp.git',
     license='Apache 2.0',
     platforms='Any',
     classifiers=[
