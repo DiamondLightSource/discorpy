@@ -269,6 +269,8 @@ def _check_axes_ratio(mat, ratio):
     """
     check = False
     (height, width) = mat.shape
+    if (height<2) or (width<2):
+        return check
     minor_axis = meas.regionprops(mat)[0].minor_axis_length
     major_axis = meas.regionprops(mat)[0].major_axis_length
     if (height > 1) and (width > 1):
