@@ -15,7 +15,7 @@
 #============================================================================
 # Author: Nghia T. Vo
 # E-mail: nghia.vo@diamond.ac.uk
-# Description: Python implementation (2.7) of the author's methods of
+# Description: Python implementation of the author's methods of
 # distortion correction, Nghia T. Vo et al "Radial lens distortion
 # correction with sub-pixel accuracy for X-ray micro-tomography"
 # Optics Express 23, 32859-32868 (2015), https://doi.org/10.1364/OE.23.032859
@@ -29,10 +29,9 @@ Module of post-processing methods:
 - Calculate the residual of the corrected dots.
 """
 import numpy as np
-import cv2
 from scipy import interpolate
 from scipy import optimize
-
+from scipy.ndimage import map_coordinates
 
 def unwarp_line_forward(list_lines, xcenter, ycenter, list_fact):
     """
@@ -93,47 +92,6 @@ def unwarp_line_backward(list_lines, xcenter, ycenter, list_fact):
         list_ulines.append(uline)
     return list_ulines
 
-
-def _mapping(mat, xmat, ymat):
-    """
-    Apply a geometric transformation to a 2D array using Opencv
-    ---------
-    Parameters: - mat: 2D array.
-                - xmat: 2D array of the x-coordinates.
-                - ymat: 2D array of the y-coordinates.
-    ---------
-    Return:     - 2D array. 
-    """
-    mat = cv2.remap(mat, xmat, ymat, interpolation=cv2.INTER_LINEAR)
-    return mat
-
-
-def unwarp_image_backward_cv(mat, xcenter, ycenter, list_fact):
-    """
-    Unwarp a 2D array using the backward model. Use Opencv library
-    for fast performance.
-    ---------
-    Parameters: - mat: 2D array.
-                - xcenter: Center of distortion in x-direction.
-                - ycenter: Center of distortion in y-direction.
-                - list_fact: Polynomial coefficients of the backward model.
-    ---------
-    Return:     - 2D array, distortion corrected.
-    """
-    (height, width) = mat.shape
-    xu_list = np.arange(width) - xcenter
-    yu_list = np.arange(height) - ycenter
-    xu_mat, yu_mat = np.meshgrid(xu_list, yu_list)
-    ru_mat = np.sqrt(xu_mat**2 + yu_mat**2)
-    fact_mat = np.sum(
-        np.asarray([factor * ru_mat**i for i,
-                    factor in enumerate(list_fact)]), axis=0)
-    xd_mat = np.float32(np.clip(xcenter + fact_mat * xu_mat, 0, width - 1))
-    yd_mat = np.float32(np.clip(ycenter + fact_mat * yu_mat, 0, height - 1))
-    mat = _mapping(mat, xd_mat, yd_mat)
-    return mat
-
-
 def unwarp_image_backward(mat, xcenter, ycenter, list_fact):
     """
     Unwarp a 2D array using the backward model.
@@ -155,10 +113,9 @@ def unwarp_image_backward(mat, xcenter, ycenter, list_fact):
                     factor in enumerate(list_fact)]), axis=0)
     xd_mat = np.float32(np.clip(xcenter + fact_mat * xu_mat, 0, width - 1))
     yd_mat = np.float32(np.clip(ycenter + fact_mat * yu_mat, 0, height - 1))
-    finter = interpolate.RectBivariateSpline(
-        yu_list + ycenter, xu_list + xcenter, mat, kx=1, ky=1)
-    mat = finter.ev(yd_mat, xd_mat)
-    return mat
+    indices = np.reshape(yd_mat, (-1, 1)), np.reshape(xd_mat, (-1, 1))
+    mat = map_coordinates(mat, indices, order=1, mode='reflect')
+    return mat.reshape((height, width))
 
 
 def unwarp_image_forward(mat, xcenter, ycenter, list_fact):
@@ -223,16 +180,30 @@ def unwarp_slice_backward(mat3D, xcenter, ycenter, list_fact, index):
     yd_list = np.clip(ycenter + flist * yu, 0, height - 1)
     yd_min = np.int16(np.floor(np.amin(yd_list)))
     yd_max = np.int16(np.ceil(np.amax(yd_list))) + 1
+    yd_list = yd_list - yd_min 
     xlist = np.arange(0, width)
     ylist = np.arange(yd_min, yd_max)
     sino = np.zeros((depth, width), dtype=np.float32)
+    indices = yd_list, xd_list
     for i in range(depth):
-        finter = interpolate.RectBivariateSpline(
-            ylist, xlist, mat3D[i, yd_min:yd_max, :], kx=1, ky=1)
-        sino[i] = finter.ev(yd_list, xd_list)
-    mean_val = np.mean(sino)
-    sino[sino == 0.0] = mean_val
+        sino[i] = map_coordinates(
+            mat3D[i, yd_min:yd_max, :], indices, order=1, mode='reflect')
     return sino
+
+
+def _mapping(mat, xmat, ymat):
+    """
+    Apply a geometric transformation to a 2D array
+    ---------
+    Parameters: - mat: 2D array.
+                - xmat: 2D array of the x-coordinates.
+                - ymat: 2D array of the y-coordinates.
+    ---------
+    Return:     - 2D array. 
+    """
+    indices = np.reshape(ymat, (-1, 1)), np.reshape(xmat, (-1, 1))
+    mat = map_coordinates(mat, indices, order=1, mode='reflect')
+    return mat.reshape(xmat.shape)    
 
 
 def unwarp_chunk_slices_backward(mat3D, xcenter, ycenter, list_fact,
@@ -310,7 +281,7 @@ def calc_residual_hor(list_ulines, xcenter, ycenter):
         dist_list = np.abs(
             a_fact * x_list - y_list + b_fact) / np.sqrt(a_fact**2 + 1)
         radi_list = np.sqrt(x_list**2 + y_list**2)
-        list_tmp = np.asarray(zip(radi_list, dist_list))
+        list_tmp = np.asarray(list(zip(radi_list, dist_list)))
         list_data.extend(list_tmp)
     list_data = np.asarray(list_data)
     return list_data[list_data[:, 0].argsort()]
@@ -338,7 +309,7 @@ def calc_residual_ver(list_ulines, xcenter, ycenter):
         dist_list = np.abs(
             a_fact * y_list - x_list + b_fact) / np.sqrt(a_fact**2 + 1)
         radi_list = np.sqrt(x_list**2 + y_list**2)
-        list_tmp = np.asarray(zip(radi_list, dist_list))
+        list_tmp = np.asarray(list(zip(radi_list, dist_list)))
         list_data.extend(list_tmp)
     list_data = np.asarray(list_data)
     return list_data[list_data[:, 0].argsort()]

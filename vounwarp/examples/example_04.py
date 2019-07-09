@@ -15,7 +15,7 @@
 #============================================================================
 # Author: Nghia T. Vo
 # E-mail: nghia.vo@diamond.ac.uk
-# Description: Python implementation (2.7) of the author's methods of
+# Description: Python implementation of the author's methods of
 # distortion correction, Nghia T. Vo et al "Radial lens distortion
 # correction with sub-pixel accuracy for X-ray micro-tomography"
 # Optics Express 23, 32859-32868 (2015), https://doi.org/10.1364/OE.23.032859
@@ -61,9 +61,9 @@ time_start = timeit.default_timer()
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
 # Initial parameters
-file_path = "../../vounwarp/data/dot_pattern_05.jpg"
-output_base = "C:/home/unwarp/"
-poly_order = 5  # Order of a polynomial
+file_path = "../data/dot_pattern_05.jpg"
+output_base = "C:/correction/"
+poly_order = 5  # Number of polynomial coefficients
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
 # Input
@@ -92,4 +92,4 @@ for i in range(start_index, stop_index):
     io.save_image(output_name, corrected_slices[:, i - start_index, :])
 
 time_stop = timeit.default_timer()
-print("Calculation completes in {} second !").format(time_stop - time_start)
+print(("Calculation completes in {} second !").format(time_stop - time_start))

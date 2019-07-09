@@ -16,7 +16,7 @@
 #============================================================================
 # Author: Nghia T. Vo
 # E-mail: nghia.vo@diamond.ac.uk
-# Description: Python implementation (2.7) of the author's methods of
+# Description: Python implementation of the author's methods of
 # distortion correction, Nghia T. Vo et al "Radial lens distortion
 # correction with sub-pixel accuracy for X-ray micro-tomography"
 # Optics Express 23, 32859-32868 (2015), https://doi.org/10.1364/OE.23.032859
@@ -55,7 +55,7 @@ def load_image(file_path):
     try:
         mat = np.asarray(Image.open(file_path), dtype=np.float32)
     except IOError:
-        print("No such file or directory: {}").format(file_path)
+        print(("No such file or directory: {}").format(file_path))
         raise
     if len(mat.shape) > 2:
         axis_m = np.argmin(mat.shape)
@@ -70,7 +70,7 @@ def _get_key(name, obj):
     """
     wanted_key = 'data'
     if isinstance(obj, h5py.Group):
-        for key, val in obj.items():
+        for key, val in list(obj.items()):
             if key == wanted_key:
                 if isinstance(obj[key], h5py.Dataset):
                     key_path = obj.name + "/" + key
@@ -99,7 +99,7 @@ def load_hdf_file(file_path, key_path=None, index=None, axis=0):
     try:
         ifile = h5py.File(file_path, 'r')
     except IOError:
-        print("Couldn't open file: {}").format(file_path)
+        print(("Couldn't open file: {}").format(file_path))
         raise
     if key_path == None:
         key_path = ifile.visititems(_get_key)  # Find the key automatically
@@ -107,7 +107,7 @@ def load_hdf_file(file_path, key_path=None, index=None, axis=0):
             raise ValueError("Please provide the key path to the dataset!")
     check = key_path in ifile
     if not check:
-        print("Couldn't open object with the key path: {}").format(key_path)
+        print(("Couldn't open object with the key path: {}").format(key_path))
         raise ValueError("!!! Wrong key !!!")
     idata = ifile[key_path]
     shape = idata.shape
@@ -118,27 +118,41 @@ def load_hdf_file(file_path, key_path=None, index=None, axis=0):
     if len(shape) == 3:
         axis = np.clip(axis, 0, 3)
         (depth, height, width) = idata.shape
-        if (index == None):
-            mat = np.take(idata, range(idata.shape[axis]), axis=axis)
+        data_type = idata.dtype
+        if (index == None):                            
+            mat = np.float32(idata[:,:,:])
         else:
             if type(index) == int:
                 try:
-                    mat = np.take(idata, [index], axis=axis)
+                    if axis==0:
+                        mat = np.float32(idata[index,:,:])
+                    elif axis==1:
+                        mat = np.float32(idata[:,index,:])
+                    else:
+                        mat = np.float32(idata[:,:,index])
                 except ValueError:
-                    print("Index out of range 0-{}").format(depth - 1)
+                    print("Index out of range")
             if (type(index) == tuple) or (type(index) == list):
                 if len(index) == 3:
                     starti = index[0]
                     stopi = index[1]
                     stepi = index[2]
-                    mat = np.take(
-                        idata, range(starti, stopi, stepi), axis=axis)
+                    list_index = list(range(starti, stopi, stepi))
                 elif len(index) == 2:
                     starti = index[0]
                     stopi = index[1]
-                    mat = np.take(idata, range(starti, stopi), axis=axis)
+                    list_index = list(range(starti, stopi))
                 else:
-                    mat = np.take(idata, np.array(index), axis=axis)
+                    list_index = list(index)
+                try:
+                    if axis==0:
+                        mat = np.float32(idata[list_index,:,:])
+                    elif axis==1:
+                        mat = np.float32(idata[:,list_index,:])
+                    else:
+                        mat = np.float32(idata[:,:,list_index])
+                except ValueError:
+                    print("Index out of range")
             if mat.shape[axis] == 1:
                 mat = np.swapaxes(mat, axis, 0)[0]
             if mat.shape[axis] == 0:
@@ -203,7 +217,7 @@ def save_image(file_path, mat, overwrite=True):
     try:
         image.save(file_path)
     except IOError:
-        print("Couldn't write to file {}").format(file_path)
+        print(("Couldn't write to file {}").format(file_path))
         raise
     return file_path
 
@@ -240,7 +254,7 @@ def save_plot_image(file_path, list_lines, height, width, overwrite=True, dpi=10
     try:
         plt.savefig(file_path, dpi=dpi)
     except IOError:
-        print("Couldn't write to file {}").format(file_path)
+        print(("Couldn't write to file {}").format(file_path))
         raise
     plt.close()
     return file_path
@@ -274,7 +288,7 @@ def save_residual_plot(file_path, list_data, height, width, overwrite=True, dpi=
     try:
         plt.savefig(file_path, dpi=dpi, bbox_inches='tight')
     except IOError:
-        print("Couldn't write to file {}").format(file_path)
+        print(("Couldn't write to file {}").format(file_path))
         raise
     plt.close()
     return file_path
@@ -305,7 +319,7 @@ def save_hdf_file(file_path, idata, key_path='entry', overwrite=True):
     try:
         ofile = h5py.File(file_path, 'w')
     except IOError:
-        print("Couldn't write file: {}").format(file_path)
+        print(("Couldn't write file: {}").format(file_path))
         raise
     grp = ofile.create_group(key_path)
     grp.create_dataset("data", data=idata)

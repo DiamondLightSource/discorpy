@@ -15,7 +15,7 @@
 #============================================================================
 # Author: Nghia T. Vo
 # E-mail: nghia.vo@diamond.ac.uk
-# Description: Python implementation (2.7) of the author's methods of
+# Description: Python implementation of the author's methods of
 # distortion correction, Nghia T. Vo et al "Radial lens distortion
 # correction with sub-pixel accuracy for X-ray micro-tomography"
 # Optics Express 23, 32859-32868 (2015), https://doi.org/10.1364/OE.23.032859
@@ -154,7 +154,7 @@ def _invert_dots_contrast(mat):
     return mat
 
 
-def binarization(mat, ratio=0.3, thres=None):
+def binarization(mat, ratio=0.3, thres=None, denoise=True):
     """
     Binarize a 2D array, invert the contrast of dots if have to,
     remove border components, clean salt noise, fill holes.
@@ -166,7 +166,8 @@ def binarization(mat, ratio=0.3, thres=None):
     ---------
     Return:      - 2D array, binarized data.
     """
-    mat = ndi.median_filter(np.abs(mat), (2, 2))  # Denoising
+    if denoise:
+        mat = ndi.median_filter(np.abs(mat), (2, 2))  # Denoising
     if thres == None:
         thres = threshold_otsu(_select_roi(mat, ratio), nbins=512)
     mat = np.asarray(mat > thres, dtype=np.float32)
@@ -188,7 +189,7 @@ def check_num_dots(mat):
     check = False
     _, num_dots = ndi.label(mat)
     if num_dots < 5 * 5:
-        print("WARNING!!! Number of detected dots: {}").format(num_dots)
+        print(("WARNING!!! Number of detected dots: {}").format(num_dots))
         print("is not enough for the algorithm to work!")
         check = True
     return check
@@ -473,7 +474,7 @@ def group_dots_hor_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
         dot1 = list_dots_left[0]
         dots_selected = np.asarray([dot1])
         pos_get = [0]
-        for i in xrange(1, len(list_dots_left)):
+        for i in range(1, len(list_dots_left)):
             dot2 = list_dots_left[i]
             check = _check_dot_on_line(
                 dot1, dot2, slope, dot_dist, ratio, num_dot_miss)
@@ -526,7 +527,7 @@ def group_dots_ver_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
         dot1 = list_dots_left[0]
         dots_selected = np.asarray([dot1])
         pos_get = [0]
-        for i in xrange(1, len(list_dots_left)):
+        for i in range(1, len(list_dots_left)):
             dot2 = list_dots_left[i]
             check = _check_dot_on_line(
                 dot1, dot2, slope, dot_dist, ratio, num_dot_miss)

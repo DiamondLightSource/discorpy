@@ -15,7 +15,7 @@
 #============================================================================
 # Author: Nghia T. Vo
 # E-mail: nghia.vo@diamond.ac.uk
-# Description: Python implementation (2.7) of the author's methods of
+# Description: Python implementation of the author's methods of
 # distortion correction, Nghia T. Vo et al "Radial lens distortion
 # correction with sub-pixel accuracy for X-ray micro-tomography"
 # Optics Express 23, 32859-32868 (2015), https://doi.org/10.1364/OE.23.032859
@@ -43,32 +43,34 @@ time_start = timeit.default_timer()
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
 # Initial parameters
-file_path = "../../vounwarp/data/coef_dot_05.txt"
-output_base = "C:/home/unwarp/"
+file_path = "../data/coef_dot_05.txt"
+output_base = "C:/correction/"
 search_range = 100
-step = 10
+step = 20
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
 # Import distortion coefficients
 (xcenter, ycenter, list_fact) = io.load_metadata_txt(file_path)
 # Generate a 3D dataset for demonstration.
 # Replace this step with a real 3D data in your codes.
-mat0 = io.load_image("../../vounwarp/data/dot_pattern_05.jpg")
+mat0 = io.load_image("../data/dot_pattern_05.jpg")
 (height, width) = mat0.shape
 mat3D = np.zeros((600, height, width), dtype=np.float32)
 mat3D[:] = mat0
-# Generate corrected slice with the index of height//2
+# Generate corrected slice with the index of 14
 # at different xcenter and ycenter.
+sindex = 14
 for x_search in range(-search_range, search_range + step, step):
     for y_search in range(-search_range, search_range + step, step):
         corrected_slice = post.unwarp_slice_backward(
-            mat3D, xcenter + x_search, ycenter + y_search, list_fact,
-            height // 2)
+            mat3D, xcenter + x_search, ycenter + y_search, list_fact, sindex)
         # Do reconstruction here using other packages: tomopy, astra
+        # Metric of reconstructed image, same as the one used for finding
+        # center of rotation, can be used instead of visual inspection  
         output_name = output_base + "/xcenter_"\
             + "{:5.2f}".format(xcenter + x_search) + "_ycenter_"\
             + "{:5.2f}".format(ycenter + y_search) + ".tif"
         io.save_image(output_name, corrected_slice)
 
 time_stop = timeit.default_timer()
-print("Calculation completes in {} second !").format(time_stop - time_start)
+print(("Calculation completes in {} second !").format(time_stop - time_start))

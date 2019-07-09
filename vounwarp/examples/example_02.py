@@ -15,7 +15,7 @@
 #============================================================================
 # Author: Nghia T. Vo
 # E-mail: nghia.vo@diamond.ac.uk
-# Description: Python implementation (2.7) of the author's methods of
+# Description: Python implementation of the author's methods of
 # distortion correction, Nghia T. Vo et al "Radial lens distortion
 # correction with sub-pixel accuracy for X-ray micro-tomography"
 # Optics Express 23, 32859-32868 (2015), https://doi.org/10.1364/OE.23.032859
@@ -57,9 +57,9 @@ time_start = timeit.default_timer()
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
 # Initial parameters
-file_path = "../../vounwarp/data/dot_pattern_01.jpg"
-output_base = "C:/home/unwarp/"
-poly_order = 5  # Order of a polynomial
+file_path = "../data/dot_pattern_01.jpg"
+output_base = "C:/correction/"
+poly_order = 5  # Number of polynomial coefficients
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
 # Input
@@ -67,10 +67,10 @@ mat0 = io.load_image(file_path)
 # Distortion coefficients calculation
 (xcenter, ycenter, list_fact) = calc_distor_coef(mat0, poly_order)
 # Output
-corrected_mat = post.unwarp_image_backward_cv(
+corrected_mat = post.unwarp_image_backward(
     mat0, xcenter, ycenter, list_fact)
 io.save_image(output_base + "/corrected_image_bw.tif", corrected_mat)
 io.save_metadata_txt(
     output_base + "/coefficients_bw.txt", xcenter, ycenter, list_fact)
 time_stop = timeit.default_timer()
-print("Calculation completes in {} second !").format(time_stop - time_start)
+print(("Calculation completes in {} second !").format(time_stop - time_start))

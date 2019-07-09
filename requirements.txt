@@ -1,7 +1,6 @@
 python
 numpy
 scipy
-opencv
 scikit-image
 PIL
 matplotlib

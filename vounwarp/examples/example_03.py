@@ -15,7 +15,7 @@
 #============================================================================
 # Author: Nghia T. Vo
 # E-mail: nghia.vo@diamond.ac.uk
-# Description: Python implementation (2.7) of the author's methods of
+# Description: Python implementation of the author's methods of
 # distortion correction, Nghia T. Vo et al "Radial lens distortion
 # correction with sub-pixel accuracy for X-ray micro-tomography"
 # Optics Express 23, 32859-32868 (2015), https://doi.org/10.1364/OE.23.032859
@@ -32,15 +32,15 @@ import vounwarp.post.postprocessing as post
 """
 Example to show how to adjust parameters for handling a challenging image.
 dot_pattern_04.jpg in /vounwarp/data is a challenging data with lots of
-contamination, misplaced dots, and missing dots, so some parameters
+blobs, misplaced dots, and missing dots, so some parameters
 of pre-procesing methods need to be adjusted.
 
 """
 
 
-file_path = "../../vounwarp/data/dot_pattern_04.jpg"
-output_base = "C:/home/unwarp/"
-poly_order = 5  # Order of a polynomial
+file_path = "../data/dot_pattern_04.jpg"
+output_base = "C:/correction/"
+poly_order = 5  # Number of polynomial coefficients
 
 time_start = timeit.default_timer()
 mat0 = io.load_image(file_path)
@@ -50,7 +50,7 @@ mat1 = prep.normalization_fft(mat0, sigma=5)
 
 # Binarize.
 # For tiny dots, sometime you may need to set the threshold manually.
-mat1 = prep.binarization(mat0, ratio=0.5, thres=None)
+mat1 = prep.binarization(mat1, ratio=0.5, thres=None)
 io.save_image(output_base + "/binarized_image.tif", mat1)
 
 # Calculate dot size, distance of two nearest dots
@@ -69,19 +69,14 @@ io.save_image(output_base + "/cleaned2_image.tif", mat1)
 # Calculate the horizontal slope and the vertical slope of the grid
 hor_slope = prep.calc_hor_slope(mat1, ratio=0.3)
 ver_slope = prep.calc_ver_slope(mat1, ratio=0.3)
-print("Horizontal slope: {0}  Vertical slope: {1}").format(
-    hor_slope, ver_slope)
+print(("Horizontal slope: {0}  Vertical slope: {1}").format(
+    hor_slope, ver_slope))
 
 # Group dots into horizontal lines and vertical lines
 list_hor_lines = prep.group_dots_hor_lines(
     mat1, hor_slope, dot_dist, ratio=0.3, num_dot_miss=10, accepted_ratio=0.6)
 list_ver_lines = prep.group_dots_ver_lines(
     mat1, ver_slope, dot_dist, ratio=0.3, num_dot_miss=10, accepted_ratio=0.6)
-io.save_plot_image(output_base + "/group_horizontal_dots.png",
-                   list_hor_lines, height, width)
-io.save_plot_image(output_base + "/group_vertical_dots.png",
-                   list_ver_lines, height, width)
-
 
 # Remove residual dots.
 list_hor_lines = prep.remove_residual_dots_hor(
@@ -89,6 +84,10 @@ list_hor_lines = prep.remove_residual_dots_hor(
 list_ver_lines = prep.remove_residual_dots_ver(
     list_ver_lines, ver_slope, residual=2.0)
 
+io.save_plot_image(output_base + "/group_horizontal_dots.png",
+                   list_hor_lines, height, width)
+io.save_plot_image(output_base + "/group_vertical_dots.png",
+                   list_ver_lines, height, width)
 
 # Following steps are straightforward.
 
@@ -103,7 +102,7 @@ check1 = post.check_distortion(list_hor_data)
 check2 = post.check_distortion(list_ver_data)
 if (not check1) and (not check2):
     print("!!! Distortion is not significant !!!")
-    sys.exit(0)
+    #sys.exit(0)
 
 # Calculate center of distortion. xcenter is the center from the left
 # of the image. ycenter is the center from the top of the image.
@@ -111,14 +110,14 @@ if (not check1) and (not check2):
 # Use fine-search if there's no perspective distortion
 # (xcenter, ycenter) = proc.find_cod_fine(
 #     list_hor_lines, list_ver_lines, xcenter, ycenter, dot_dist)
-print(
-    "Center of distortion: x-center: {0}; y-center: {1}").format(xcenter, ycenter)
+print((
+    "Center of distortion: x-center: {0}; y-center: {1}").format(xcenter, ycenter))
 
 # Calculate distortion coefficients using the backward-from-forward model
 list_ffact, list_bfact = proc.calc_coef_backward_from_forward(
     list_hor_lines, list_ver_lines, xcenter, ycenter, poly_order)
 # Apply distortion correction
-corrected_mat = post.unwarp_image_backward_cv(
+corrected_mat = post.unwarp_image_backward(
     mat0, xcenter, ycenter, list_bfact)
 io.save_image(output_base + "/corrected_image.tif", corrected_mat)
 io.save_metadata_txt(
@@ -141,5 +140,5 @@ check2 = post.check_distortion(list_ver_data)
 if check1 or check2:
     print("!!! Correction results are not at sub-pixel accuracy !!!")
 time_stop = timeit.default_timer()
-print("Calculation completes in {} second !").format(
-    time_stop - time_start)
+print(("Calculation completes in {} second !").format(
+    time_stop - time_start))

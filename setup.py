@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION=1.0
+VERSION=1.1
 setup(
     name='vounwarp',
     packages=find_packages(exclude=['test*']),
@@ -14,17 +14,13 @@ setup(
     license='Apache 2.0',
     platforms='Any',
     classifiers=[
-        'Development Status :: 1.0',
+        'Development Status :: 1.1',
         'License :: OSI Approved :: Apache License 2.0',
         'Intended Audience :: Science/Research',
         'Intended Audience :: Education',
         'Intended Audience :: Developers',
         'Natural Language :: English',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python',
 	]
 )
