@@ -156,7 +156,7 @@ list_uhor_lines = post.unwarp_line_backward(
 list_uver_lines = post.unwarp_line_backward(
     list_ver_lines, xcenter, ycenter, list_fact)
 list_hor_data = post.calc_residual_hor(list_uhor_lines, xcenter, ycenter)
-list_ver_data = post.calc_residual_hor(list_uver_lines, xcenter, ycenter)
+list_ver_data = post.calc_residual_ver(list_uver_lines, xcenter, ycenter)
 io.save_residual_plot(
     output_base + "/residual_hor_lines_after_BW_correction.png",
     list_hor_data, height, width)
@@ -189,7 +189,7 @@ list_uhor_lines = post.unwarp_line_forward(
 list_uver_lines = post.unwarp_line_forward(
     list_ver_lines, xcenter, ycenter, list_fact)
 list_hor_data = post.calc_residual_hor(list_uhor_lines, xcenter, ycenter)
-list_ver_data = post.calc_residual_hor(list_uver_lines, xcenter, ycenter)
+list_ver_data = post.calc_residual_ver(list_uver_lines, xcenter, ycenter)
 io.save_residual_plot(
     output_base + "/residual_hor_lines_after_FW_correction.png",
     list_hor_data, height, width)
@@ -224,7 +224,7 @@ list_uhor_lines = post.unwarp_line_backward(
 list_uver_lines = post.unwarp_line_backward(
     list_ver_lines, xcenter, ycenter, list_bfact)
 list_hor_data = post.calc_residual_hor(list_uhor_lines, xcenter, ycenter)
-list_ver_data = post.calc_residual_hor(list_uver_lines, xcenter, ycenter)
+list_ver_data = post.calc_residual_ver(list_uver_lines, xcenter, ycenter)
 io.save_residual_plot(
     output_base + "/residual_hor_lines_after_BWFW_correction.png",
     list_hor_data, height, width)
