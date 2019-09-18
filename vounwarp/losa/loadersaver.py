@@ -37,7 +37,6 @@ import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
 from collections import OrderedDict
-from scipy.misc import bytescale
 import errno
 
 def load_image(file_path):
@@ -209,7 +208,7 @@ def save_image(file_path, mat, overwrite=True):
             "Please use a file path following the Unix convention")
     file_base, file_ext = os.path.splitext(file_path)
     if not ((file_ext == ".tif") or (file_ext == ".tiff")):
-        mat = bytescale(mat)
+        mat = np.uint8(255*(mat-np.min(mat))/(np.max(mat)-np.min(mat)))
     _create_folder(file_path)
     if not overwrite:
         file_path = _create_file_name(file_path)
