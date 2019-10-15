@@ -181,8 +181,6 @@ def unwarp_slice_backward(mat3D, xcenter, ycenter, list_fact, index):
     yd_min = np.int16(np.floor(np.amin(yd_list)))
     yd_max = np.int16(np.ceil(np.amax(yd_list))) + 1
     yd_list = yd_list - yd_min 
-    xlist = np.arange(0, width)
-    ylist = np.arange(yd_min, yd_max)
     sino = np.zeros((depth, width), dtype=np.float32)
     indices = yd_list, xd_list
     for i in range(depth):
@@ -224,9 +222,9 @@ def unwarp_chunk_slices_backward(mat3D, xcenter, ycenter, list_fact,
     if (len(mat3D.shape) < 3):
         raise ValueError("Input must be a 3D data")
     (depth, height, width) = mat3D.shape
-    index_list = np.arange(depth, dtype=np.int16)
+    index_list = np.arange(height, dtype=np.int16)
     if stop_index == -1:
-        stop_index = depth
+        stop_index = height
     if (start_index not in index_list) or (stop_index not in index_list):
         raise ValueError("Selected index is out of the range")
     xu_list = np.arange(0, width) - xcenter
