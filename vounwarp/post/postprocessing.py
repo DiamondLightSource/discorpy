@@ -33,16 +33,22 @@ from scipy import interpolate
 from scipy import optimize
 from scipy.ndimage import map_coordinates
 
+
 def unwarp_line_forward(list_lines, xcenter, ycenter, list_fact):
     """
     Unwarp lines of dot-centroids using the forward model.
-    ---------
-    Parameters: - list_lines: List of the coordinates of dot-centroids
-                            on the lines.
-                - list_fact: Polynomial coefficients of the forward model.
-    ---------
-    Return:     - list_ulines: List of the corrected coordinates of
-                             dot-centroids on the lines.
+    
+    Parameters
+    ----------
+    list_lines : list of float
+        List of the coordinates of the dot-centroids on the lines.
+    list_fact : list of float
+        Polynomial coefficients of the forward model.
+    
+    Returns
+    -------
+    list_ulines : list of float
+        List of the corrected coordinates of the dot-centroids on the lines.
     """
     list_ulines = []
     list_expo = np.arange(len(list_fact), dtype=np.int16)
@@ -67,13 +73,18 @@ def _func_diff(ru, rd, *list_fact):
 def unwarp_line_backward(list_lines, xcenter, ycenter, list_fact):
     """
     Unwarp lines of dot-centroids using the forward model.
-    ---------
-    Parameters: - list_lines: List of the coordinates of dot-centroids
-                            on the lines.
-                - list_fact: Polynomial coefficients of the backward model.
-    ---------
-    Return:     - list_ulines: List of the corrected coordinates of
-                             dot-centroids on the lines.
+    
+    Parameters
+    ----------
+    list_lines : list of float
+        List of the coordinates of the dot-centroids on the lines.
+    list_fact : list of float
+        Polynomial coefficients of the backward model.
+    
+    Returns
+    -------
+    list_ulines : list of float
+        List of the corrected coordinates of the dot-centroids on the lines.
     """
     list_ulines = []
     for _, line in enumerate(list_lines):
@@ -92,16 +103,26 @@ def unwarp_line_backward(list_lines, xcenter, ycenter, list_fact):
         list_ulines.append(uline)
     return list_ulines
 
+
 def unwarp_image_backward(mat, xcenter, ycenter, list_fact):
     """
     Unwarp a 2D array using the backward model.
-    ---------
-    Parameters: - mat: 2D array.
-                - xcenter: Center of distortion in x-direction.
-                - ycenter: Center of distortion in y-direction.
-                - list_fact: Polynomial coefficients of the backward model.
-    ---------
-    Return:     - 2D array, distortion corrected.
+    
+    Parameters
+    ----------
+    mat : float
+        2D array.
+    xcenter : float
+        Center of distortion in x-direction.
+    ycenter : float
+        Center of distortion in y-direction.
+    list_fact : list of float
+        Polynomial coefficients of the backward model.
+    
+    Returns
+    -------
+    float
+        2D array. Distortion corrected.
     """
     (height, width) = mat.shape
     xu_list = np.arange(width) - xcenter
@@ -122,13 +143,22 @@ def unwarp_image_forward(mat, xcenter, ycenter, list_fact):
     """
     Unwarp a 2D array using the forward model.
     Should be used only for testing due to the problem of vacant pixels.
-    ---------
-    Parameters: - mat: 2D array.
-                - xcenter: Center of distortion in x-direction.
-                - ycenter: Center of distortion in y-direction.
-                - list_fact: Polynomial coefficients of the forward model.
-    ---------
-    Return:     - 2D array, distortion corrected.
+    
+    Parameters
+    ----------
+    mat : float
+        2D array.
+    xcenter : float
+        Center of distortion in x-direction.
+    ycenter : float
+        Center of distortion in y-direction.
+    list_fact : list of float
+        Polynomial coefficients of the forward model.
+    
+    Returns
+    -------
+    float
+        2D array. Distortion corrected.
     """
     (height, width) = mat.shape
     xd_list = np.arange(width) - xcenter
@@ -158,14 +188,24 @@ def unwarp_slice_backward(mat3D, xcenter, ycenter, list_fact, index):
     """
     Generate an unwarped slice [:,index.:] of a 3D dataset, i.e
     one unwarped sinogram of a 3D tomographic data.
-    ---------
-    Parameters: - mat3D: 3D array.
-                - xcenter: Center of distortion in x-direction.
-                - ycenter: Center of distortion in y-direction.
-                - list_fact: Polynomial coefficients of the backward model.
-                - index: Index of the slice
-    ---------
-    Return:     - 2D array, distortion corrected.
+    
+    Parameters
+    ----------
+    mat3D : float
+        3D array.
+    xcenter : float
+        Center of distortion in x-direction.
+    ycenter : float
+        Center of distortion in y-direction.
+    list_fact : list of float
+        Polynomial coefficients of the backward model.
+    index : int
+        Index of the slice
+    
+    Returns
+    -------
+    float
+        2D array. Distortion corrected.
     """
     if (len(mat3D.shape) < 3):
         raise ValueError("Input must be a 3D data")
@@ -192,12 +232,20 @@ def unwarp_slice_backward(mat3D, xcenter, ycenter, list_fact, index):
 def _mapping(mat, xmat, ymat):
     """
     Apply a geometric transformation to a 2D array
-    ---------
-    Parameters: - mat: 2D array.
-                - xmat: 2D array of the x-coordinates.
-                - ymat: 2D array of the y-coordinates.
-    ---------
-    Return:     - 2D array. 
+    
+    Parameters
+    ----------
+    mat : float
+        2D array.
+    xmat : float
+        2D array of the x-coordinates.
+    ymat : float
+        2D array of the y-coordinates.
+    
+    Returns
+    -------
+    float
+        2D array. 
     """
     indices = np.reshape(ymat, (-1, 1)), np.reshape(xmat, (-1, 1))
     mat = map_coordinates(mat, indices, order=1, mode='reflect')
@@ -209,15 +257,26 @@ def unwarp_chunk_slices_backward(mat3D, xcenter, ycenter, list_fact,
     """
     Generate a chunk  of unwarped slices [:,start_index: stop_index, :].
     Useful for correcting 3D tomographic data.
-    ---------
-    Parameters: - mat3D: 3D array.
-                - xcenter: Center of distortion in x-direction.
-                - ycenter: Center of distortion in y-direction.
-                - list_fact: Polynomial coefficients of the backward model.
-                - start_index: Starting index of the slice.
-                - stop_index: Stopping index of the slice.
-    ---------
-    Returns:    - 3D array, distortion corrected.
+    
+    Parameters
+    ----------
+    mat3D : float
+        3D array.
+    xcenter : float
+        Center of distortion in x-direction.
+    ycenter : float
+        Center of distortion in y-direction.
+    list_fact : list of float
+        Polynomial coefficients of the backward model.
+    start_index : int
+        Starting index of the slice.
+    stop_index : int
+        Stopping index of the slice.
+    
+    Returns
+    -------
+    float
+        3D array. Distortion corrected.
     """
     if (len(mat3D.shape) < 3):
         raise ValueError("Input must be a 3D data")
@@ -262,14 +321,22 @@ def calc_residual_hor(list_ulines, xcenter, ycenter):
     Calculate the distances of corrected dots (on the horizontal lines)
     to fitted straight lines.
     Useful to check the straightness of the unwarped lines.     
-    ---------
-    Parameters: - list_ulines: List of the unwarped horizontal lines.
-                - xcenter: Center of distortion in x-direction.
-                - ycenter: Center of distortion in y-direction.
-    ---------
-    Returns:    - 2D array: each element has two values: 1) Distance
-                of a dot to the center of distortion; 2) Distance
-                of a dot to the fitted straight line. 
+    
+    Parameters
+    ----------
+    list_ulines : list of float
+        List of the unwarped horizontal lines.
+    xcenter : float
+        Center of distortion in x-direction.
+    ycenter : float
+        Center of distortion in y-direction.
+    
+    Returns
+    -------
+    list of float
+        2D array: each element has two values: 1) Distance of a dot to 
+        the center of distortion; 2) Distance of a dot to the fitted 
+        straight line. 
     """
     list_data = []
     for i, line in enumerate(list_ulines):
@@ -290,14 +357,22 @@ def calc_residual_ver(list_ulines, xcenter, ycenter):
     Calculate the distances of corrected dots (on the vertical lines)
     to fitted straight lines.
     Useful to check the straightness of the unwarped lines.     
-    ---------
-    Parameters: - list_ulines: List of the unwarped vertical lines.
-                - xcenter: Center of distortion in x-direction.
-                - ycenter: Center of distortion in y-direction.
-    ---------
-    Returns:    - 2D array: each element has two values: 1) Distance
-                of a dot to the center of distortion; 2) Distance
-                of a dot to the fitted straight line. 
+    
+    Parameters
+    ----------
+    list_ulines : list of float
+        List of the unwarped vertical lines.
+    xcenter : float
+        Center of distortion in x-direction.
+    ycenter : float
+        Center of distortion in y-direction.
+    
+    Returns
+    -------
+    list of float
+        2D array: each element has two values: 1) Distance of a dot to 
+        the center of distortion; 2) Distance of a dot to the fitted 
+        straight line. 
     """
     list_data = []
     for i, line in enumerate(list_ulines):
@@ -318,10 +393,15 @@ def check_distortion(list_data):
     Check if the distortion is significant or not.
     If the number of dots having the residual greater than 1 pixel
     is greater than 15% of the total number of dots, there's distortion.     
-    ---------
-    Parameters: - list_data: List of [radius, residual] of the dots.             
-    ---------
-    Returns:    - Boolean.
+    
+    Parameters
+    ----------
+    list_data : list of float
+        List of [radius, residual] of the dots.             
+    
+    Returns
+    -------
+    bool
     """
     check = False
     res_list = list_data[:, 1]

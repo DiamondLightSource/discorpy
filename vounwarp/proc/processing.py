@@ -36,14 +36,22 @@ from scipy import optimize
 def _para_fit_hor(list_lines, xcenter, ycenter):
     """
     Fit horizontal lines of dots to parabolas.
-    ---------
-    Parameters: - list_lines: List of the coordinates of dot-centroids.
-                - xcenter: Center of distortion in x-direction.
-                - ycenter: Center of distortion in y-direction.
-    ---------
-    Returns:    - list_coef: Coefficients of the fits.
-                - list_slines: List of the shifted coordinates of
-                dot-centroids.
+    
+    Parameters
+    ----------
+    list_lines : list of float
+        List of the coordinates of the dot-centroids.
+    xcenter : float
+        Center of distortion in x-direction.
+    ycenter : float
+        Center of distortion in y-direction.
+    
+    Returns
+    -------
+    list_coef : list of float 
+        Coefficients of the fits.
+    list_slines : list of float 
+        List of the shifted coordinates of the dot-centroids.
     """
     num_line = len(list_lines)
     list_coef = np.zeros((num_line, 3), dtype=np.float32)
@@ -60,14 +68,22 @@ def _para_fit_hor(list_lines, xcenter, ycenter):
 def _para_fit_ver(list_lines, xcenter, ycenter):
     """
     Fit vertical lines of dots to parabolas.
-    ---------
-    Parameters: - list_lines: List of the coordinates of dot-centroids.
-                - xcenter: Center of distortion in x-direction.
-                - ycenter: Center of distortion in y-direction.
-    ---------
-    Returns:    - list_coef: Coefficients of the fits.
-                - list_slines: List of the shifted coordinates of
-                dot-centroids.
+    
+    Parameters
+    ----------
+    list_lines : list of float
+        List of the coordinates of the dot-centroids.
+    xcenter : float
+        Center of distortion in x-direction.
+    ycenter : float
+        Center of distortion in y-direction.
+    
+    Returns
+    -------
+    list_coef : list of float
+        Coefficients of the fits.
+    list_slines : list of float
+        List of the shifted coordinates of the dot-centroids.
     """
     num_line = len(list_lines)
     list_coef = np.zeros((num_line, 3), dtype=np.float32)
@@ -84,14 +100,20 @@ def _para_fit_ver(list_lines, xcenter, ycenter):
 def find_cod_coarse(list_hor_lines, list_ver_lines):
     """
     Coarse estimation of the center of distortion.
-    ---------
-    Parameters: - list_hor_lines: List of the coordinates of dot-centroids
-                                 on the horizontal lines.
-                - list_ver_lines: List of the coordinates of dot-centroids
-                                 on the vertical lines.
-    ---------
-    Returns:    - xcenter: Center of distortion in x-direction.
-                - ycenter: Center of distortion in y-direction.
+    
+    Parameters
+    ----------
+    list_hor_lines : list of float 
+        List of the coordinates of the dot-centroids on the horizontal lines.
+    list_ver_lines : list of float 
+        List of the coordinates of the dot-centroids on the vertical lines.
+    
+    Returns
+    -------
+    xcenter : float 
+        Center of distortion in x-direction.
+    ycenter : float
+        Center of distortion in y-direction.
     """
     (list_coef_hor, list_hor_lines) = _para_fit_hor(list_hor_lines, 0.0, 0.0)
     (list_coef_ver, list_ver_lines) = _para_fit_ver(list_ver_lines, 0.0, 0.0)
@@ -124,13 +146,17 @@ def _calc_error(list_coef_hor, list_coef_ver):
     Locate points on each parabola having the minimum distance to the origin.
     Apply linear fit to these points. 
     Calculate the metric of how close the fitted line is to the origin.
-    ---------
-    Parameters: - list_coef_hor: Coefficients of the parabolic fits of the
-                                 horizontal lines.
-                - list_coef_ver: Coefficients of the parabolic fits of the
-                                 vertical lines.
-    ---------
-    Return:     - float. 
+    
+    Parameters
+    ----------
+    list_coef_hor : list of float 
+        Coefficients of the parabolic fits of the horizontal lines.
+    list_coef_ver : list of float
+        Coefficients of the parabolic fits of the vertical lines.
+    
+    Returns    
+    -------
+    float   
     """
     num_hline = len(list_coef_hor)
     num_vline = len(list_coef_ver)
@@ -157,18 +183,28 @@ def _calc_metric(list_hor_lines, list_ver_lines, xcenter, ycenter,
                  list_xshift, list_yshift):
     """
     Calculate the metric for finding the best center of distortion.
-    ---------
-    Parameters: - list_hor_lines: List of the coordinates of dot-centroids
-                                 on the horizontal lines.
-                - list_ver_lines: List of the coordinates of dot-centroids
-                                 on the vertical lines.
-                - xcenter: Center of distortion in x-direction.
-                - ycenter: Center of distortion in y-direction.
-                - list_xshift: List of x-offsets from the xcenter.
-                - list_yshift: List of y-offsets from the ycenter.
-    ---------
-    Returns:    - xshift: Shift in x-direction from the xcenter.
-                - yshift: Shift in y-direction from the ycenter.
+    
+    Parameters
+    ----------
+    list_hor_lines : list of float
+        List of the coordinates of the dot-centroids on the horizontal lines.
+    list_ver_lines : list of float
+        List of the coordinates of the dot-centroids on the vertical lines.
+    xcenter : float
+        Center of distortion in x-direction.
+    ycenter : float
+        Center of distortion in y-direction.
+    list_xshift : list of float 
+        List of x-offsets from the xcenter.
+    list_yshift : list of float 
+        List of y-offsets from the ycenter.
+    
+    Returns
+    -------
+    xshift : float
+        Shift in x-direction from the xcenter.
+    yshift : float
+        Shift in y-direction from the ycenter.
     """
     (list_coef_hor, list_hor_lines) = _para_fit_hor(
         list_hor_lines, xcenter, ycenter)
@@ -202,17 +238,26 @@ def find_cod_fine(list_hor_lines, list_ver_lines, xcenter, ycenter, dot_dist):
     """
     Find the best center of distortion (CoD) by searching around the coarse
     estimation of the CoD.
-    ---------
-    Parameters: - list_hor_lines: List of the coordinates of dot-centroids
-                                 on the horizontal lines.
-                - list_ver_lines: List of the coordinates of dot-centroids
-                                 on the vertical lines.
-                - xcenter: Coarse estimation of the CoD in x-direction.
-                - ycenter: Coarse estimation of the CoD in y-direction.
-                - dot_dist: Median distance of two nearest dots.
-    ---------
-    Returns:    - xcenter: Center of distortion in x-direction.
-                - ycenter: Center of distortion in y-direction.
+    
+    Parameters
+    ----------
+    list_hor_lines : list of float
+        List of the coordinates of the dot-centroids on the horizontal lines.
+    list_ver_lines : list of float
+        List of the coordinates of the dot-centroids on the vertical lines.
+    xcenter : float
+        Coarse estimation of the CoD in x-direction.
+    ycenter : float
+        Coarse estimation of the CoD in y-direction.
+    dot_dist : float
+        Median distance of the two nearest dots.
+    
+    Returns
+    -------
+    xcenter : float
+        Center of distortion in x-direction.
+    ycenter : float
+        Center of distortion in y-direction.
     """
     sstep = 2.0
     list_xshift = np.arange(-dot_dist / 2, dot_dist / 2 + sstep, sstep)
@@ -236,13 +281,17 @@ def find_cod_fine(list_hor_lines, list_ver_lines, xcenter, ycenter, dot_dist):
 def _check_missing_lines(list_coef_hor, list_coef_ver):
     """
     Check if there are missing lines
-    ---------
-    Parameters: - list_coef_hor: Coefficients of the parabolic fits of the
-                                 horizontal lines.
-                - list_coef_ver: Coefficients of the parabolic fits of the
-                                 vertical lines.
-    ---------
-    Return:     - Boolean.    
+    
+    Parameters
+    ----------
+    list_coef_hor : list of float
+         Coefficients of the parabolic fits of the horizontal lines.
+    list_coef_ver : list of float
+        Coefficients of the parabolic fits of the vertical lines.
+    
+    Returns
+    -------
+    bool    
     """
     check = False
     list_dist_hor = np.abs(np.diff(list_coef_hor[:, 2]))
@@ -283,16 +332,24 @@ def _optimize_intercept(dist_hv, pos_hv, list_inter):
 def _calc_undistor_intercept(list_hor_lines, list_ver_lines, xcenter, ycenter):
     """
     Calculate the intercepts of undistorted lines.
-    ---------
-    Parameters: - list_hor_lines: List of the coordinates of dot-centroids
-                                 on the horizontal lines.
-                - list_ver_lines: List of the coordinates of dot-centroids
-                                 on the vertical lines.
-                - xcenter: Center of distortion in x-direction.
-                - ycenter: Center of distortion in y-direction.
-    ---------
-    Returns:    - list_hor_uc: Intercepts of the undistorted horizontal lines.
-                - list_ver_uc: Intercepts of the undistorted vertical lines.
+    
+    Parameters
+    ----------
+    list_hor_lines : list of float
+        List of the coordinates of the dot-centroids on the horizontal lines.
+    list_ver_lines : list of float
+        List of the coordinates of the dot-centroids on the vertical lines.
+    xcenter : float
+        Center of distortion in x-direction.
+    ycenter : float
+        Center of distortion in y-direction.
+    
+    Returns
+    -------
+    list_hor_uc : list of float
+        Intercepts of the undistorted horizontal lines.
+    list_ver_uc : list of float
+        Intercepts of the undistorted vertical lines.
     """
     (list_coef_hor, list_hor_lines) = _para_fit_hor(
         list_hor_lines, xcenter, ycenter)
@@ -334,17 +391,24 @@ def calc_coef_backward(list_hor_lines, list_ver_lines, xcenter, ycenter,
                        num_fact):
     """
     Calculate the distortion coefficients of the backward mode.
-    ---------
-    Parameters: - list_hor_lines: List of the coordinates of dot-centroids
-                                 on the horizontal lines.
-                - list_ver_lines: List of the coordinates of dot-centroids
-                                 on the vertical lines.
-                - xcenter: Center of distortion in x-direction.
-                - ycenter: Center of distortion in y-direction.
-                - num_fact: Number of the factors of the polynomial fit.
-                 5 is maximum.
-    ---------
-    Returns:    - list_fact: Coefficients of the polynomial fit.
+    
+    Parameters
+    ----------
+    list_hor_lines : list of float
+        List of the coordinates of the dot-centroids on the horizontal lines.
+    list_ver_lines : list of float
+        List of the coordinates of the dot-centroids on the vertical lines.
+    xcenter : float
+        Center of distortion in x-direction.
+    ycenter : float
+        Center of distortion in y-direction.
+    num_fact : int
+        Number of the factors of the polynomial fit. 5 is maximum.
+    
+    Returns
+    -------
+    list_fact : list of float
+        Coefficients of the polynomial fit.
     """
     num_fact = np.int16(np.clip(num_fact, 1, 5))
     (list_hor_uc, list_ver_uc) = _calc_undistor_intercept(
@@ -386,17 +450,24 @@ def calc_coef_forward(list_hor_lines, list_ver_lines, xcenter, ycenter,
                       num_fact):
     """
     Calculate the distortion coefficients of the forward mode.
-    ---------
-    Parameters: - list_hor_lines: List of the coordinates of dot-centroids
-                                 on the horizontal lines.
-                - list_ver_lines: List of the coordinates of dot-centroids
-                                 on the vertical lines.
-                - xcenter: Center of distortion in x-direction.
-                - ycenter: Center of distortion in y-direction.
-                - num_fact: Number of the factors of the polynomial fit.
-                 5 is maximum
-    ---------
-    Returns:    - list_fact: Coefficients of the polynomial fit.
+    
+    Parameters
+    ----------
+    list_hor_lines : list of float
+        List of the coordinates of the dot-centroids on the horizontal lines.
+    list_ver_lines : list of float
+        List of the coordinates of the dot-centroids on the vertical lines.
+    xcenter : float
+        Center of distortion in x-direction.
+    ycenter : float
+        Center of distortion in y-direction.
+    num_fact : int
+        Number of the factors of the polynomial fit. 5 is maximum
+    
+    Returns
+    -------
+    list_fact : list of float
+        Coefficients of the polynomial fit.
     """
     num_fact = np.int16(np.clip(num_fact, 1, 5))
     (list_hor_uc, list_ver_uc) = _calc_undistor_intercept(
@@ -443,20 +514,26 @@ def calc_coef_backward_from_forward(list_hor_lines, list_ver_lines, xcenter,
     """
     Calculate the distortion coefficients of the backward mode from the
     forward model.
-    ---------
-    Parameters: - list_hor_lines: List of the coordinates of dot-centroids
-                                 on the horizontal lines.
-                - list_ver_lines: List of the coordinates of dot-centroids
-                                 on the vertical lines.
-                - xcenter: Center of distortion in x-direction.
-                - ycenter: Center of distortion in y-direction.
-                - num_fact: Number of the factors of the polynomial fit.
-                 5 is maximum
-    ---------
-    Returns:    - list_ffact: Coefficients of the polynomial fit of the
-                 forward model.
-                - list_bfact: Coefficients of the polynomial fit of the
-                 backward model.
+    
+    Parameters
+    ----------
+    list_hor_lines : list of float
+        List of the coordinates of the dot-centroids on the horizontal lines.
+    list_ver_lines : list of float
+        List of the coordinates of dot-centroids on the vertical lines.
+    xcenter : float
+        Center of distortion in x-direction.
+    ycenter : float
+        Center of distortion in y-direction.
+    num_fact : int
+        Number of the factors of the polynomial fit. 5 is maximum
+    
+    Returns
+    -------
+    list_ffact : list of float
+        Coefficients of the polynomial fit of the forward model.
+    list_bfact : list of float
+        Coefficients of the polynomial fit of the backward model.
     """
     num_fact = np.int16(np.clip(num_fact, 1, 5))
     list_ffact = np.float64(

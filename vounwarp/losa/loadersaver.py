@@ -41,11 +41,17 @@ import errno
 
 def load_image(file_path):
     """
-    Load data from an image.
-    ---------
-    Parameters - file_path: Path to the file.
-    ---------
-    Return:    - 2D array.
+     Load data from an image.
+    
+    Parameters
+    ----------
+    file_path : str
+        Path to the file.
+    
+    Returns
+    -------
+    float
+        2D array.
     """
     if ("\\" in file_path):
         raise ValueError(
@@ -79,15 +85,23 @@ def _get_key(name, obj):
 def load_hdf_file(file_path, key_path=None, index=None, axis=0):
     """
     Load data from a hdf5 file.
-    ---------
-    Parameters: - file_path: Path to the file
-                - key_path: Key path to the dataset
-                - index: Values for slicing data through the 0th axis.
-                 Can be integer, tuple or list, e.g index=(start,stop,step)
-                 or index=(slice1, slice2, slice3,slice4).
-                - axis: Slice direction
-    ---------
-    Return:     - 2D array or 3D array.
+    
+    Parameters
+    ----------
+    file_path : str
+        Path to the file
+    key_path : str
+        Key path to the dataset
+    index : int or tuple of int
+        Values for slicing data. Can be integer, tuple or list, 
+        e.g index=(start,stop,step) or index=(slice1, slice2, slice3,slice4).
+    axis : int
+        Slice direction
+    
+    Returns
+    -------
+    float
+        2D array or 3D array.
     """
     ifile = None
     idata = None
@@ -117,7 +131,6 @@ def load_hdf_file(file_path, key_path=None, index=None, axis=0):
     if len(shape) == 3:
         axis = np.clip(axis, 0, 3)
         (depth, height, width) = idata.shape
-        data_type = idata.dtype
         if (index == None):                            
             mat = np.float32(idata[:,:,:])
         else:
@@ -162,7 +175,10 @@ def load_hdf_file(file_path, key_path=None, index=None, axis=0):
 def _create_folder(file_path):
     """
     Create folder if not exists.
-    Parameter: file_path.
+    
+    Parameters
+    ----------
+    file_path : str        
     """
     file_base = os.path.dirname(file_path)
     if not os.path.exists(file_base):
@@ -176,8 +192,15 @@ def _create_folder(file_path):
 def _create_file_name(file_path):
     """
     Create file name to avoid overwriting.
-    Parameter: File path.
-    Return:    Updated file path.
+    
+    Parameters
+    ----------
+    file_path : str
+    
+    Returns
+    -------
+    str
+        Updated file path.
     """
     file_base, file_ext = os.path.splitext(file_path)
     if os.path.isfile(file_path):
@@ -196,12 +219,20 @@ def _create_file_name(file_path):
 def save_image(file_path, mat, overwrite=True):
     """
     Save 2D data to an image.
-    ---------
-    Parameters: - file_path: Path to the file.
-                - mat: 2D array.
-                - overwrite: Overwrite the existing file if True.
-    ---------
-    Return:     - Updated file path.
+    
+    Parameters
+    ----------
+    file_path : str 
+        Path to the file.
+    mat : int or float 
+        2D array.
+    overwrite : bool 
+        Overwrite the existing file if True.
+    
+    Returns
+    -------
+    str
+        Updated file path.
     """
     if ("\\" in file_path):
         raise ValueError(
@@ -226,14 +257,22 @@ def save_plot_image(file_path, list_lines, height, width, overwrite=True, dpi=10
     Save the plot of dot-centroids to an image.
     Useful to check if the dots are arranged properly.
     Note: Dots on the same line having the same color.
-    ---------
-    Parameters: - file_path: Path to the file.
-                - list_lines: List of the coordinates of dots on the lines.
-                - height, width : Shape of the image.
-
-                - overwrite: Overwrite the existing file if True.
-    ---------
-    Return:     - Updated file path.
+    
+    Parameters
+    ----------
+    file_path : str
+        Path to the file.
+    list_lines : float 
+        2D array. List of the coordinates of dots on the lines.
+    height, width : int
+        Shape of the image.
+    overwrite : bool
+        Overwrite the existing file if True.
+    
+    Returns
+    -------
+    str
+        Updated file path.
     """
     if ("\\" in file_path):
         raise ValueError(
@@ -263,13 +302,22 @@ def save_residual_plot(file_path, list_data, height, width, overwrite=True, dpi=
     """
     Save the plot of the residual vs radius to an image.
     Useful to check the accuracy of the unwarping results.
-    ---------
-    Parameters: - file_path: Path to the file.
-                - list_data: List of [residual, radius] of the corrected dots.
-                - height, width : Shape of the image.
-                - overwrite: Overwrite the existing file if True.
-    ---------
-    Return :    - Updated file path.
+    
+    Parameters
+    ----------
+    file_path : str
+        Path to the file.
+    list_data : float
+        List of [residual, radius] of the corrected dots.
+    height, width : int 
+        Shape of the image.
+    overwrite : bool
+        Overwrite the existing file if True.
+    
+    Returns
+    -------
+    str
+        Updated file path.
     """
     if ("\\" in file_path):
         raise ValueError(
@@ -296,13 +344,22 @@ def save_residual_plot(file_path, list_data, height, width, overwrite=True, dpi=
 def save_hdf_file(file_path, idata, key_path='entry', overwrite=True):
     """
     Write data to a hdf5 file.
-    ---------
-    Parameters: - file_path: Path to the file.
-                - idata: Data to be saved.
-                - key_path: Key path to the dataset.
-                - overwrite: Overwrite the existing file if True.
-    ---------
-    Return:    - Updated file path.
+    
+    Parameters
+    ----------
+    file_path : str
+        Path to the file.
+    idata : data-type 
+        Data to be saved.
+    key_path : str 
+        Key path to the dataset.
+    overwrite : bool
+        Overwrite the existing file if True.
+    
+    Returns
+    -------
+    str
+        Updated file path.
     """
     if ("\\" in file_path):
         raise ValueError(
@@ -329,14 +386,24 @@ def save_hdf_file(file_path, idata, key_path='entry', overwrite=True):
 def save_metadata_txt(file_path, xcenter, ycenter, list_fact, overwrite=True):
     """
     Write metadata to a text file.
-    ---------
-    Parameters: - file_path: The path to the file.
-                - xcenter: Center of distortion in x-direction.
-                - ycenter: Center of distortion in y-direction.
-                - list_fact: Coefficients of the polynomial fit.
-                - overwrite: Overwrite the existing file if True.
-    ---------
-    Return:    - Updated file path.
+    
+    Parameters
+    ----------
+    file_path : str
+        The path to the file.
+    xcenter : float
+        Center of distortion in x-direction.
+    ycenter : float
+        Center of distortion in y-direction.
+    list_fact : float
+        1D array. Coefficients of the polynomial fit.
+    overwrite : bool
+        Overwrite the existing file if True.
+    
+    Returns
+    -------
+    str
+        Updated file path.
     """
     file_base, file_ext = os.path.splitext(file_path)
     if not ((file_ext == '.txt') or (file_ext == '.dat')):
@@ -361,10 +428,16 @@ def save_metadata_txt(file_path, xcenter, ycenter, list_fact, overwrite=True):
 def load_metadata_txt(file_path):
     """
     Load distortion coefficients from a text file.
-    ---------
-    Parameter:  - file_path: Path to the file
-    ---------
-    Return:     - Tuple of (xcenter, ycenter, list_fact).
+    
+    Parameters
+    ----------
+    file_path : str
+        Path to the file
+    
+    Returns
+    -------
+    tuple of float and list
+        Tuple of (xcenter, ycenter, list_fact).
     """
     if ("\\" in file_path):
         raise ValueError(

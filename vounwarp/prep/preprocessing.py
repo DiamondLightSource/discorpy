@@ -44,13 +44,20 @@ from scipy.ndimage.measurements import center_of_mass
 
 def normalization(mat, radius=51):
     """
-    Correct non-uniform background.
-    Recommend a large size of the kernel to remove dots.
-    ---------
-    Parameters: - mat: 2D array.
-                - radius: Size of the filter.
-    ---------
-    Return:     - 2D array, corrected background.
+    Correct a non-uniform background of an image.
+    Use a large kernel to remove dots.
+    
+    Parameters
+    ----------
+    mat : float
+        2D array.
+    radius : int
+        Size of the filter.
+    
+    Returns
+    -------
+    float
+        2D array. Corrected background.
     """
     mat_bck = ndi.median_filter(mat, radius, mode="reflect")
     mean_val = np.mean(mat_bck)
@@ -65,11 +72,18 @@ def normalization(mat, radius=51):
 def _make_window(height, width, sigma=10):
     """
     Create a 2D Gaussian window.
-    ---------
-    Parameters: - height, width : Shape of the 2D array.
-                - sigma: Sigma of the Gaussian.
-    ---------
-    Return:     - 2D Gaussian window. 
+    
+    Parameters
+    ----------
+    height, width : int 
+        Shape of the 2D array.
+    sigma : int
+        Sigma of the Gaussian window.
+    
+    Returns
+    -------
+    float
+        2D array. 
     """
     xcenter = (width - 1.0) / 2.0
     ycenter = (height - 1.0) / 2.0
@@ -82,12 +96,20 @@ def _make_window(height, width, sigma=10):
 def _apply_fft_filter(mat, sigma, pad):
     """
     Apply a Fourier-based filter.
-    ---------
-    Parameters: - mat : 2D array.
-                - sigma: Sigma of the Gaussian.
-                - pad: Edge padding.
-    ---------
-    Return:     - Filtered 2D array. 
+    
+    Parameters
+    ----------
+    mat : float
+        2D array.
+    sigma : int
+        Sigma of the Gaussian filter.
+    pad : int
+        Edge padding.
+    
+    Returns
+    -------
+    float
+        2D array. Filtered image.
     """
     mat = np.pad(mat, ((pad, pad), (pad, pad)), mode='symmetric')
     (height, width) = mat.shape
@@ -102,13 +124,21 @@ def _apply_fft_filter(mat, sigma, pad):
 
 def normalization_fft(mat, sigma=10, pad=30):
     """
-    Correct non-uniform background using a FFT-based filter.
-    ---------
-    Parameters: - mat: 2D array.
-                - sigma: Sigma of the Gaussian.
-                - pad: Edge padding.
-    ---------
-    Return:     - 2D array, corrected background.
+    Correct a non-uniform background using a FFT-based filter.
+    
+    Parameters
+    ----------
+    mat : float
+        2D array.
+    sigma : int
+        Sigma of the Gaussian.
+    pad : int
+        Edge padding.
+    
+    Returns
+    -------
+    float
+        2D array. Corrected background image.
     """
     mat_bck = _apply_fft_filter(mat, sigma, pad)
     mean_val = np.mean(mat_bck)
@@ -123,11 +153,18 @@ def normalization_fft(mat, sigma=10, pad=30):
 def _select_roi(mat, ratio):
     """
     Select ROI around the middle of an image.
-    ---------
-    Parameters: - mat: 2D array.
-                - ratio: Ratio between the ROI area and the full size image.
-    ---------
-    Return:     - 2D array, cropped data.
+    
+    Parameters
+    ----------
+    mat : float
+        2D array.
+    ratio : float
+        Ratio between the ROI area and the full size image.
+    
+    Returns
+    -------
+    float
+        2D array.
     """
     (height, width) = mat.shape
     ratio = np.clip(ratio, 0.1, 1.0)
@@ -139,12 +176,18 @@ def _select_roi(mat, ratio):
 
 def _invert_dots_contrast(mat):
     """
-    Invert contrast of a 2D binary array.
+    Invert the contrast of a 2D binary array.
     To make sure that dots are white.
-    ---------
-    Parameter:  - mat: Binarized 2D array.
-    ---------
-    Return:     - 2D array, inverted contrast.
+    
+    Parameters
+    ----------
+    mat : float 
+        Binarized 2D array.
+    
+    Returns
+    -------
+    float
+        2D array.
     """
     (height, width) = mat.shape
     ratio = np.sum(mat) / (height * width)
@@ -158,13 +201,21 @@ def binarization(mat, ratio=0.3, thres=None, denoise=True):
     """
     Binarize a 2D array, invert the contrast of dots if have to,
     remove border components, clean salt noise, fill holes.
-    ---------
-    Parameters: - mat: 2D array.
-                - ratio: ROI around the middle of the image used for
-                 calculating the threshold.
-                - thres: Threshold is calculated automatically if it is None
-    ---------
-    Return:      - 2D array, binarized data.
+    
+    Parameters
+    ----------
+    mat : float 
+        2D array.
+    ratio : float 
+        To take the ROI around the middle of the image used for 
+        calculating the threshold.
+    thres : float, optional
+        Threshold for binarizing. Calculated automatically if None.
+    
+    Returns
+    -------
+    float
+        2D binarized array.
     """
     if denoise:
         mat = ndi.median_filter(np.abs(mat), (2, 2))  # Denoising
@@ -181,10 +232,16 @@ def binarization(mat, ratio=0.3, thres=None, denoise=True):
 def check_num_dots(mat):
     """
     Check if the number of dots is enough for parabolic fit
-    ---------
-    Parameters: - mat: 2D binary array.
-    ---------
-    Return:     - Boolean.    
+    
+    Parameters
+    ----------
+    mat : float
+        2D binary array.
+    
+    Returns
+    -------
+    bool
+        True means not enough.
     """
     check = False
     _, num_dots = ndi.label(mat)
@@ -197,13 +254,21 @@ def check_num_dots(mat):
 
 def calc_size_distance(mat, ratio=0.3):
     """
-    Find the median size of dots and the distance between two nearest dots.
-    ---------
-    Parameters: - mat: 2D array.
-                - ratio: ROI around the middle of an image.
-    ---------
-    Returns:     - dot_size: Size of the dot.
-                 - dot_dist: Distance between two nearest dots.
+    Find the median size of dots and the distance of the two nearest dots.
+    
+    Parameters
+    ----------
+    mat : float
+        2D array.
+    ratio : float
+        To take the ROI around the middle of an image.
+    
+    Returns
+    -------
+    dot_size : float 
+        Size of the dot.
+    dot_dist : float 
+        Distance between the two nearest dots.
     """
     mat = _select_roi(mat, ratio)
     mat = np.int16(clear_border(mat))
@@ -223,12 +288,19 @@ def calc_size_distance(mat, ratio=0.3):
 def _check_dot_size(mat, min_size, max_size):
     """
     Check if the size of a dot is in an acceptable range.
-    ---------
-    Parameters: - mat: 2D array.
-                - min_size: Minimum size.
-                - max_size: Maximum size.
-    ---------
-    Return:     - Boolean.
+    
+    Parameters
+    ----------
+    mat : float
+        2D array.
+    min_size : float
+        Minimum size.
+    max_size : float
+        Maximum size.
+    
+    Returns
+    -------
+    bool
     """
     check = False
     dot_size = mat.sum()
@@ -240,12 +312,20 @@ def _check_dot_size(mat, min_size, max_size):
 def select_dots_based_size(mat, dot_size, ratio=0.3):
     """
     Select dots having a certain size.
-    ---------
-    Parameters: - mat: 2D array.
-                - dot_size: Median size of dots.
-                - ratio: Acceptable variation.
-    ---------
-    Return:     - 2D array, binary data with selected objects.
+    
+    Parameters
+    ----------
+    mat : float
+        2D array.
+    dot_size : float
+        Size of the standard dot.
+    ratio : float
+        Acceptable variation.
+    
+    Returns
+    -------
+    float
+        2D array. Selected dots.
     """
     min_size = np.clip(np.int32(dot_size - ratio * dot_size), 0, None)
     max_size = np.int32(dot_size + ratio * dot_size)
@@ -262,11 +342,17 @@ def select_dots_based_size(mat, dot_size, ratio=0.3):
 def _check_axes_ratio(mat, ratio):
     """
     Check if the ratio of the axes length of a fitted ellipse is acceptable.
-    ---------
-    Parameters: - mat: 2D array.
-                - ratio: Acceptable variation.
-    ---------
-    Return:     - Boolean.
+    
+    Parameters
+    ----------
+    mat : float
+        2D array.
+    ratio : float
+        Acceptable variation.
+    
+    Returns
+    -------
+    bool
     """
     check = False
     (height, width) = mat.shape
@@ -287,11 +373,18 @@ def select_dots_based_ratio(mat, ratio=0.3):
     """
     Select dots having a certain ratio between the axes length of
     the fitted ellipse.
-    ---------
-    Parameters: - mat: 2D array.
-                - ratio: Acceptable variation.
-    ---------
-    Return:     - 2D array, binary data with selected objects.
+    
+    Parameters
+    ----------
+    mat : float
+        2D array.
+    ratio : float
+        Acceptable variation.
+    
+    Returns
+    -------
+    float
+        2D array. Selected dots.
     """
     mat_label, _ = ndi.label(mat)
     list_dots = ndi.find_objects(mat_label)
@@ -306,12 +399,20 @@ def select_dots_based_ratio(mat, ratio=0.3):
 def select_dots_based_distance(mat, dot_dist, ratio=0.3):
     """
     Select dots having a certain distance to theirs neighbour dots.
-    ---------
-    Parameters: - mat: 2D array.
-                - dot_dist: Median distance of two nearest dots.
-                - ratio: Acceptable variation.
-    ---------
-    Return:     - 2D array, binary data with selected objects.
+    
+    Parameters
+    ----------
+    mat : float
+        2D array.
+    dot_dist : float
+        Median distance of two nearest dots.
+    ratio : float
+        Acceptable variation.
+    
+    Returns
+    -------
+    float
+        2D array. Selected dots.
     """
     mat_label, num_dots = ndi.label(mat)
     list_dots = ndi.find_objects(mat_label)
@@ -333,12 +434,19 @@ def select_dots_based_distance(mat, dot_dist, ratio=0.3):
 
 def calc_hor_slope(mat, ratio=0.3):
     """
-    Calculate the slope of the horizontal lines against the horizontal axis.
-    ---------
-    Parameters: - mat: 2D array.
-                - ratio: ROI around the middle of an image.
-    ---------
-    Return:     - float, horizontal slope of the grid.
+    Calculate the slope of horizontal lines against the horizontal axis.
+    
+    Parameters
+    ----------
+    mat : float
+        2D array.
+    ratio : float
+        To take the ROI around the middle of an image.
+    
+    Returns
+    -------
+    float
+        Horizontal slope of the grid.
     """
     coarse_range = 30.0  # Degree
     radi = np.pi / 180.0
@@ -377,12 +485,19 @@ def calc_hor_slope(mat, ratio=0.3):
 
 def calc_ver_slope(mat, ratio=0.3):
     """
-    Calculate the slope of the vertical lines against the vertical axis.
-    ---------
-    Parameters: - mat: 2D array.
-                - ratio: ROI around the middle of a image.
-    ---------
-    Return:    - float, vertical slope of the grid.
+    Calculate the slope of vertical lines against the vertical axis.
+    
+    Parameters
+    ----------
+    mat : float
+        2D array.
+    ratio : float
+        To take the ROI around the middle of a image.
+    
+    Returns
+    -------
+    float
+        Vertical slope of the grid.
     """
     coarse_range = 30.0
     radi = np.pi / 180.0
@@ -422,15 +537,25 @@ def calc_ver_slope(mat, ratio=0.3):
 def _check_dot_on_line(dot1, dot2, slope, dot_dist, ratio, num_dot_miss):
     """
     Check if dot1 and dot2 belong to the same group.
-    ---------
-    Parameters: - dot1: Coordinate of dot1.
-                - dot2: Coordinate of dot2.
-                - slope: Slope of the line of dots.
-                - dot_dist: Median distance of two nearest dots.
-                - ratio: Acceptable variation.
-                - num_dot_miss: Acceptable missing dots between dot1 and dot2.
-    ---------
-    Return:     - Boolean.
+    
+    Parameters
+    ----------
+    dot1 : list of float
+        Coordinate of dot1.
+    dot2 : list of float
+        Coordinate of dot2.
+    slope : float
+        Slope of the line of dots.
+    dot_dist : float
+        Median distance of two nearest dots.
+    ratio : float
+        Acceptable variation.
+    num_dot_miss : int
+        Acceptable missing dots between dot1 and dot2.
+    
+    Returns
+    -------
+    bool
     """
     check = False
     dist_error = ratio * dot_dist
@@ -450,18 +575,30 @@ def group_dots_hor_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
                          accepted_ratio=0.65):
     """
     Group dots into horizontal lines.
-    ---------
-    Parameters: - mat: 2D array.
-                - slope: Slope of the horizontal lines.
-                - dot_dist: Median distance of two nearest dots.
-                - ratio: Acceptable variation.
-                - num_dot_miss: Acceptable missing dots between dot1 and dot2.
-                - accepted_ratio: Use to select the lines having the number of
-                 dots equal to or larger than the multiplication of the
-                 accepted_ratio and the maximum number of dots per line.
-    ---------
-    Return:     - List of 2D arrays. Each list is the coordinates
-                 (x, y) of dot-centroids belong to the same group.
+    
+    Parameters
+    ----------
+    mat : float
+        2D array.
+    slope : float
+        Slope of the horizontal line.
+    dot_dist : float 
+        Median distance of two nearest dots.
+    ratio : float 
+        Acceptable variation.
+    num_dot_miss : int
+        Acceptable missing dots between dot1 and dot2.
+    accepted_ratio : float 
+        Use to select the lines having the number of dots equal to or 
+        larger than the multiplication of the `accepted_ratio` and 
+        the maximum number of dots per line.
+    
+    Returns
+    -------
+    list of float
+        List of 2D array. Each list is the coordinates (x, y) of 
+        the dot-centroids belong to the same group. Length of each 
+        list may be different.
     """
     mat_label, num_dots = ndi.label(mat)
     list_dots = np.copy(center_of_mass(
@@ -502,18 +639,30 @@ def group_dots_ver_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
                          accepted_ratio=0.65):
     """
     Group dots into vertical lines.
-    ---------
-    Parameters: - mat: 2D array.
-                - slope: Slope of the vertical lines.
-                - dot_dist: Median distance of two nearest dots.
-                - ratio: Acceptable variation.
-                - num_dot_miss: Acceptable missing dots between dot1 and dot2.
-                - accepted_ratio: Use to select the lines having the number of
-                 dots equal to or larger than the multiplication of the
-                 accepted_ratio and the maximum number of dots per line.
-    ---------
-    Return:     - List of 2D arrays. Each list is the coordinates
-                 (x, y) of dot-centeroids belong to the same group.
+    
+    Parameters
+    ----------
+    mat : float
+        2D array.
+    slope : float
+        Slope of the vertical line.
+    dot_dist : float
+        Median distance of two nearest dots.
+    ratio : float
+        Acceptable variation.
+    num_dot_miss : int 
+        Acceptable missing dots between dot1 and dot2.
+    accepted_ratio : ratio 
+        Use to select the lines having the number of dots equal to or larger 
+        than the multiplication of the `accepted_ratio` and the maximum 
+        number of dots per line.
+    
+    Returns
+    -------
+    list of float
+        List of 2D array. Each list is the coordinates (x, y) of 
+        dot-centeroids belong to the same group. Length of each 
+        list may be different.
     """
     mat_label, num_dots = ndi.label(mat)
     list_dots = np.copy(center_of_mass(
@@ -557,15 +706,23 @@ def remove_residual_dots_hor(list_lines, slope, residual=2.5):
     """
     Remove dots having a distance larger than a certain value from the fitted
     horizontal parabola.
-    ---------
-    Parameters: - list_lines: List of the coordinates of dot-centroids on
-                 the horizontal lines.
-                - slope: Slope of the horizontal lines.
-                - residual: Acceptable distance (pixel unit) between
-                 the dot and the fitted parabola.
-    ---------
-    Return:     - List of 2D arrays. Each list is the coordinates
-                 (x, y) of dot-centroids belong to the same group.
+    
+    Parameters
+    ----------
+    list_lines : list of float 
+        List of the coordinates of the dot-centroids on the horizontal lines.
+    slope : float
+        Slope of the horizontal line.
+    residual : float 
+        Acceptable distance in pixel unit between the dot and the fitted 
+        parabola.
+    
+    Returns
+    -------
+    list of float
+        List of 2D array. Each list is the coordinates (x, y) of 
+        dot-centroids belong to the same group. Length of each 
+        list may be different.
     """
     list_lines2 = []
     for i, list_ in enumerate(list_lines):
@@ -583,15 +740,23 @@ def remove_residual_dots_ver(list_lines, slope, residual=2.5):
     """
     Remove dots having a distance larger than a certain value from the fitted
     vertical parabola.
+    
+    Parameters
     ---------
-    Parameters: - list_lines: List of the coordinates of dot-centroids on
-                 the vertical lines.
-                - slope: Slope of the vertical lines.
-                - residual: Acceptable distance (pixel unit) between
-                 the dot and the fitted parabola.
-    ---------
-    Return:     - List of 2D arrays. Each list is the coordinates
-                 (x, y) of dot-centroids belong to the same group.
+    list_lines : list of float 
+        List of the coordinates of the dot-centroids on the vertical lines.
+    slope : float 
+        Slope of the vertical line.
+    residual : float 
+        Acceptable distance in pixel unit between the dot and the fitted 
+        parabola.
+    
+    Returns
+    -------
+    list of float
+        List of 2D array. Each list is the coordinates (x, y) of 
+        dot-centroids belong to the same group. Length of each 
+        list may be different.
     """
     list_lines2 = []
     for i, list_ in enumerate(list_lines):
