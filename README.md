@@ -26,3 +26,8 @@ Install
 - vounwarp is available on the conda-forge channel. To install:
 
   $ conda install -c conda-forge vounwarp
+
+How to use
+==========
+- A document explaining step-by-step how to calculate distortion coefficients from a dot pattern image is in the "/doc" folder or can be downloaded from: https://zenodo.org/record/1322720 
+- Examples of how to use the package are in the "/examples" folder.
