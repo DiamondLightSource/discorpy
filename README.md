@@ -77,6 +77,6 @@ Diamond Light Source, UK:
 
 - Apply to a hazard camera of the [Mars Perseverance Rover](https://mars.nasa.gov/mars2020/multimedia/raw-images/).
 Details of how to estimate distortion coefficients of that camera without using
-a calibration target are shown [here](https://github.com/nghia-vo/vounwarp/blob/master/examples/Perseverance_distortion_correction/Distortion_correction_for_Perseverance_camera.md)  
+a calibration target are shown [here](https://github.com/DiamondLightSource/vounwarp/blob/master/examples/Perseverance_distortion_correction/Distortion_correction_for_Perseverance_camera.md)  
 
 ![Mars_rover](data/demo/Mars_Rover_camera.jpg)
