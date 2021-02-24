@@ -2,6 +2,6 @@ python
 numpy
 scipy
 scikit-image
-PIL
+pillow
 matplotlib
 h5py

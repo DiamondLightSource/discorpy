@@ -1,5 +1,5 @@
 #============================================================================
-# Copyright (c) 2018 Nghia T. Vo. All rights reserved.
+# Copyright (c) 2018 Diamond Light Source Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,8 +25,6 @@
 import timeit
 import numpy as np
 import vounwarp.losa.loadersaver as io
-import vounwarp.prep.preprocessing as prep
-import vounwarp.proc.processing as proc
 import vounwarp.post.postprocessing as post
 
 
@@ -35,7 +33,7 @@ In practice, we may already have distortion coefficients of a lens, but the
 center of distortion (CoD) may be changed due to lens exchange. For some
 reasons, we can't collect a dot pattern again. Following is the example
 which is applicable to tomographic data to search for the best CoD.
-The idea is that we generate the corrected sinograms using estimated CoDs,
+The idea is that we generate unwarped sinograms using estimated CoDs,
 then we can do reconstruction and check the results to find the best CoD.
 """
 
@@ -44,33 +42,35 @@ time_start = timeit.default_timer()
 #-----------------------------------------------------------------------------
 # Initial parameters
 file_path = "../data/coef_dot_05.txt"
-output_base = "C:/correction/"
+output_base = "E:/correction/"
 search_range = 100
 step = 20
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
 # Import distortion coefficients
 (xcenter, ycenter, list_fact) = io.load_metadata_txt(file_path)
+
 # Generate a 3D dataset for demonstration.
 # Replace this step with a real 3D data in your codes.
 mat0 = io.load_image("../data/dot_pattern_05.jpg")
 (height, width) = mat0.shape
 mat3D = np.zeros((600, height, width), dtype=np.float32)
 mat3D[:] = mat0
-# Generate corrected slice with the index of 14
+
+# Generate unwarped slice with the index of 14
 # at different xcenter and ycenter.
-sindex = 14
+index = 14
 for x_search in range(-search_range, search_range + step, step):
     for y_search in range(-search_range, search_range + step, step):
         corrected_slice = post.unwarp_slice_backward(
-            mat3D, xcenter + x_search, ycenter + y_search, list_fact, sindex)
+            mat3D, xcenter + x_search, ycenter + y_search, list_fact, index)
+        # ----------------------------------------------------------
         # Do reconstruction here using other packages: tomopy, astra
-        # Metric of reconstructed image, same as the one used for finding
-        # center of rotation, can be used instead of visual inspection  
+        # ----------------------------------------------------------
         output_name = output_base + "/xcenter_"\
             + "{:5.2f}".format(xcenter + x_search) + "_ycenter_"\
             + "{:5.2f}".format(ycenter + y_search) + ".tif"
         io.save_image(output_name, corrected_slice)
 
 time_stop = timeit.default_timer()
-print(("Calculation completes in {} second !").format(time_stop - time_start))
+print("Running time is {} second!".format(time_stop - time_start))

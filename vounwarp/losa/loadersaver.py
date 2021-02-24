@@ -1,6 +1,6 @@
-#============================================================================
-#============================================================================
-# Copyright (c) 2018 Nghia T. Vo. All rights reserved.
+# ============================================================================
+# ============================================================================
+# Copyright (c) 2018 Diamond Light Source Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#============================================================================
+# ============================================================================
 # Author: Nghia T. Vo
 # E-mail: nghia.vo@diamond.ac.uk
 # Description: Python implementation of the author's methods of
@@ -21,12 +21,12 @@
 # correction with sub-pixel accuracy for X-ray micro-tomography"
 # Optics Express 23, 32859-32868 (2015), https://doi.org/10.1364/OE.23.032859
 # Publication date: 10th July 2018
-#============================================================================
+# ============================================================================
 
 """
 Module for I/O tasks:
-- Load data from an image file (tif, png, jpeg) or a hdf file.
-- Save a 2D array as a tif image or 2D, 3D array to a hdf file.
+- Load data from an image file (tif, png, jpg) or a hdf file.
+- Save a 2D array as a tif/png/jpg image or 2D, 3D array to a hdf file.
 - Save a plot of data points as an image.
 - Save and load metadata to and from a text file.
 """
@@ -39,30 +39,31 @@ import matplotlib.pyplot as plt
 from collections import OrderedDict
 import errno
 
-def load_image(file_path):
+
+def load_image(file_path, average=True):
     """
-     Load data from an image.
-    
+    Load data from an image.
+
     Parameters
     ----------
     file_path : str
-        Path to the file.
-    
+        Path to a file.
+    average : bool, optional
+        Average a multi-channel image if True.
+
     Returns
     -------
-    float
-        2D array.
+    array_like
     """
-    if ("\\" in file_path):
+    if "\\" in file_path:
         raise ValueError(
             "Please use a file path following the Unix convention")
-    mat = None
     try:
         mat = np.asarray(Image.open(file_path), dtype=np.float32)
     except IOError:
-        print(("No such file or directory: {}").format(file_path))
+        print("No such file or directory: {}".format(file_path))
         raise
-    if len(mat.shape) > 2:
+    if len(mat.shape) > 2 and average is True:
         axis_m = np.argmin(mat.shape)
         mat = np.mean(mat, axis=axis_m)
     return mat
@@ -70,8 +71,8 @@ def load_image(file_path):
 
 def _get_key(name, obj):
     """
-    Find the key path to the dataset automatically.
-    Use with Group.visititems() method to walk through hdf5 tree.
+    Find a key path having 'data' in a dataset. Use with Group.visititems()
+    method to walk through a hdf5 tree.
     """
     wanted_key = 'data'
     if isinstance(obj, h5py.Group):
@@ -84,67 +85,64 @@ def _get_key(name, obj):
 
 def load_hdf_file(file_path, key_path=None, index=None, axis=0):
     """
-    Load data from a hdf5 file.
-    
+    Load data from a hdf5/nxs file.
+
     Parameters
     ----------
     file_path : str
-        Path to the file
+        Path to a hdf/nxs file
     key_path : str
-        Key path to the dataset
+        Key path to a dataset
     index : int or tuple of int
-        Values for slicing data. Can be integer, tuple or list, 
+        Values for slicing data. Can be integer, tuple or list,
         e.g index=(start,stop,step) or index=(slice1, slice2, slice3,slice4).
     axis : int
         Slice direction
-    
+
     Returns
     -------
-    float
+    array_like
         2D array or 3D array.
     """
-    ifile = None
-    idata = None
     mat = None
-    if ("\\" in file_path):
+    if "\\" in file_path:
         raise ValueError(
             "Please use a file path following the Unix convention")
     try:
         ifile = h5py.File(file_path, 'r')
     except IOError:
-        print(("Couldn't open file: {}").format(file_path))
+        print("Couldn't open file: {}".format(file_path))
         raise
-    if key_path == None:
+    if key_path is None:
         key_path = ifile.visititems(_get_key)  # Find the key automatically
-        if key_path == None:
+        if key_path is None:
             raise ValueError("Please provide the key path to the dataset!")
     check = key_path in ifile
     if not check:
-        print(("Couldn't open object with the key path: {}").format(key_path))
+        print("Couldn't open object with the key path: {}".format(key_path))
         raise ValueError("!!! Wrong key !!!")
     idata = ifile[key_path]
     shape = idata.shape
-    if (len(shape) < 2 or len(shape) > 3):
-        raise ValueError("Require 2D or 3D dataset!")
+    if len(shape) < 2 or len(shape) > 3:
+        raise ValueError("Require a 2D or 3D dataset!")
     if len(shape) == 2:
         mat = np.asarray(idata)
     if len(shape) == 3:
         axis = np.clip(axis, 0, 3)
-        (depth, height, width) = idata.shape
-        if (index == None):                            
-            mat = np.float32(idata[:,:,:])
+        if index is None:
+            mat = np.float32(idata[:, :, :])
         else:
-            if type(index) == int:
+            if isinstance(index, int):
                 try:
-                    if axis==0:
-                        mat = np.float32(idata[index,:,:])
-                    elif axis==1:
-                        mat = np.float32(idata[:,index,:])
+                    if axis == 0:
+                        mat = np.float32(idata[index, :, :])
+                    elif axis == 1:
+                        mat = np.float32(idata[:, index, :])
                     else:
-                        mat = np.float32(idata[:,:,index])
+                        mat = np.float32(idata[:, :, index])
                 except ValueError:
-                    print("Index out of range")
-            if (type(index) == tuple) or (type(index) == list):
+                    print("Index out of range!")
+            if isinstance(index, tuple) or isinstance(index, list):
                 if len(index) == 3:
                     starti = index[0]
                     stopi = index[1]
@@ -157,14 +155,14 @@ def load_hdf_file(file_path, key_path=None, index=None, axis=0):
                 else:
                     list_index = list(index)
                 try:
-                    if axis==0:
-                        mat = np.float32(idata[list_index,:,:])
-                    elif axis==1:
-                        mat = np.float32(idata[:,list_index,:])
+                    if axis == 0:
+                        mat = np.float32(idata[list_index, :, :])
+                    elif axis == 1:
+                        mat = np.float32(idata[:, list_index, :])
                     else:
-                        mat = np.float32(idata[:,:,list_index])
+                        mat = np.float32(idata[:, :, list_index])
                 except ValueError:
-                    print("Index out of range")
+                    print("Index out of range!")
             if mat.shape[axis] == 1:
                 mat = np.swapaxes(mat, axis, 0)[0]
             if mat.shape[axis] == 0:
@@ -174,11 +172,12 @@ def load_hdf_file(file_path, key_path=None, index=None, axis=0):
 
 def _create_folder(file_path):
     """
-    Create folder if not exists.
-    
+    Create a folder to save a file if not exists.
+
     Parameters
     ----------
-    file_path : str        
+    file_path : str
+        Path to a file
     """
     file_base = os.path.dirname(file_path)
     if not os.path.exists(file_base):
@@ -191,12 +190,13 @@ def _create_folder(file_path):
 
 def _create_file_name(file_path):
     """
-    Create file name to avoid overwriting.
-    
+    Create a file name to avoid overwriting.
+
     Parameters
     ----------
     file_path : str
-    
+        Path to a file
+
     Returns
     -------
     str
@@ -219,27 +219,27 @@ def _create_file_name(file_path):
 def save_image(file_path, mat, overwrite=True):
     """
     Save 2D data to an image.
-    
+
     Parameters
     ----------
-    file_path : str 
-        Path to the file.
-    mat : int or float 
+    file_path : str
+        Output file path.
+    mat : array_like
         2D array.
-    overwrite : bool 
-        Overwrite the existing file if True.
-    
+    overwrite : bool, optional
+        Overwrite an existing file if True.
+
     Returns
     -------
     str
         Updated file path.
     """
-    if ("\\" in file_path):
+    if "\\" in file_path:
         raise ValueError(
             "Please use a file path following the Unix convention")
     file_base, file_ext = os.path.splitext(file_path)
     if not ((file_ext == ".tif") or (file_ext == ".tiff")):
-        mat = np.uint8(255*(mat-np.min(mat))/(np.max(mat)-np.min(mat)))
+        mat = np.uint8(255 * (mat - np.min(mat)) / (np.max(mat) - np.min(mat)))
     _create_folder(file_path)
     if not overwrite:
         file_path = _create_file_name(file_path)
@@ -247,34 +247,38 @@ def save_image(file_path, mat, overwrite=True):
     try:
         image.save(file_path)
     except IOError:
-        print(("Couldn't write to file {}").format(file_path))
+        print("Couldn't write to file {}".format(file_path))
         raise
     return file_path
 
 
-def save_plot_image(file_path, list_lines, height, width, overwrite=True, dpi=100):
+def save_plot_image(file_path, list_lines, height, width, overwrite=True,
+                    dpi=100):
     """
-    Save the plot of dot-centroids to an image.
-    Useful to check if the dots are arranged properly.
-    Note: Dots on the same line having the same color.
-    
+    Save the plot of dot-centroids to an image. Useful to check if the dots
+    are arranged properly where dots on the same line having the same color.
+
     Parameters
     ----------
     file_path : str
-        Path to the file.
-    list_lines : float 
+        Output file path.
+    list_lines : float
         2D array. List of the coordinates of dots on the lines.
-    height, width : int
-        Shape of the image.
-    overwrite : bool
+    height : int
+        Height of the image.
+    width : int
+        Width of the image.
+    overwrite : bool, optional
         Overwrite the existing file if True.
-    
+    dpi : int, optional
+        The resolution in dots per inch.
+
     Returns
     -------
     str
         Updated file path.
     """
-    if ("\\" in file_path):
+    if "\\" in file_path:
         raise ValueError(
             "Please use a file path following the Unix convention")
     _create_folder(file_path)
@@ -288,38 +292,41 @@ def save_plot_image(file_path, list_lines, height, width, overwrite=True, dpi=10
     plt.axis((0, width, 0, height))
     m_size = 0.5 * min(height / dpi, width / dpi)
     for line in list_lines:
-        plt.plot(line[:, 1], height - line[:, 0], '-o',  markersize=m_size)
+        plt.plot(line[:, 1], height - line[:, 0], '-o', markersize=m_size)
     try:
         plt.savefig(file_path, dpi=dpi)
     except IOError:
-        print(("Couldn't write to file {}").format(file_path))
+        print("Couldn't write to file {}".format(file_path))
         raise
     plt.close()
     return file_path
 
 
-def save_residual_plot(file_path, list_data, height, width, overwrite=True, dpi=100):
+def save_residual_plot(file_path, list_data, height, width, overwrite=True,
+                       dpi=100):
     """
-    Save the plot of the residual vs radius to an image.
-    Useful to check the accuracy of the unwarping results.
-    
+    Save the plot of residual against radius to an image. Useful to check the
+    accuracy of unwarping results.
+
     Parameters
     ----------
     file_path : str
-        Path to the file.
+        Output file path.
     list_data : float
-        List of [residual, radius] of the corrected dots.
-    height, width : int 
-        Shape of the image.
-    overwrite : bool
+        List of [residual, radius] of corrected dots.
+    height : int
+        Height of the output image.
+    width : int
+        Width of the output image.
+    overwrite : bool, optional
         Overwrite the existing file if True.
-    
+
     Returns
     -------
     str
         Updated file path.
     """
-    if ("\\" in file_path):
+    if "\\" in file_path:
         raise ValueError(
             "Please use a file path following the Unix convention")
     _create_folder(file_path)
@@ -331,11 +338,11 @@ def save_residual_plot(file_path, list_data, height, width, overwrite=True, dpi=
     plt.rc('font', size=np.int16(m_size * 3))
     plt.xlabel('Radius')
     plt.ylabel('Residual')
-    plt.plot(list_data[:, 0], list_data[:, 1], '.',  markersize=m_size)
+    plt.plot(list_data[:, 0], list_data[:, 1], '.', markersize=m_size)
     try:
         plt.savefig(file_path, dpi=dpi, bbox_inches='tight')
     except IOError:
-        print(("Couldn't write to file {}").format(file_path))
+        print("Couldn't write to file {}".format(file_path))
         raise
     plt.close()
     return file_path
@@ -344,24 +351,24 @@ def save_residual_plot(file_path, list_data, height, width, overwrite=True, dpi=
 def save_hdf_file(file_path, idata, key_path='entry', overwrite=True):
     """
     Write data to a hdf5 file.
-    
+
     Parameters
     ----------
     file_path : str
-        Path to the file.
-    idata : data-type 
+        Output file path.
+    idata : array_like
         Data to be saved.
-    key_path : str 
+    key_path : str
         Key path to the dataset.
-    overwrite : bool
-        Overwrite the existing file if True.
-    
+    overwrite : bool, optional
+        Overwrite an existing file if True.
+
     Returns
     -------
     str
         Updated file path.
     """
-    if ("\\" in file_path):
+    if "\\" in file_path:
         raise ValueError(
             "Please use a file path following the Unix convention")
     file_base, file_ext = os.path.splitext(file_path)
@@ -371,11 +378,10 @@ def save_hdf_file(file_path, idata, key_path='entry', overwrite=True):
     _create_folder(file_path)
     if not overwrite:
         file_path = _create_file_name(file_path)
-    ofile = None
     try:
         ofile = h5py.File(file_path, 'w')
     except IOError:
-        print(("Couldn't write file: {}").format(file_path))
+        print("Couldn't write file: {}".format(file_path))
         raise
     grp = ofile.create_group(key_path)
     grp.create_dataset("data", data=idata)
@@ -386,20 +392,20 @@ def save_hdf_file(file_path, idata, key_path='entry', overwrite=True):
 def save_metadata_txt(file_path, xcenter, ycenter, list_fact, overwrite=True):
     """
     Write metadata to a text file.
-    
+
     Parameters
     ----------
     file_path : str
-        The path to the file.
+        Output file path.
     xcenter : float
         Center of distortion in x-direction.
     ycenter : float
         Center of distortion in y-direction.
     list_fact : float
-        1D array. Coefficients of the polynomial fit.
-    overwrite : bool
-        Overwrite the existing file if True.
-    
+        1D array. Coefficients of a polynomial.
+    overwrite : bool, optional
+        Overwrite an existing file if True.
+
     Returns
     -------
     str
@@ -428,15 +434,15 @@ def save_metadata_txt(file_path, xcenter, ycenter, list_fact, overwrite=True):
 def load_metadata_txt(file_path):
     """
     Load distortion coefficients from a text file.
-    
+
     Parameters
     ----------
     file_path : str
-        Path to the file
-    
+        Path to a file.
+
     Returns
     -------
-    tuple of float and list
+    tuple of floats and list
         Tuple of (xcenter, ycenter, list_fact).
     """
     if ("\\" in file_path):

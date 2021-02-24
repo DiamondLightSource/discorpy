@@ -1,4 +1,4 @@
-#============================================================================
+# ============================================================================
 # Copyright (c) 2018 Diamond Light Source Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#============================================================================
+# ============================================================================
 # Author: Nghia T. Vo
 # E-mail: nghia.vo@diamond.ac.uk
 # Description: Python implementation of the author's methods of
@@ -20,43 +20,42 @@
 # correction with sub-pixel accuracy for X-ray micro-tomography"
 # Optics Express 23, 32859-32868 (2015), https://doi.org/10.1364/OE.23.032859
 # Publication date: 10th July 2018
-#============================================================================
+# ============================================================================
 
 """
 Module of pre-procesing methods:
-- Normalize, binarize an image of a dot pattern.
-- Calculate the dot size, the distance between two nearest dots,
- and the slopes of the gridlines.
+- Normalize, binarize an image.
+- Determine median dot-size, median distance between two nearest dots,
+ and the slopes of grid-lines of a dot-pattern image.
 - Remove non-dot objects or misplaced dots.
-- Group dot-centroids into horizontal lines and vertical lines
+- Group dot-centroids into horizontal lines and vertical lines.
 """
 
 import numpy as np
+from scipy import ndimage as ndi
+from scipy.fftpack import fft2, ifft2
+from scipy.ndimage.measurements import center_of_mass
 from skimage.filters import threshold_otsu
 from skimage.segmentation import clear_border
 import skimage.morphology as morph
 import skimage.measure as meas
 from skimage.transform import radon
-from scipy import ndimage as ndi
-from scipy.fftpack import fft2, ifft2
-from scipy.ndimage.measurements import center_of_mass
 
 
 def normalization(mat, radius=51):
     """
-    Correct a non-uniform background of an image.
-    Use a large kernel to remove dots.
-    
+    Correct a non-uniform background of an image using the median filter.
+
     Parameters
     ----------
-    mat : float
+    mat : array_like
         2D array.
     radius : int
-        Size of the filter.
-    
+        Size of the median filter.
+
     Returns
     -------
-    float
+    array_like
         2D array. Corrected background.
     """
     mat_bck = ndi.median_filter(mat, radius, mode="reflect")
@@ -72,18 +71,20 @@ def normalization(mat, radius=51):
 def _make_window(height, width, sigma=10):
     """
     Create a 2D Gaussian window.
-    
+
     Parameters
     ----------
-    height, width : int 
-        Shape of the 2D array.
+    height : int
+        Height of the window.
+    width : int
+        Width of the window.
     sigma : int
         Sigma of the Gaussian window.
-    
+
     Returns
     -------
-    float
-        2D array. 
+    array_like
+        2D array.
     """
     xcenter = (width - 1.0) / 2.0
     ycenter = (height - 1.0) / 2.0
@@ -95,20 +96,20 @@ def _make_window(height, width, sigma=10):
 
 def _apply_fft_filter(mat, sigma, pad):
     """
-    Apply a Fourier-based filter.
-    
+    Apply a Fourier Gaussian filter.
+
     Parameters
     ----------
-    mat : float
+    mat : array_like
         2D array.
     sigma : int
         Sigma of the Gaussian filter.
     pad : int
-        Edge padding.
-    
+        Pad width.
+
     Returns
     -------
-    float
+    array_like
         2D array. Filtered image.
     """
     mat = np.pad(mat, ((pad, pad), (pad, pad)), mode='symmetric')
@@ -124,20 +125,20 @@ def _apply_fft_filter(mat, sigma, pad):
 
 def normalization_fft(mat, sigma=10, pad=30):
     """
-    Correct a non-uniform background using a FFT-based filter.
-    
+    Correct a non-uniform background image using a Fourier Gaussian filter.
+
     Parameters
     ----------
-    mat : float
+    mat : array_like
         2D array.
     sigma : int
         Sigma of the Gaussian.
     pad : int
-        Edge padding.
-    
+        Pad width.
+
     Returns
     -------
-    float
+    array_like
         2D array. Corrected background image.
     """
     mat_bck = _apply_fft_filter(mat, sigma, pad)
@@ -153,21 +154,21 @@ def normalization_fft(mat, sigma=10, pad=30):
 def _select_roi(mat, ratio):
     """
     Select ROI around the middle of an image.
-    
+
     Parameters
     ----------
-    mat : float
+    mat : array_like
         2D array.
     ratio : float
-        Ratio between the ROI area and the full size image.
-    
+        Ratio between the ROI size and the image size.
+
     Returns
     -------
-    float
+    array_like
         2D array.
     """
     (height, width) = mat.shape
-    ratio = np.clip(ratio, 0.1, 1.0)
+    ratio = np.clip(ratio, 0.05, 1.0)
     depad_hei = np.int16((height - ratio * height) / 2)
     depad_wid = np.int16((width - ratio * width) / 2)
     mat = mat[depad_hei:height - depad_hei, depad_wid:width - depad_wid]
@@ -176,50 +177,50 @@ def _select_roi(mat, ratio):
 
 def _invert_dots_contrast(mat):
     """
-    Invert the contrast of a 2D binary array.
-    To make sure that dots are white.
-    
+    Invert the contrast of a 2D binary array to make sure that dots are white.
+
     Parameters
     ----------
-    mat : float 
-        Binarized 2D array.
-    
+    mat : array_like
+        2D binary array.
+
     Returns
     -------
-    float
+    array_like
         2D array.
     """
     (height, width) = mat.shape
     ratio = np.sum(mat) / (height * width)
     max_val = np.max(mat)
-    if (ratio > 0.5):
+    if ratio > 0.5:
         mat = max_val - mat
     return mat
 
 
 def binarization(mat, ratio=0.3, thres=None, denoise=True):
     """
-    Binarize a 2D array, invert the contrast of dots if have to,
-    remove border components, clean salt noise, fill holes.
-    
+    Apply a list of operations: binarizing an 2D array; inverting the contrast
+    of dots if needs to; removing border components; cleaning salty noise;
+    and filling holes.
+
     Parameters
     ----------
-    mat : float 
+    mat : array_like
         2D array.
-    ratio : float 
-        To take the ROI around the middle of the image used for 
-        calculating the threshold.
+    ratio : float
+        Used to select the ROI around the middle of the image for calculating
+        threshold.
     thres : float, optional
-        Threshold for binarizing. Calculated automatically if None.
-    
+        Threshold for binarizing. Automatically calculated if None.
+
     Returns
     -------
-    float
-        2D binarized array.
+    array_like
+        2D binary array.
     """
     if denoise:
-        mat = ndi.median_filter(np.abs(mat), (2, 2))  # Denoising
-    if thres == None:
+        mat = ndi.median_filter(np.abs(mat), (2, 2))
+    if thres is None:
         thres = threshold_otsu(_select_roi(mat, ratio), nbins=512)
     mat = np.asarray(mat > thres, dtype=np.float32)
     mat = _invert_dots_contrast(mat)
@@ -231,13 +232,13 @@ def binarization(mat, ratio=0.3, thres=None, denoise=True):
 
 def check_num_dots(mat):
     """
-    Check if the number of dots is enough for parabolic fit
-    
+    Check if the number of dots is not enough for parabolic fit.
+
     Parameters
     ----------
-    mat : float
+    mat : array_like
         2D binary array.
-    
+
     Returns
     -------
     bool
@@ -246,7 +247,7 @@ def check_num_dots(mat):
     check = False
     _, num_dots = ndi.label(mat)
     if num_dots < 5 * 5:
-        print(("WARNING!!! Number of detected dots: {}").format(num_dots))
+        print("WARNING!!! Number of detected dots: {}".format(num_dots))
         print("is not enough for the algorithm to work!")
         check = True
     return check
@@ -254,21 +255,22 @@ def check_num_dots(mat):
 
 def calc_size_distance(mat, ratio=0.3):
     """
-    Find the median size of dots and the distance of the two nearest dots.
-    
+    Find the median size of dots and the median distance between two
+    nearest dots.
+
     Parameters
     ----------
-    mat : float
+    mat : array_like
         2D array.
     ratio : float
-        To take the ROI around the middle of an image.
-    
+        Used to select the ROI around the middle of an image.
+
     Returns
     -------
-    dot_size : float 
-        Size of the dot.
-    dot_dist : float 
-        Distance between the two nearest dots.
+    dot_size : float
+        Median size of the dots.
+    dot_dist : float
+        Median distance between two nearest dots.
     """
     mat = _select_roi(mat, ratio)
     mat = np.int16(clear_border(mat))
@@ -279,7 +281,7 @@ def calc_size_distance(mat, ratio=0.3):
     list_cent = np.asarray(
         center_of_mass(mat, labels=mat_label, index=list_index))
     list_dist = [np.sort(np.sqrt((dot[0] - list_cent[:, 0]) ** 2
-                                 + (dot[1] - list_cent[:, 1])**2))[1]
+                                 + (dot[1] - list_cent[:, 1]) ** 2))[1]
                  for dot in list_cent]
     dot_dist = np.median(list_dist)
     return dot_size, dot_dist
@@ -287,17 +289,17 @@ def calc_size_distance(mat, ratio=0.3):
 
 def _check_dot_size(mat, min_size, max_size):
     """
-    Check if the size of a dot is in an acceptable range.
-    
+    Check if the size of a dot is in a range.
+
     Parameters
     ----------
-    mat : float
+    mat : array_like
         2D array.
     min_size : float
         Minimum size.
     max_size : float
         Maximum size.
-    
+
     Returns
     -------
     bool
@@ -312,19 +314,20 @@ def _check_dot_size(mat, min_size, max_size):
 def select_dots_based_size(mat, dot_size, ratio=0.3):
     """
     Select dots having a certain size.
-    
+
     Parameters
     ----------
-    mat : float
+    mat : array_like
         2D array.
     dot_size : float
         Size of the standard dot.
     ratio : float
-        Acceptable variation.
-    
+        Used to calculate the acceptable range.
+        [dot_size - ratio*dot_size; dot_size + ratio*dot_size]
+
     Returns
     -------
-    float
+    array_like
         2D array. Selected dots.
     """
     min_size = np.clip(np.int32(dot_size - ratio * dot_size), 0, None)
@@ -341,22 +344,24 @@ def select_dots_based_size(mat, dot_size, ratio=0.3):
 
 def _check_axes_ratio(mat, ratio):
     """
-    Check if the ratio of the axes length of a fitted ellipse is acceptable.
-    
+    Check if the ratio of the axes length of a fitted ellipse is smaller than
+    a threshold.
+
     Parameters
     ----------
-    mat : float
+    mat : array_like
         2D array.
     ratio : float
-        Acceptable variation.
-    
+        Threshold value.
+
+
     Returns
     -------
     bool
     """
     check = False
     (height, width) = mat.shape
-    if (height<2) or (width<2):
+    if (height < 2) or (width < 2):
         return check
     minor_axis = meas.regionprops(mat)[0].minor_axis_length
     major_axis = meas.regionprops(mat)[0].major_axis_length
@@ -371,19 +376,19 @@ def _check_axes_ratio(mat, ratio):
 
 def select_dots_based_ratio(mat, ratio=0.3):
     """
-    Select dots having a certain ratio between the axes length of
-    the fitted ellipse.
-    
+    Select dots having the ratio between the axes length of
+    the fitted ellipse smaller than a threshold.
+
     Parameters
     ----------
     mat : float
         2D array.
     ratio : float
-        Acceptable variation.
-    
+        Threshold value.
+
     Returns
     -------
-    float
+    array_like
         2D array. Selected dots.
     """
     mat_label, _ = ndi.label(mat)
@@ -398,20 +403,20 @@ def select_dots_based_ratio(mat, ratio=0.3):
 
 def select_dots_based_distance(mat, dot_dist, ratio=0.3):
     """
-    Select dots having a certain distance to theirs neighbour dots.
-    
+    Select dots having a certain range of distance to theirs neighbouring dots.
+
     Parameters
     ----------
-    mat : float
+    mat : array_like
         2D array.
     dot_dist : float
         Median distance of two nearest dots.
     ratio : float
-        Acceptable variation.
-    
+        Used to calculate acceptable range.
+
     Returns
     -------
-    float
+    array_like
         2D array. Selected dots.
     """
     mat_label, num_dots = ndi.label(mat)
@@ -420,8 +425,8 @@ def select_dots_based_distance(mat, dot_dist, ratio=0.3):
     list_cent = np.asarray(
         center_of_mass(mat, labels=mat_label, index=list_index))
     list_dist = np.asarray([np.sort(np.sqrt(
-        (dot[0] - list_cent[:, 0])**2
-        + (dot[1] - list_cent[:, 1])**2))[1:4] for dot in list_cent])
+        (dot[0] - list_cent[:, 0]) ** 2 + (dot[1] - list_cent[:, 1]) ** 2))[1:4]
+                            for dot in list_cent])
     mat1 = np.zeros_like(mat)
     for i, j in enumerate(list_dots):
         dist = list_dist[i]
@@ -435,14 +440,14 @@ def select_dots_based_distance(mat, dot_dist, ratio=0.3):
 def calc_hor_slope(mat, ratio=0.3):
     """
     Calculate the slope of horizontal lines against the horizontal axis.
-    
+
     Parameters
     ----------
-    mat : float
+    mat : array_like
         2D array.
     ratio : float
-        To take the ROI around the middle of an image.
-    
+        Used to select the ROI around the middle of an image.
+
     Returns
     -------
     float
@@ -453,7 +458,7 @@ def calc_hor_slope(mat, ratio=0.3):
     mat = np.int16(clear_border(_select_roi(mat, ratio)))
     (height, width) = mat.shape
     list_angle = 90.0 + np.arange(-coarse_range, coarse_range + 1.0)
-    projections = radon(mat, theta=list_angle, circle=False)
+    projections = radon(np.float32(mat), theta=list_angle, circle=False)
     list_max = np.amax(projections, axis=0)
     best_angle = -(list_angle[np.argmax(list_max)] - 90.0)
     dist_error = 0.5 * width * (np.tan(radi) / np.cos(best_angle * radi))
@@ -461,17 +466,17 @@ def calc_hor_slope(mat, ratio=0.3):
     list_index = np.arange(1, num_dots + 1)
     list_cent = np.asarray(
         center_of_mass(mat, labels=mat_label, index=list_index))
-    list_cent = - list_cent     # For coordinate consistency
+    list_cent = - list_cent  # For coordinate consistency
     mean_x = np.mean(list_cent[:, 1])
     mean_y = np.mean(list_cent[:, 0])
-    index_mid_dot = np.argsort(np.sqrt((mean_x - list_cent[:, 1])**2
-                                       + (mean_y - list_cent[:, 0])**2))[0]
+    index_mid_dot = np.argsort(np.sqrt((mean_x - list_cent[:, 1]) ** 2
+                                       + (mean_y - list_cent[:, 0]) ** 2))[0]
     used_dot = list_cent[index_mid_dot]
     line_slope = np.tan(best_angle * radi)
     list_tmp = np.sqrt(
-        np.ones(num_dots, dtype=np.float32) * line_slope**2 + 1.0)
+        np.ones(num_dots, dtype=np.float32) * line_slope ** 2 + 1.0)
     list_tmp2 = used_dot[0] * np.ones(num_dots, dtype=np.float32) \
-        - line_slope * used_dot[1]
+                - line_slope * used_dot[1]
     list_dist = np.abs(
         line_slope * list_cent[:, 1] - list_cent[:, 0] + list_tmp2) / list_tmp
     dots_selected = np.asarray(
@@ -486,14 +491,14 @@ def calc_hor_slope(mat, ratio=0.3):
 def calc_ver_slope(mat, ratio=0.3):
     """
     Calculate the slope of vertical lines against the vertical axis.
-    
+
     Parameters
     ----------
-    mat : float
+    mat : array_like
         2D array.
     ratio : float
-        To take the ROI around the middle of a image.
-    
+        Used to select the ROI around the middle of a image.
+
     Returns
     -------
     float
@@ -504,7 +509,7 @@ def calc_ver_slope(mat, ratio=0.3):
     mat = np.int16(clear_border(_select_roi(mat, ratio)))
     (height, width) = mat.shape
     list_angle = np.arange(-coarse_range, coarse_range + 1.0)
-    projections = radon(mat, theta=list_angle, circle=False)
+    projections = radon(np.float32(mat), theta=list_angle, circle=False)
     list_max = np.amax(projections, axis=0)
     best_angle = (list_angle[np.argmax(list_max)])
     dist_error = 0.5 * width * np.tan(radi) / np.cos(best_angle * radi)
@@ -514,14 +519,14 @@ def calc_ver_slope(mat, ratio=0.3):
         np.asarray(center_of_mass(mat, labels=mat_label, index=list_index)))
     mean_x = np.mean(list_cent[:, 1])
     mean_y = np.mean(list_cent[:, 0])
-    index_mid_dot = np.argsort(np.sqrt((mean_x - list_cent[:, 1])**2
-                                       + (mean_y - list_cent[:, 0])**2))[0]
+    index_mid_dot = np.argsort(np.sqrt((mean_x - list_cent[:, 1]) ** 2
+                                       + (mean_y - list_cent[:, 0]) ** 2))[0]
     used_dot = list_cent[index_mid_dot]
     line_slope = np.tan(best_angle * radi)
     list_tmp = np.sqrt(
-        np.ones(num_dots, dtype=np.float32) * line_slope**2 + 1.0)
+        np.ones(num_dots, dtype=np.float32) * line_slope ** 2 + 1.0)
     list_tmp2 = used_dot[0] * np.ones(num_dots, dtype=np.float32) \
-        - line_slope * used_dot[1]
+                - line_slope * used_dot[1]
     list_dist = np.abs(
         line_slope * list_cent[:, 1] - list_cent[:, 0] + list_tmp2) / list_tmp
     dots_selected = np.asarray(
@@ -537,7 +542,7 @@ def calc_ver_slope(mat, ratio=0.3):
 def _check_dot_on_line(dot1, dot2, slope, dot_dist, ratio, num_dot_miss):
     """
     Check if dot1 and dot2 belong to the same group.
-    
+
     Parameters
     ----------
     dot1 : list of float
@@ -552,7 +557,7 @@ def _check_dot_on_line(dot1, dot2, slope, dot_dist, ratio, num_dot_miss):
         Acceptable variation.
     num_dot_miss : int
         Acceptable missing dots between dot1 and dot2.
-    
+
     Returns
     -------
     bool
@@ -562,7 +567,7 @@ def _check_dot_on_line(dot1, dot2, slope, dot_dist, ratio, num_dot_miss):
     search_dist = num_dot_miss * dot_dist
     xmin = dot1[1] - search_dist
     xmax = dot1[1] + search_dist
-    if (xmin < dot2[1] < xmax):
+    if xmin < dot2[1] < xmax:
         ntemp1 = np.sqrt(slope * slope + 1.0)
         ntemp2 = dot1[0] - slope * dot1[1]
         dist_d12 = np.abs(slope * dot2[1] - dot2[0] + ntemp2) / ntemp1
@@ -575,30 +580,29 @@ def group_dots_hor_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
                          accepted_ratio=0.65):
     """
     Group dots into horizontal lines.
-    
+
     Parameters
     ----------
-    mat : float
+    mat : array_like
         2D array.
     slope : float
-        Slope of the horizontal line.
-    dot_dist : float 
+        Horizontal slope of the grid.
+    dot_dist : float
         Median distance of two nearest dots.
-    ratio : float 
+    ratio : float
         Acceptable variation.
     num_dot_miss : int
         Acceptable missing dots between dot1 and dot2.
-    accepted_ratio : float 
-        Use to select the lines having the number of dots equal to or 
-        larger than the multiplication of the `accepted_ratio` and 
-        the maximum number of dots per line.
-    
+    accepted_ratio : float
+        Use to select lines having the number of dots equal to or larger than
+        the multiplication of the `accepted_ratio` and the maximum number of
+        dots per line.
+
     Returns
     -------
-    list of float
-        List of 2D array. Each list is the coordinates (x, y) of 
-        the dot-centroids belong to the same group. Length of each 
-        list may be different.
+    list of array_like
+        List of 2D arrays. Each list is the coordinates (x, y) of dot-centroids
+        belong to the same group. Length of each list may be different.
     """
     mat_label, num_dots = ndi.label(mat)
     list_dots = np.copy(center_of_mass(
@@ -607,7 +611,7 @@ def group_dots_hor_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
     list_dots_left = np.copy(list_dots)
     list_dots_left = list_dots_left[list_dots_left[:, 1].argsort()]
     list_lines = []
-    while (num_dots_left > 1):
+    while num_dots_left > 1:
         dot1 = list_dots_left[0]
         dots_selected = np.asarray([dot1])
         pos_get = [0]
@@ -639,30 +643,29 @@ def group_dots_ver_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
                          accepted_ratio=0.65):
     """
     Group dots into vertical lines.
-    
+
     Parameters
     ----------
-    mat : float
+    mat : array_like
         2D array.
     slope : float
-        Slope of the vertical line.
+        Vertical slope of the grid.
     dot_dist : float
         Median distance of two nearest dots.
     ratio : float
         Acceptable variation.
-    num_dot_miss : int 
+    num_dot_miss : int
         Acceptable missing dots between dot1 and dot2.
-    accepted_ratio : ratio 
-        Use to select the lines having the number of dots equal to or larger 
-        than the multiplication of the `accepted_ratio` and the maximum 
-        number of dots per line.
-    
+    accepted_ratio : float
+        Use to select lines having the number of dots equal to or larger than
+        the multiplication of the `accepted_ratio` and the maximum number of
+        dots per line.
+
     Returns
     -------
-    list of float
-        List of 2D array. Each list is the coordinates (x, y) of 
-        dot-centeroids belong to the same group. Length of each 
-        list may be different.
+    list of array_like
+        List of 2D arrays. Each list is the coordinates (x, y) of dot-centroids
+        belong to the same group. Length of each list may be different.
     """
     mat_label, num_dots = ndi.label(mat)
     list_dots = np.copy(center_of_mass(
@@ -672,7 +675,7 @@ def group_dots_ver_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
     list_dots_left = np.copy(list_dots)
     list_dots_left = list_dots_left[list_dots_left[:, 1].argsort()]
     list_lines = []
-    while (num_dots_left > 1):
+    while num_dots_left > 1:
         dot1 = list_dots_left[0]
         dots_selected = np.asarray([dot1])
         pos_get = [0]
@@ -704,25 +707,23 @@ def group_dots_ver_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
 
 def remove_residual_dots_hor(list_lines, slope, residual=2.5):
     """
-    Remove dots having a distance larger than a certain value from the fitted
-    horizontal parabola.
-    
+    Remove dots having distances larger than a certain value from fitted
+    horizontal parabolas.
+
     Parameters
     ----------
-    list_lines : list of float 
-        List of the coordinates of the dot-centroids on the horizontal lines.
+    list_lines : list of array_like
+        List of the coordinates of dot-centroids on horizontal lines.
     slope : float
-        Slope of the horizontal line.
-    residual : float 
-        Acceptable distance in pixel unit between the dot and the fitted 
-        parabola.
-    
+        Horizontal slope of the grid.
+    residual : float
+        Acceptable distance in pixel unit between a dot and a fitted parabola.
+
     Returns
     -------
-    list of float
-        List of 2D array. Each list is the coordinates (x, y) of 
-        dot-centroids belong to the same group. Length of each 
-        list may be different.
+    list of array_like
+        List of 2D arrays. Each list is the coordinates (x, y) of dot-centroids
+        belong to the same group. Length of each list may be different.
     """
     list_lines2 = []
     for i, list_ in enumerate(list_lines):
@@ -738,35 +739,34 @@ def remove_residual_dots_hor(list_lines, slope, residual=2.5):
 
 def remove_residual_dots_ver(list_lines, slope, residual=2.5):
     """
-    Remove dots having a distance larger than a certain value from the fitted
-    vertical parabola.
-    
+    Remove dots having distances larger than a certain value from fitted
+    vertical parabolas.
+
     Parameters
     ---------
-    list_lines : list of float 
+    list_lines : list of float
         List of the coordinates of the dot-centroids on the vertical lines.
-    slope : float 
+    slope : float
         Slope of the vertical line.
-    residual : float 
-        Acceptable distance in pixel unit between the dot and the fitted 
+    residual : float
+        Acceptable distance in pixel unit between the dot and the fitted
         parabola.
-    
+
     Returns
     -------
     list of float
-        List of 2D array. Each list is the coordinates (x, y) of 
-        dot-centroids belong to the same group. Length of each 
-        list may be different.
+        List of 2D array. Each list is the coordinates (x, y) of dot-centroids
+        belong to the same group. Length of each list may be different.
     """
     list_lines2 = []
     for i, list_ in enumerate(list_lines):
-        list_ = np.fliplr(list_)    # Swap the coordinates
+        list_ = np.fliplr(list_)  # Swap the coordinates
         (a2, a1, a0) = np.polyfit(list_[:, 1], list_[:, 0], 2)
         error = np.abs(
             ((a2 * list_[:, 1] ** 2 + a1 * list_[:, 1] + a0)
              - list_[:, 0]) * np.cos(np.arctan(slope)))
         dots_left = np.asarray(
             [dot for i, dot in enumerate(list_) if error[i] < residual])
-        dots_left = np.fliplr(dots_left)    # Swap back
+        dots_left = np.fliplr(dots_left)  # Swap back
         list_lines2.append(dots_left)
     return list_lines2

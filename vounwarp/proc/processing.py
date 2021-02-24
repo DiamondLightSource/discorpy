@@ -1,4 +1,4 @@
-#============================================================================
+# ============================================================================
 # Copyright (c) 2018 Diamond Light Source Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#============================================================================
+# ============================================================================
 # Author: Nghia T. Vo
 # E-mail: nghia.vo@diamond.ac.uk
 # Description: Python implementation of the author's methods of
@@ -20,14 +20,14 @@
 # correction with sub-pixel accuracy for X-ray micro-tomography"
 # Optics Express 23, 32859-32868 (2015), https://doi.org/10.1364/OE.23.032859
 # Publication date: 10th July 2018
-#============================================================================
+# ============================================================================
 
 """
 Module of processing methods:
-- Fit line of dots to parabolas, find the center of distortion.
+- Fit lines of dots to parabolas, find the center of distortion.
 - Calculate undistorted intercepts of gridlines.
-- Calculate distortion coefficients using the backward model,
-the forward model, and the backward-from-forward model.
+- Calculate distortion coefficients of the backward model, the forward model,
+and the backward-from-forward model.
 """
 import numpy as np
 from scipy import optimize
@@ -36,22 +36,22 @@ from scipy import optimize
 def _para_fit_hor(list_lines, xcenter, ycenter):
     """
     Fit horizontal lines of dots to parabolas.
-    
+
     Parameters
     ----------
-    list_lines : list of float
-        List of the coordinates of the dot-centroids.
+    list_lines : list of 2D arrays
+        List of the coordinates of dot-centroids on each line.
     xcenter : float
         Center of distortion in x-direction.
     ycenter : float
         Center of distortion in y-direction.
-    
+
     Returns
     -------
-    list_coef : list of float 
-        Coefficients of the fits.
-    list_slines : list of float 
-        List of the shifted coordinates of the dot-centroids.
+    list_coef : list of 1D arrays
+        List of the coefficients of each parabola.
+    list_slines : list of 2D arrays
+        List of the shifted coordinates of dot-centroids on each line.
     """
     num_line = len(list_lines)
     list_coef = np.zeros((num_line, 3), dtype=np.float32)
@@ -68,22 +68,22 @@ def _para_fit_hor(list_lines, xcenter, ycenter):
 def _para_fit_ver(list_lines, xcenter, ycenter):
     """
     Fit vertical lines of dots to parabolas.
-    
+
     Parameters
     ----------
-    list_lines : list of float
-        List of the coordinates of the dot-centroids.
+    list_lines : list of 2D arrays
+        List of the coordinates of dot-centroids on each line.
     xcenter : float
         Center of distortion in x-direction.
     ycenter : float
         Center of distortion in y-direction.
-    
+
     Returns
     -------
-    list_coef : list of float
-        Coefficients of the fits.
-    list_slines : list of float
-        List of the shifted coordinates of the dot-centroids.
+    list_coef : list of 1D arrays
+        List of the coefficients of each parabola.
+    list_slines : list of 2D arrays
+        List of the shifted coordinates of dot-centroids on each line.
     """
     num_line = len(list_lines)
     list_coef = np.zeros((num_line, 3), dtype=np.float32)
@@ -100,17 +100,17 @@ def _para_fit_ver(list_lines, xcenter, ycenter):
 def find_cod_coarse(list_hor_lines, list_ver_lines):
     """
     Coarse estimation of the center of distortion.
-    
+
     Parameters
     ----------
-    list_hor_lines : list of float 
-        List of the coordinates of the dot-centroids on the horizontal lines.
-    list_ver_lines : list of float 
-        List of the coordinates of the dot-centroids on the vertical lines.
-    
+    list_hor_lines : list of 2D arrays
+        List of the coordinates of dot-centroids on each horizontal line.
+    list_ver_lines : list of 2D arrays
+        List of the coordinates of dot-centroids on each vertical line.
+
     Returns
     -------
-    xcenter : float 
+    xcenter : float
         Center of distortion in x-direction.
     ycenter : float
         Center of distortion in y-direction.
@@ -119,18 +119,14 @@ def find_cod_coarse(list_hor_lines, list_ver_lines):
     (list_coef_ver, list_ver_lines) = _para_fit_ver(list_ver_lines, 0.0, 0.0)
     pos_hor = np.argmax(np.abs(np.diff(np.sign(list_coef_hor[:, 0])))) + 1
     pos_ver = np.argmax(np.abs(np.diff(np.sign(list_coef_ver[:, 0])))) + 1
-    ycenter0 = (
-        list_coef_hor[pos_hor - 1, 2] + list_coef_hor[pos_hor, 2]) * 0.5
-    xcenter0 = (
-        list_coef_ver[pos_ver - 1, 2] + list_coef_ver[pos_ver, 2]) * 0.5
-    slope_hor = (
-        list_coef_hor[pos_hor - 1, 1] + list_coef_hor[pos_hor, 1]) * 0.5
-    slope_ver = (
-        list_coef_ver[pos_ver - 1, 1] + list_coef_ver[pos_ver, 1]) * 0.5
-    ycenter = (ycenter0 + xcenter0 * slope_hor) / \
-        (1.0 - slope_hor * slope_ver)
-    xcenter = (xcenter0 + ycenter0 * slope_ver) / \
-        (1.0 - slope_hor * slope_ver)
+    ycenter0 = (list_coef_hor[pos_hor - 1, 2] + list_coef_hor[pos_hor, 2]) * 0.5
+    xcenter0 = (list_coef_ver[pos_ver - 1, 2] + list_coef_ver[pos_ver, 2]) * 0.5
+    slope_hor = (list_coef_hor[pos_hor - 1, 1] + list_coef_hor[
+        pos_hor, 1]) * 0.5
+    slope_ver = (list_coef_ver[pos_ver - 1, 1] + list_coef_ver[
+        pos_ver, 1]) * 0.5
+    ycenter = (ycenter0 + xcenter0 * slope_hor) / (1.0 - slope_hor * slope_ver)
+    xcenter = (xcenter0 + ycenter0 * slope_ver) / (1.0 - slope_hor * slope_ver)
     return xcenter, ycenter
 
 
@@ -138,25 +134,26 @@ def _func_dist(x, a, b, c):
     """
     Function for finding the minimum distance.
     """
-    return x**2 + (a * x**2 + b * x + c)**2
+    return x ** 2 + (a * x ** 2 + b * x + c) ** 2
 
 
 def _calc_error(list_coef_hor, list_coef_ver):
     """
-    Locate points on each parabola having the minimum distance to the origin.
-    Apply linear fit to these points. 
-    Calculate the metric of how close the fitted line is to the origin.
-    
+    Calculate a metric of measuring how close fitted lines to the coordinate
+    origin by: locating points on each parabola having the minimum distance
+    to the origin, applying linear fits to these points, adding intercepts of
+    the fits.
+
     Parameters
     ----------
-    list_coef_hor : list of float 
-        Coefficients of the parabolic fits of the horizontal lines.
-    list_coef_ver : list of float
-        Coefficients of the parabolic fits of the vertical lines.
-    
-    Returns    
+    list_coef_hor : list of 1D arrays
+        Coefficients of parabolic fits of horizontal lines.
+    list_coef_ver : list of 1D arrays
+        Coefficients of parabolic fits of vertical lines.
+
+    Returns
     -------
-    float   
+    float
     """
     num_hline = len(list_coef_hor)
     num_vline = len(list_coef_ver)
@@ -164,47 +161,47 @@ def _calc_error(list_coef_hor, list_coef_ver):
     for i, coefs in enumerate(list_coef_hor):
         minimum = optimize.minimize(_func_dist, 0.0, args=tuple(coefs))
         xm = minimum.x[0]
-        ym = coefs[0] * xm**2 + coefs[1] * xm + coefs[2]
+        ym = coefs[0] * xm ** 2 + coefs[1] * xm + coefs[2]
         list_hpoint[i, 0] = xm
         list_hpoint[i, 1] = ym
     list_vpoint = np.zeros((num_vline, 2), dtype=np.float32)
     for i, coefs in enumerate(list_coef_ver):
         minimum = optimize.minimize(_func_dist, 0.0, args=tuple(coefs))
         ym = minimum.x[0]
-        xm = coefs[0] * ym**2 + coefs[1] * ym + coefs[2]
+        xm = coefs[0] * ym ** 2 + coefs[1] * ym + coefs[2]
         list_vpoint[i, 0] = ym
         list_vpoint[i, 1] = xm
-    _, error_h = np.polyfit(list_hpoint[:, 0], list_hpoint[:, 1], 1)
-    _, error_v = np.polyfit(list_vpoint[:, 0], list_vpoint[:, 1], 1)
+    error_h = np.polyfit(list_hpoint[:, 0], list_hpoint[:, 1], 1)[-1]
+    error_v = np.polyfit(list_vpoint[:, 0], list_vpoint[:, 1], 1)[-1]
     return np.abs(error_h) + np.abs(error_v)
 
 
 def _calc_metric(list_hor_lines, list_ver_lines, xcenter, ycenter,
                  list_xshift, list_yshift):
     """
-    Calculate the metric for finding the best center of distortion.
-    
+    Calculate a metric for determining the best center of distortion.
+
     Parameters
     ----------
-    list_hor_lines : list of float
-        List of the coordinates of the dot-centroids on the horizontal lines.
-    list_ver_lines : list of float
-        List of the coordinates of the dot-centroids on the vertical lines.
+    list_hor_lines : list of 2D arrays
+        List of the coordinates of dot-centroids on each horizontal line.
+    list_ver_lines : list of 2D arrays
+        List of the coordinates of dot-centroids on each vertical line.
     xcenter : float
         Center of distortion in x-direction.
     ycenter : float
         Center of distortion in y-direction.
-    list_xshift : list of float 
-        List of x-offsets from the xcenter.
-    list_yshift : list of float 
-        List of y-offsets from the ycenter.
-    
+    list_xshift : list of float
+        List of x-offsets from the x-center.
+    list_yshift : list of float
+        List of y-offsets from the y-center.
+
     Returns
     -------
     xshift : float
-        Shift in x-direction from the xcenter.
+        Shift in x-direction from the x-center.
     yshift : float
-        Shift in y-direction from the ycenter.
+        Shift in y-direction from the y-center.
     """
     (list_coef_hor, list_hor_lines) = _para_fit_hor(
         list_hor_lines, xcenter, ycenter)
@@ -238,20 +235,20 @@ def find_cod_fine(list_hor_lines, list_ver_lines, xcenter, ycenter, dot_dist):
     """
     Find the best center of distortion (CoD) by searching around the coarse
     estimation of the CoD.
-    
+
     Parameters
     ----------
-    list_hor_lines : list of float
-        List of the coordinates of the dot-centroids on the horizontal lines.
-    list_ver_lines : list of float
-        List of the coordinates of the dot-centroids on the vertical lines.
+    list_hor_lines : list of 2D arrays
+        List of the coordinates of dot-centroids on each horizontal line.
+    list_ver_lines : list of 2D arrays
+        List of the coordinates of dot-centroids on each vertical line.
     xcenter : float
         Coarse estimation of the CoD in x-direction.
     ycenter : float
         Coarse estimation of the CoD in y-direction.
     dot_dist : float
-        Median distance of the two nearest dots.
-    
+        Median distance of two nearest dots.
+
     Returns
     -------
     xcenter : float
@@ -259,16 +256,16 @@ def find_cod_fine(list_hor_lines, list_ver_lines, xcenter, ycenter, dot_dist):
     ycenter : float
         Center of distortion in y-direction.
     """
-    sstep = 2.0
-    list_xshift = np.arange(-dot_dist / 2, dot_dist / 2 + sstep, sstep)
+    step = 2.0
+    list_xshift = np.arange(-dot_dist / 2, dot_dist / 2 + step, step)
     list_yshift = list_xshift
     (xshift, yshift) = _calc_metric(
         list_hor_lines, list_ver_lines, xcenter, ycenter, list_xshift,
         list_yshift)
     xcenter1 = xcenter + xshift
     ycenter1 = ycenter + yshift
-    sstep = 0.5
-    list_xshift = np.arange(-3, 3 + sstep, sstep)
+    step = 0.5
+    list_xshift = np.arange(-3, 3 + step, step)
     list_yshift = list_xshift
     (xshift, yshift) = _calc_metric(
         list_hor_lines, list_ver_lines, xcenter1, ycenter1, list_xshift,
@@ -281,17 +278,17 @@ def find_cod_fine(list_hor_lines, list_ver_lines, xcenter, ycenter, dot_dist):
 def _check_missing_lines(list_coef_hor, list_coef_ver):
     """
     Check if there are missing lines
-    
+
     Parameters
     ----------
-    list_coef_hor : list of float
-         Coefficients of the parabolic fits of the horizontal lines.
-    list_coef_ver : list of float
-        Coefficients of the parabolic fits of the vertical lines.
-    
+    list_coef_hor : list of 1D arrays
+        Coefficients of parabolic fits of horizontal lines.
+    list_coef_ver : list of 1D arrays
+        Coefficients of parabolic fits of vertical lines.
+
     Returns
     -------
-    bool    
+    bool
     """
     check = False
     list_dist_hor = np.abs(np.diff(list_coef_hor[:, 2]))
@@ -300,10 +297,10 @@ def _check_missing_lines(list_coef_hor, list_coef_ver):
     list_vindex = np.arange(len(list_dist_ver))
     hfact = np.polyfit(list_hindex, list_dist_hor, 2)
     vfact = np.polyfit(list_vindex, list_dist_ver, 2)
-    list_fit_hor = hfact[0] * list_hindex**2 + \
-        hfact[1] * list_hindex + hfact[2]
-    list_fit_ver = vfact[0] * list_vindex**2 + \
-        vfact[1] * list_vindex + vfact[2]
+    list_fit_hor = hfact[0] * list_hindex ** 2 + \
+                   hfact[1] * list_hindex + hfact[2]
+    list_fit_ver = vfact[0] * list_vindex ** 2 + \
+                   vfact[1] * list_vindex + vfact[2]
     herror = np.max(np.abs((list_dist_hor - list_fit_hor) / list_fit_hor))
     verror = np.max(np.abs((list_dist_ver - list_fit_ver) / list_fit_ver))
     if (herror > 0.3) or (verror > 0.3):
@@ -315,8 +312,9 @@ def _func_opt(d0, c0, indexc0, *list_inter):
     """
     Function for finding the optimum undistorted distance.
     """
-    return np.sum(np.asarray([(np.sign(c) * np.abs(i - indexc0) * d0 + c0 - c) ** 2
-                              for i, c in enumerate(list_inter)]))
+    return np.sum(
+        np.asarray([(np.sign(c) * np.abs(i - indexc0) * d0 + c0 - c) ** 2
+                    for i, c in enumerate(list_inter)]))
 
 
 def _optimize_intercept(dist_hv, pos_hv, list_inter):
@@ -329,27 +327,30 @@ def _optimize_intercept(dist_hv, pos_hv, list_inter):
     return minimum.x[0]
 
 
-def _calc_undistor_intercept(list_hor_lines, list_ver_lines, xcenter, ycenter):
+def _calc_undistor_intercept(list_hor_lines, list_ver_lines, xcenter, ycenter,
+                             optimizing=False):
     """
     Calculate the intercepts of undistorted lines.
-    
+
     Parameters
     ----------
-    list_hor_lines : list of float
-        List of the coordinates of the dot-centroids on the horizontal lines.
-    list_ver_lines : list of float
-        List of the coordinates of the dot-centroids on the vertical lines.
+    list_hor_lines : list of 2D arrays
+        List of the coordinates of dot-centroids on each horizontal line.
+    list_ver_lines : list of 2D arrays
+        List of the coordinates of dot-centroids on each vertical line.
     xcenter : float
         Center of distortion in x-direction.
     ycenter : float
         Center of distortion in y-direction.
-    
+    optimizing : bool, optional
+        Apply optimization if True.
+
     Returns
     -------
-    list_hor_uc : list of float
-        Intercepts of the undistorted horizontal lines.
-    list_ver_uc : list of float
-        Intercepts of the undistorted vertical lines.
+    list_hor_uc : list of floats
+        Intercepts of undistorted horizontal lines.
+    list_ver_uc : list of floats
+        Intercepts of undistorted vertical lines.
     """
     (list_coef_hor, list_hor_lines) = _para_fit_hor(
         list_hor_lines, xcenter, ycenter)
@@ -358,59 +359,59 @@ def _calc_undistor_intercept(list_hor_lines, list_ver_lines, xcenter, ycenter):
     check = _check_missing_lines(list_coef_hor, list_coef_ver)
     if check:
         print("!!! ERROR !!!")
-        print(
-            "Parameters of the methods of grouping dots need to be adjusted")
+        print("Parameters of the methods of grouping dots need to be adjusted")
         raise ValueError("There're missing lines, algorithm will not work!!!")
     pos_hor = np.argmin(np.abs(list_coef_hor[:, 2]))
     pos_ver = np.argmin(np.abs(list_coef_ver[:, 2]))
     num_hline = len(list_hor_lines)
     num_vline = len(list_ver_lines)
-    numuse = min(3, num_hline // 2 - 1, num_vline // 2 - 1)
+    num_use = min(3, num_hline // 2 - 1, num_vline // 2 - 1)
     (posh1, posh2) = (
-        max(0, pos_hor - numuse), min(num_hline, pos_hor + numuse + 1))
+        max(0, pos_hor - num_use), min(num_hline, pos_hor + num_use + 1))
     (posv1, posv2) = (
-        max(0, pos_ver - numuse), min(num_vline, pos_ver + numuse + 1))
+        max(0, pos_ver - num_use), min(num_vline, pos_ver + num_use + 1))
     dist_hor = np.mean(np.abs(np.diff(list_coef_hor[posh1: posh2, 2])))
     dist_ver = np.mean(np.abs(np.diff(list_coef_ver[posv1: posv2, 2])))
-#     dist_hor = _optimize_intercept(dist_hor, pos_hor, list_coef_hor[:, 2])
-#     dist_ver = _optimize_intercept(dist_ver, pos_ver, list_coef_ver[:, 2])
+    if optimizing is True:
+        dist_hor = _optimize_intercept(dist_hor, pos_hor, list_coef_hor[:, 2])
+        dist_ver = _optimize_intercept(dist_ver, pos_ver, list_coef_ver[:, 2])
     list_hor_uc = np.zeros(num_hline, dtype=np.float32)
     list_ver_uc = np.zeros(num_vline, dtype=np.float32)
     for i in range(num_hline):
         dist = np.abs(i - pos_hor) * dist_hor
-        list_hor_uc[i] = np.sign(
-            list_coef_hor[i, 2]) * dist + list_coef_hor[pos_hor, 2]
+        list_hor_uc[i] = np.sign(list_coef_hor[i, 2]) * dist + list_coef_hor[
+            pos_hor, 2]
     for i in range(num_vline):
         dist = np.abs(i - pos_ver) * dist_ver
-        list_ver_uc[i] = np.sign(
-            list_coef_ver[i, 2]) * dist + list_coef_ver[pos_ver, 2]
+        list_ver_uc[i] = np.sign(list_coef_ver[i, 2]) * dist + list_coef_ver[
+            pos_ver, 2]
     return list_hor_uc, list_ver_uc
 
 
 def calc_coef_backward(list_hor_lines, list_ver_lines, xcenter, ycenter,
                        num_fact):
     """
-    Calculate the distortion coefficients of the backward mode.
-    
+    Calculate the distortion coefficients of a backward mode.
+
     Parameters
     ----------
-    list_hor_lines : list of float
-        List of the coordinates of the dot-centroids on the horizontal lines.
-    list_ver_lines : list of float
-        List of the coordinates of the dot-centroids on the vertical lines.
+    list_hor_lines : list of 2D arrays
+        List of the coordinates of dot-centroids on each horizontal line.
+    list_ver_lines : list of 2D arrays
+        List of the coordinates of dot-centroids on each vertical line.
     xcenter : float
         Center of distortion in x-direction.
     ycenter : float
         Center of distortion in y-direction.
     num_fact : int
-        Number of the factors of the polynomial fit. 5 is maximum.
-    
+        Number of the factors of polynomial.
+
     Returns
     -------
     list_fact : list of float
-        Coefficients of the polynomial fit.
+        Coefficients of the polynomial.
     """
-    num_fact = np.int16(np.clip(num_fact, 1, 5))
+    num_fact = np.int16(np.clip(num_fact, 1, None))
     (list_hor_uc, list_ver_uc) = _calc_undistor_intercept(
         list_hor_lines, list_ver_lines, xcenter, ycenter)
     (list_coef_hor, list_hor_lines) = _para_fit_hor(
@@ -449,27 +450,27 @@ def calc_coef_backward(list_hor_lines, list_ver_lines, xcenter, ycenter,
 def calc_coef_forward(list_hor_lines, list_ver_lines, xcenter, ycenter,
                       num_fact):
     """
-    Calculate the distortion coefficients of the forward mode.
-    
+    Calculate the distortion coefficients of a forward mode.
+
     Parameters
     ----------
-    list_hor_lines : list of float
-        List of the coordinates of the dot-centroids on the horizontal lines.
-    list_ver_lines : list of float
-        List of the coordinates of the dot-centroids on the vertical lines.
+    list_hor_lines : list of 2D arrays
+        List of the coordinates of dot-centroids on each horizontal line.
+    list_ver_lines : list of 2D arrays
+        List of the coordinates of dot-centroids on each vertical line.
     xcenter : float
         Center of distortion in x-direction.
     ycenter : float
         Center of distortion in y-direction.
     num_fact : int
-        Number of the factors of the polynomial fit. 5 is maximum
-    
+        Number of the factors of polynomial.
+
     Returns
     -------
     list_fact : list of float
-        Coefficients of the polynomial fit.
+        Coefficients of the polynomial.
     """
-    num_fact = np.int16(np.clip(num_fact, 1, 5))
+    num_fact = np.int16(np.clip(num_fact, 1, None))
     (list_hor_uc, list_ver_uc) = _calc_undistor_intercept(
         list_hor_lines, list_ver_lines, xcenter, ycenter)
     (list_coef_hor, list_hor_lines) = _para_fit_hor(
@@ -512,28 +513,28 @@ def calc_coef_forward(list_hor_lines, list_ver_lines, xcenter, ycenter,
 def calc_coef_backward_from_forward(list_hor_lines, list_ver_lines, xcenter,
                                     ycenter, num_fact):
     """
-    Calculate the distortion coefficients of the backward mode from the
-    forward model.
-    
+    Calculate the distortion coefficients of a backward mode from a forward
+    model.
+
     Parameters
     ----------
-    list_hor_lines : list of float
-        List of the coordinates of the dot-centroids on the horizontal lines.
-    list_ver_lines : list of float
-        List of the coordinates of dot-centroids on the vertical lines.
+    list_hor_lines : list of 2D arrays
+        List of the coordinates of dot-centroids on each horizontal line.
+    list_ver_lines : list of 2D arrays
+        List of the coordinates of dot-centroids on each vertical line.
     xcenter : float
         Center of distortion in x-direction.
     ycenter : float
         Center of distortion in y-direction.
     num_fact : int
-        Number of the factors of the polynomial fit. 5 is maximum
-    
+        Number of the factors of polynomial.
+
     Returns
     -------
-    list_ffact : list of float
-        Coefficients of the polynomial fit of the forward model.
-    list_bfact : list of float
-        Coefficients of the polynomial fit of the backward model.
+    list_ffact : list of floats
+        Polynomial coefficients of the forward model.
+    list_bfact : list of floats
+        Polynomial coefficients of the backward model.
     """
     num_fact = np.int16(np.clip(num_fact, 1, 5))
     list_ffact = np.float64(
@@ -555,7 +556,6 @@ def calc_coef_backward_from_forward(list_hor_lines, list_ver_lines, xcenter,
                 ru = ffactor * rd
                 Amatrix.append(np.power(ru, list_expo))
                 Bmatrix.append(Fb)
-
     for _, line in enumerate(list_ver_lines):
         for _, point in enumerate(line):
             xd = np.float64(point[1])

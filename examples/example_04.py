@@ -1,5 +1,5 @@
 #============================================================================
-# Copyright (c) 2018 Nghia T. Vo. All rights reserved.
+# Copyright (c) 2018 Diamond Light Source Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,13 +33,12 @@ import vounwarp.post.postprocessing as post
 """
 Example to show how to apply distortion correction along axis-1 instead of
 axis-0 of a 3D dataset. This is useful for tomographic data where one can
-generate directly corrected sinograms instead of doing two separate steps
+generate directly unwarped sinograms instead of doing two separate steps
 of correcting distortion in the projection space and generating sinograms.
-
 """
 
 
-def calc_distor_coef(mat, poly_order):
+def calc_distor_coef(mat, num_coef):
     # Pre-processing
     mat1 = prep.binarization(mat)
     (dot_size, dot_dist) = prep.calc_size_distance(mat1)
@@ -54,7 +53,7 @@ def calc_distor_coef(mat, poly_order):
     # Processing
     (xcenter, ycenter) = proc.find_cod_coarse(list_hor_lines, list_ver_lines)
     list_fact = proc.calc_coef_backward(
-        list_hor_lines, list_ver_lines, xcenter, ycenter, poly_order)
+        list_hor_lines, list_ver_lines, xcenter, ycenter, num_coef)
     return xcenter, ycenter, list_fact
 
 time_start = timeit.default_timer()
@@ -62,34 +61,36 @@ time_start = timeit.default_timer()
 #-----------------------------------------------------------------------------
 # Initial parameters
 file_path = "../data/dot_pattern_05.jpg"
-output_base = "C:/correction/"
-poly_order = 5  # Number of polynomial coefficients
+output_base = "E:/correction/"
+num_coef = 5  # Number of polynomial coefficients
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
 # Input
 mat0 = io.load_image(file_path)
 (height, width) = mat0.shape
-# Distortion coefficients calculation
-(xcenter, ycenter, list_fact) = calc_distor_coef(mat0, poly_order)
-io.save_metadata_txt(
-    output_base + "/coefficients_bw.txt", xcenter, ycenter, list_fact)
+
+# Calculation of distortion coefficients
+(xcenter, ycenter, list_fact) = calc_distor_coef(mat0, num_coef)
+io.save_metadata_txt(output_base + "/coefficients_bw.txt", xcenter, ycenter,
+                     list_fact)
+
 # Generate a 3D dataset for demonstration.
 # Replace this step with a real 3D data in your codes.
 mat3D = np.zeros((600, height, width), dtype=np.float32)
 mat3D[:] = mat0
-# Generate a chunk of corrected slices in the range of
-# (height//2 - 10; height//2 + 10)
+
+# Generate a chunk of unwarped slices in the range of
+# (start_index; stop_index)
 start_index = 14
 stop_index = 20
-corrected_slices = post.unwarp_chunk_slices_backward(
-    mat3D, xcenter, ycenter, list_fact, start_index, stop_index)
+corrected_slices = post.unwarp_chunk_slices_backward(mat3D, xcenter, ycenter,
+                                                     list_fact, start_index,
+                                                     stop_index)
 for i in range(start_index, stop_index):
     name = "0000" + str(i)
     output_name = output_base + "/before/slice_" + name[-5:] + ".tif"
     io.save_image(output_name, mat3D[:, i, :])
-
-    output_name = output_base + "/after/corrected_slice_" + name[-5:] + ".tif"
+    output_name = output_base + "/after/unwarped_slice_" + name[-5:] + ".tif"
     io.save_image(output_name, corrected_slices[:, i - start_index, :])
-
 time_stop = timeit.default_timer()
-print(("Calculation completes in {} second !").format(time_stop - time_start))
+print("Running time is {} second!".format(time_stop - time_start))
