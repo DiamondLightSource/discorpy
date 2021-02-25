@@ -29,7 +29,6 @@ Module of post-processing methods:
 - Calculate the residual of unwarped dots.
 """
 import numpy as np
-from scipy import interpolate
 from scipy import optimize
 from scipy.ndimage import map_coordinates
 

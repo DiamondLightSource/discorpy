@@ -76,4 +76,4 @@ a calibration target are shown [here](https://github.com/DiamondLightSource/disc
 
 Update notes
 ------------
-- 25/02 Change the package name from Vounwarp to Discorpy. Old-name package is still available at https://github.com/nghia-vo/vounwarp
+- 25/02: Change the package name from Vounwarp to Discorpy. Old-name package is still available at https://github.com/nghia-vo/vounwarp

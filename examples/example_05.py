@@ -24,8 +24,8 @@
 
 import timeit
 import numpy as np
-import vounwarp.losa.loadersaver as io
-import vounwarp.post.postprocessing as post
+import discorpy.losa.loadersaver as io
+import discorpy.post.postprocessing as post
 
 
 """

@@ -23,8 +23,8 @@ estimated forward model of the Hazard Cameras (Hazcams) on the underside of NASA
 Perseverance Mars rover.
 """
 import numpy as np
-import vounwarp.losa.loadersaver as io
-import vounwarp.post.postprocessing as post
+import discorpy.losa.loadersaver as io
+import discorpy.post.postprocessing as post
 
 # Load image
 mat0 = io.load_image("Sol0_1st_color.png")

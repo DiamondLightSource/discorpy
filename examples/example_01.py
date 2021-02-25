@@ -24,10 +24,10 @@
 
 import timeit
 import numpy as np
-import vounwarp.losa.loadersaver as io
-import vounwarp.prep.preprocessing as prep
-import vounwarp.proc.processing as proc
-import vounwarp.post.postprocessing as post
+import discorpy.losa.loadersaver as io
+import discorpy.prep.preprocessing as prep
+import discorpy.proc.processing as proc
+import discorpy.post.postprocessing as post
 
 """
 Example to show how to use most of the methods in the package.

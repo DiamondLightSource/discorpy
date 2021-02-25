@@ -16,8 +16,8 @@ and overlay on the original image to check by eyes.
 
 ```python
 import numpy as np
-import vounwarp.losa.loadersaver as io
-import vounwarp.post.postprocessing as post
+import discorpy.losa.loadersaver as io
+import discorpy.post.postprocessing as post
 
 # Load image
 mat0 = io.load_image("Sol0_1st_color.png")
@@ -49,8 +49,8 @@ From the estimated parameters of the forward model, we can calculate parameters
 of a backward model which will be used for image correction.
 ```python
 import numpy as np
-import vounwarp.losa.loadersaver as io
-import vounwarp.post.postprocessing as post
+import discorpy.losa.loadersaver as io
+import discorpy.post.postprocessing as post
 
 # Load image
 mat0 = io.load_image("Sol0_1st_color.png")
@@ -100,8 +100,8 @@ Knowing the parameters of the backward model, distortion correction can
 easily be applied to other images of that camera.
 ```python
 import numpy as np
-import vounwarp.losa.loadersaver as io
-import vounwarp.post.postprocessing as post
+import discorpy.losa.loadersaver as io
+import discorpy.post.postprocessing as post
 from PIL import Image
 
 # Load color image

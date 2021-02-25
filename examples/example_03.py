@@ -24,10 +24,10 @@
 
 import numpy as np
 import timeit
-import vounwarp.losa.loadersaver as io
-import vounwarp.prep.preprocessing as prep
-import vounwarp.proc.processing as proc
-import vounwarp.post.postprocessing as post
+import discorpy.losa.loadersaver as io
+import discorpy.prep.preprocessing as prep
+import discorpy.proc.processing as proc
+import discorpy.post.postprocessing as post
 
 """
 Example to show how to adjust parameters of methods to process a challenging 

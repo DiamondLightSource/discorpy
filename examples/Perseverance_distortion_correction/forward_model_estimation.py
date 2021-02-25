@@ -26,8 +26,8 @@ https://mars.nasa.gov/system/downloadable_items/45689_PIA24430-Perseverance's_fi
 
 
 import numpy as np
-import vounwarp.losa.loadersaver as io
-import vounwarp.post.postprocessing as post
+import discorpy.losa.loadersaver as io
+import discorpy.post.postprocessing as post
 
 # Load image
 mat0 = io.load_image("Sol0_1st_color.png")

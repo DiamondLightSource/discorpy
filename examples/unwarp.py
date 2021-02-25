@@ -31,16 +31,16 @@ import warnings
 
 warnings.filterwarnings("ignore")
 from scipy import ndimage as ndi
-import vounwarp.losa.loadersaver as io
-import vounwarp.prep.preprocessing as prep
-import vounwarp.proc.processing as proc
-import vounwarp.post.postprocessing as post
+import discorpy.losa.loadersaver as io
+import discorpy.prep.preprocessing as prep
+import discorpy.proc.processing as proc
+import discorpy.post.postprocessing as post
 
 """
 Standalone script for calculating distortion coefficients from a dot pattern.
 Acceptable file formats: tif, jpg, png, hdf, or nxs.
 Example of use:
-python vounwarp.py -i home/user/data/dot_pattern_01.tif -o home/user/correction -n 5
+python discorpy.py -i home/user/data/dot_pattern_01.tif -o home/user/correction -n 5
 """
 
 parser = argparse.ArgumentParser(

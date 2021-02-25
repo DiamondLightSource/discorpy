@@ -22,8 +22,8 @@ Example to show how to apply distortion correction to images of the Hazard Camer
 (Hazcams) on the underside of NASA’s Perseverance Mars rover.
 """
 import numpy as np
-import vounwarp.losa.loadersaver as io
-import vounwarp.post.postprocessing as post
+import discorpy.losa.loadersaver as io
+import discorpy.post.postprocessing as post
 from PIL import Image
 
 # Load color image
