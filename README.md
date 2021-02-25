@@ -1,5 +1,5 @@
 # Discorpy
-*Dis*tortion *Cor*rection *Py*thon package
+**Dis**tortion **Cor**rection **Py**thon package
 
 ## Distortion calibration and correction software for tomography detector systems
 
