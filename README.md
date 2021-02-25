@@ -52,6 +52,12 @@ software such as [Tomopy](https://tomopy.readthedocs.io/en/latest/api/tomopy.pre
 [Savu](https://github.com/DiamondLightSource/Savu/blob/master/savu/plugins/corrections/distortion_correction.py) 
 for correction.
 
+Update notes
+============
+- 25/02: Change the package name from Vounwarp to Discorpy. Old-name package is still available at https://github.com/nghia-vo/vounwarp 
+and installable using conda-forge channel. 
+
+
 Demonstrations
 ==============
 - Apply to a visible dot-target collected at [Beamline I12](https://www.diamond.ac.uk/Instruments/Imaging-and-Microscopy/I12/Detectors-at-I12.html),
@@ -73,7 +79,3 @@ Details of how to estimate distortion coefficients of that camera without using
 a calibration target are shown [here](https://github.com/DiamondLightSource/discorpy/blob/master/examples/Perseverance_distortion_correction/Distortion_correction_for_Perseverance_camera.md)  
 
 ![Mars_rover](data/demo/Mars_Rover_camera.jpg)
-
-Update notes
-------------
-- 25/02: Change the package name from Vounwarp to Discorpy. Old-name package is still available at https://github.com/nghia-vo/vounwarp
