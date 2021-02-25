@@ -1,9 +1,9 @@
-# Vounwarp
+# Discorpy
+*Dis*tortion *Cor*rection *Py*thon package
 
-## Distortion correction package
+## Distortion calibration and correction software for tomography detector systems
 
-
-**Vounwarp** is an open-source Python package for radial distortion correction 
+**Discorpy** is an open-source Python package for radial distortion correction 
 with sub-pixel accuracy as required by tomography detector systems. 
 It calculates parameters of a polynomial model of radial lens distortion, which 
 are the center of distortion and the polynomial coefficients, using a grid 
@@ -28,13 +28,6 @@ a 3D dataset; evaluating the accuracy of correction results.
 
 Install
 =======
-- *vounwarp* is available on the conda-forge channel. To install: 1) Install 
-[Miniconda](https://docs.conda.io/en/latest/miniconda.html) (just to run conda) 
-or [Anaconda](https://www.anaconda.com/products/individual) (conda + loads of 
-python packages). 2) Open a command prompt/terminal and run the following command:
-```commandline
-$ conda install -c conda-forge vounwarp
-```
 - To install from the source codes:
     * Download the source codes from this github page (click-> Code -> Download ZIP). 
     Unzip to a local folder.
@@ -42,8 +35,8 @@ $ conda install -c conda-forge vounwarp
     * Open command prompt, navigate to the source folder, run the following 
     commands:
         ```commandline
-        $ conda create -n vounwarp
-        $ conda activate vounwarp
+        $ conda create -n discorpy
+        $ conda activate discorpy
         $ conda install python
         $ python setup.py install
         ```
@@ -77,6 +70,10 @@ Diamond Light Source, UK:
 
 - Apply to a hazard camera of the [Mars Perseverance Rover](https://mars.nasa.gov/mars2020/multimedia/raw-images/).
 Details of how to estimate distortion coefficients of that camera without using
-a calibration target are shown [here](https://github.com/DiamondLightSource/vounwarp/blob/master/examples/Perseverance_distortion_correction/Distortion_correction_for_Perseverance_camera.md)  
+a calibration target are shown [here](https://github.com/DiamondLightSource/discorpy/blob/master/examples/Perseverance_distortion_correction/Distortion_correction_for_Perseverance_camera.md)  
 
 ![Mars_rover](data/demo/Mars_Rover_camera.jpg)
+
+Update notes
+------------
+- 25/02 Change the package name from Vounwarp to Discorpy. Old-name package is still available at https://github.com/nghia-vo/vounwarp
