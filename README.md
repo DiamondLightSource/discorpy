@@ -1,7 +1,7 @@
 # Discorpy
-**Dis**tortion **Cor**rection **Py**thon package
+(**Dis**)tortion (**Cor**)rection (**Py**)thon-package
 
-## Distortion calibration and correction software for tomography detector systems
+### Distortion calibration and correction software for tomography detector systems
 
 **Discorpy** is an open-source Python package for radial distortion correction 
 with sub-pixel accuracy as required by tomography detector systems. 
