@@ -12,6 +12,11 @@ pattern image. The package implements methods published, Nghia T. Vo et al.
 tomography" Optics Express 23, 32859-32868 (2015), 
 https://doi.org/10.1364/OE.23.032859. 
 
+Update notes
+============
+- 25/02: the package name is changed from Vounwarp to Discorpy. The old-name package is still available at https://github.com/nghia-vo/vounwarp 
+and installable using conda-forge channel: https://anaconda.org/conda-forge/vounwarp
+
 Features
 ========
 - Pre-processing methods for finding coordinates of dot-centroids, grouping them
@@ -51,12 +56,6 @@ https://zenodo.org/record/1322720
 software such as [Tomopy](https://tomopy.readthedocs.io/en/latest/api/tomopy.prep.alignment.html) or
 [Savu](https://github.com/DiamondLightSource/Savu/blob/master/savu/plugins/corrections/distortion_correction.py) 
 for correction.
-
-Update notes
-============
-- 25/02: Change the package name from Vounwarp to Discorpy. Old-name package is still available at https://github.com/nghia-vo/vounwarp 
-and installable using conda-forge channel. 
-
 
 Demonstrations
 ==============
