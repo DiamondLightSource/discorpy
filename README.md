@@ -14,7 +14,7 @@ https://doi.org/10.1364/OE.23.032859.
 
 Update notes
 ============
-- 25/02: the package name is changed from Vounwarp to Discorpy. The old-name package is still available at https://github.com/nghia-vo/vounwarp 
+- 25/02/2021: the package name is changed from Vounwarp to Discorpy. The old-name package is still available at https://github.com/nghia-vo/vounwarp 
 and installable using conda-forge channel: https://anaconda.org/conda-forge/vounwarp
 
 Features
