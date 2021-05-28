@@ -21,6 +21,8 @@
 # Optics Express 23, 32859-32868 (2015), https://doi.org/10.1364/OE.23.032859
 # Publication date: 10th July 2018
 # ============================================================================
+# Contributors:
+# ============================================================================
 
 """
 Module of pre-procesing methods:
@@ -200,8 +202,8 @@ def _invert_dots_contrast(mat):
 def binarization(mat, ratio=0.3, thres=None, denoise=True):
     """
     Apply a list of operations: binarizing an 2D array; inverting the contrast
-    of dots if needs to; removing border components; cleaning salty noise;
-    and filling holes.
+    of dots if needs to; removing border components; cleaning salty noise; and
+    filling holes.
 
     Parameters
     ----------
@@ -255,13 +257,13 @@ def check_num_dots(mat):
 
 def calc_size_distance(mat, ratio=0.3):
     """
-    Find the median size of dots and the median distance between two
-    nearest dots.
+    Find the median size of dots and the median distance between two nearest
+    dots.
 
     Parameters
     ----------
     mat : array_like
-        2D array.
+        2D binary array.
     ratio : float
         Used to select the ROI around the middle of an image.
 
@@ -294,7 +296,7 @@ def _check_dot_size(mat, min_size, max_size):
     Parameters
     ----------
     mat : array_like
-        2D array.
+        2D binary array.
     min_size : float
         Minimum size.
     max_size : float
@@ -306,7 +308,7 @@ def _check_dot_size(mat, min_size, max_size):
     """
     check = False
     dot_size = mat.sum()
-    if (dot_size > min_size) and (dot_size < max_size):
+    if (dot_size >= min_size) and (dot_size <= max_size):
         check = True
     return check
 
@@ -318,7 +320,7 @@ def select_dots_based_size(mat, dot_size, ratio=0.3):
     Parameters
     ----------
     mat : array_like
-        2D array.
+        2D binary array.
     dot_size : float
         Size of the standard dot.
     ratio : float
@@ -332,11 +334,11 @@ def select_dots_based_size(mat, dot_size, ratio=0.3):
     """
     min_size = np.clip(np.int32(dot_size - ratio * dot_size), 0, None)
     max_size = np.int32(dot_size + ratio * dot_size)
-    mat_label, _ = ndi.label(mat)
+    mat_label, _ = ndi.label(np.int16(mat))
     list_dots = ndi.find_objects(mat_label)
     dots_selected = [dot for dot in list_dots
                      if _check_dot_size(mat[dot], min_size, max_size)]
-    mat1 = np.zeros_like(mat)
+    mat1 = np.zeros_like(mat, dtype=np.int16)
     for _, j in enumerate(dots_selected):
         mat1[j] = mat[j]
     return mat1
@@ -344,16 +346,15 @@ def select_dots_based_size(mat, dot_size, ratio=0.3):
 
 def _check_axes_ratio(mat, ratio):
     """
-    Check if the ratio of the axes length of a fitted ellipse is smaller than
-    a threshold.
+    Check if the ratio of the axes length of a fitted ellipse is smaller than a
+    threshold.
 
     Parameters
     ----------
     mat : array_like
-        2D array.
+        2D binary array.
     ratio : float
         Threshold value.
-
 
     Returns
     -------
@@ -376,13 +377,13 @@ def _check_axes_ratio(mat, ratio):
 
 def select_dots_based_ratio(mat, ratio=0.3):
     """
-    Select dots having the ratio between the axes length of
-    the fitted ellipse smaller than a threshold.
+    Select dots having the ratio between the axes length of the fitted ellipse
+    smaller than a threshold.
 
     Parameters
     ----------
-    mat : float
-        2D array.
+    mat : array_like
+        2D binary array.
     ratio : float
         Threshold value.
 
@@ -391,6 +392,7 @@ def select_dots_based_ratio(mat, ratio=0.3):
     array_like
         2D array. Selected dots.
     """
+    mat = np.int16(mat)
     mat_label, _ = ndi.label(mat)
     list_dots = ndi.find_objects(mat_label)
     dots_selected = [dot for dot in list_dots
@@ -419,6 +421,7 @@ def select_dots_based_distance(mat, dot_dist, ratio=0.3):
     array_like
         2D array. Selected dots.
     """
+    mat = np.int16(mat)
     mat_label, num_dots = ndi.label(mat)
     list_dots = ndi.find_objects(mat_label)
     list_index = np.arange(1, num_dots + 1)
@@ -444,7 +447,7 @@ def calc_hor_slope(mat, ratio=0.3):
     Parameters
     ----------
     mat : array_like
-        2D array.
+        2D binary array.
     ratio : float
         Used to select the ROI around the middle of an image.
 
@@ -495,7 +498,7 @@ def calc_ver_slope(mat, ratio=0.3):
     Parameters
     ----------
     mat : array_like
-        2D array.
+        2D binary array.
     ratio : float
         Used to select the ROI around the middle of a image.
 
@@ -584,7 +587,7 @@ def group_dots_hor_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
     Parameters
     ----------
     mat : array_like
-        2D array.
+        2D binary array.
     slope : float
         Horizontal slope of the grid.
     dot_dist : float
@@ -604,7 +607,7 @@ def group_dots_hor_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
         List of 2D arrays. Each list is the coordinates (x, y) of dot-centroids
         belong to the same group. Length of each list may be different.
     """
-    mat_label, num_dots = ndi.label(mat)
+    mat_label, num_dots = ndi.label(np.int16(mat))
     list_dots = np.copy(center_of_mass(
         mat, labels=mat_label, index=np.arange(1, num_dots + 1)))
     num_dots_left = num_dots
@@ -647,7 +650,7 @@ def group_dots_ver_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
     Parameters
     ----------
     mat : array_like
-        2D array.
+        2D binary array.
     slope : float
         Vertical slope of the grid.
     dot_dist : float
@@ -667,7 +670,7 @@ def group_dots_ver_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
         List of 2D arrays. Each list is the coordinates (x, y) of dot-centroids
         belong to the same group. Length of each list may be different.
     """
-    mat_label, num_dots = ndi.label(mat)
+    mat_label, num_dots = ndi.label(np.int16(mat))
     list_dots = np.copy(center_of_mass(
         mat, labels=mat_label, index=np.arange(1, num_dots + 1)))
     list_dots = np.fliplr(list_dots)  # Swap the coordinates

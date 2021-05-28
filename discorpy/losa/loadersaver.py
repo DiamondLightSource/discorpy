@@ -22,6 +22,8 @@
 # Optics Express 23, 32859-32868 (2015), https://doi.org/10.1364/OE.23.032859
 # Publication date: 10th July 2018
 # ============================================================================
+# Contributors:
+# ============================================================================
 
 """
 Module for I/O tasks:
@@ -90,9 +92,9 @@ def load_hdf_file(file_path, key_path=None, index=None, axis=0):
     Parameters
     ----------
     file_path : str
-        Path to a hdf/nxs file
+        Path to a hdf/nxs file.
     key_path : str
-        Key path to a dataset
+        Key path to a dataset.
     index : int or tuple of int
         Values for slicing data. Can be integer, tuple or list,
         e.g index=(start,stop,step) or index=(slice1, slice2, slice3,slice4).
@@ -168,6 +170,34 @@ def load_hdf_file(file_path, key_path=None, index=None, axis=0):
             if mat.shape[axis] == 0:
                 raise ValueError("Empty indices!")
     return mat
+
+
+def load_hdf_object(file_path, key_path):
+    """
+    Load a hdf/nexus dataset as an object.
+
+    Parameters
+    ----------
+    file_path : str
+        Path to a hdf/nxs file.
+    key_path : str
+        Key path to a dataset.
+
+    Returns
+    -------
+    object
+        hdf/nxs object.
+    """
+    try:
+        ifile = h5py.File(file_path, 'r')
+    except IOError:
+        print("Couldn't open file: {}".format(file_path))
+        raise
+    check = key_path in ifile
+    if not check:
+        print("Couldn't open object with the key path: {}".format(key_path))
+        raise ValueError("!!! Wrong key !!!")
+    return ifile[key_path]
 
 
 def _create_folder(file_path):
@@ -262,8 +292,8 @@ def save_plot_image(file_path, list_lines, height, width, overwrite=True,
     ----------
     file_path : str
         Output file path.
-    list_lines : float
-        2D array. List of the coordinates of dots on the lines.
+    list_lines : list of array_like
+        List of 2D arrays. Each list is the coordinates of dots on a line.
     height : int
         Height of the image.
     width : int
@@ -312,14 +342,16 @@ def save_residual_plot(file_path, list_data, height, width, overwrite=True,
     ----------
     file_path : str
         Output file path.
-    list_data : float
-        List of [residual, radius] of corrected dots.
+    list_data : array_like
+        2D array. List of [residual, radius] of each dot.
     height : int
         Height of the output image.
     width : int
         Width of the output image.
     overwrite : bool, optional
         Overwrite the existing file if True.
+    dpi : int, optional
+        The resolution in dots per inch.
 
     Returns
     -------
@@ -387,6 +419,57 @@ def save_hdf_file(file_path, idata, key_path='entry', overwrite=True):
     grp.create_dataset("data", data=idata)
     ofile.close()
     return file_path
+
+
+def open_hdf_stream(file_path, data_shape, key_path='entry/data',
+                    data_type='float32', overwrite=True, **options):
+    """
+    Open stream to write data to a hdf/nxs file with options to add metadata.
+
+    Parameters
+    ----------
+    file_path : str
+        Path to the file.
+    data_shape : tuple of int
+        Shape of the data.
+    key_path : str
+        Key path to the dataset.
+    data_type: str
+        Type of data.
+    overwrite : bool
+        Overwrite the existing file if True.
+    options : dict, optional
+        Add metadata. E.g. options={"entry/angles": angles, "entry/energy": 53}.
+
+    Returns
+    -------
+    object
+        hdf object.
+    """
+    file_base, file_ext = os.path.splitext(file_path)
+    if not (file_ext == '.hdf' or file_ext == '.h5' or file_ext == ".nxs"):
+        file_ext = '.hdf'
+    file_path = file_base + file_ext
+    _create_folder(file_path)
+    if not overwrite:
+        file_path = _create_file_name(file_path)
+    try:
+        ofile = h5py.File(file_path, 'w')
+    except IOError:
+        print("Couldn't write to file: {}".format(file_path))
+        raise
+    if len(options) != 0:
+        for opt_name in options:
+            opts = options[opt_name]
+            for key in opts:
+                if key_path in key:
+                    msg = "!!! Selected key path, '{0}', can not be a child" \
+                          " key-path of '{1}' !!!\n!!! Change to make sure " \
+                          "they are at the same level !!!".format(key, key_path)
+                    raise ValueError(msg)
+                ofile.create_dataset(key, data=opts[key])
+    data_out = ofile.create_dataset(key_path, data_shape, dtype=data_type)
+    return data_out
 
 
 def save_metadata_txt(file_path, xcenter, ycenter, list_fact, overwrite=True):

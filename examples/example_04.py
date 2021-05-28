@@ -20,7 +20,9 @@
 # correction with sub-pixel accuracy for X-ray micro-tomography"
 # Optics Express 23, 32859-32868 (2015), https://doi.org/10.1364/OE.23.032859
 # Publication date: 10th July 2018
-#============================================================================
+# ============================================================================
+# Contributors:
+# ============================================================================
 
 import timeit
 import numpy as np

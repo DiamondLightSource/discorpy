@@ -19,8 +19,8 @@
 
 """
 Example to show how to calculate parameters of a backward model from an
-estimated forward model of the Hazard Cameras (Hazcams) on the underside of NASA’s
-Perseverance Mars rover.
+estimated forward model of the Hazard Cameras (Hazcams) on the underside of
+NASA’s Perseverance Mars rover.
 """
 import numpy as np
 import discorpy.losa.loadersaver as io

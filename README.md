@@ -73,8 +73,23 @@ Diamond Light Source, UK:
 
 ![I13_before_after2](data/demo/i13_data_2.jpg)
 
+- Improvement of a tomographic reconstructed image after distortion correction.
+  + Before the correction:
+    
+    ![tomo_before](data/demo/recon_before.jpg)
+    
+  + After the correction:
+    
+    ![tomo_before](data/demo/recon_after.jpg)
+
+
 - Apply to a hazard camera of the [Mars Perseverance Rover](https://mars.nasa.gov/mars2020/multimedia/raw-images/).
 Details of how to estimate distortion coefficients of that camera without using
 a calibration target are shown [here](https://github.com/DiamondLightSource/discorpy/blob/master/examples/Perseverance_distortion_correction/Distortion_correction_for_Perseverance_camera.md)  
 
 ![Mars_rover](data/demo/Mars_Rover_camera.jpg)
+
+- Applying distortion correction with sub-pixel accuracy to an [X-ray tomographic dataset](https://doi.org/10.5281/zenodo.3339628)
+  helps to improve the visibility of small features in reconstructed images:
+  
+       

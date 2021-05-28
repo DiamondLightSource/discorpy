@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name="discorpy",
-    version="1.2",
+    version="1.3",
     author="Nghia Vo",
     author_email="nghia.vo@diamond.ac.uk",
     description='Radial lens distortion correction in Python',
@@ -21,7 +21,7 @@ setuptools.setup(
         "Intended Audience :: Science/Research",
         "Operating System :: OS Independent",
         "Natural Language :: English",
-        "Topic :: Scientific/Engineering :: Distortion correction"
+        "Topic :: Scientific/Engineering :: Image Processing"
     ],
     install_requires=[
         "matplotlib",

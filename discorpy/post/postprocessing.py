@@ -21,6 +21,8 @@
 # Optics Express 23, 32859-32868 (2015), https://doi.org/10.1364/OE.23.032859
 # Publication date: 10th July 2018
 # ============================================================================
+# Contributors:
+# ============================================================================
 
 """
 Module of post-processing methods:
@@ -65,9 +67,8 @@ def unwarp_line_forward(list_lines, xcenter, ycenter, list_fact):
 
 
 def _func_diff(ru, rd, *list_fact):
-    return (rd - ru * np.sum(np.asarray([fact * ru ** i for i,
-                                                            fact in
-                                         enumerate(list_fact)]))) ** 2
+    return (rd - ru * np.sum(
+        np.asarray([fact * ru ** i for i, fact in enumerate(list_fact)]))) ** 2
 
 
 def unwarp_line_backward(list_lines, xcenter, ycenter, list_fact):
@@ -131,10 +132,8 @@ def unwarp_image_backward(mat, xcenter, ycenter, list_fact):
     yu_list = np.arange(height) - ycenter
     xu_mat, yu_mat = np.meshgrid(xu_list, yu_list)
     ru_mat = np.sqrt(xu_mat ** 2 + yu_mat ** 2)
-    fact_mat = np.sum(
-        np.asarray([factor * ru_mat ** i for i,
-                                             factor in enumerate(list_fact)]),
-        axis=0)
+    fact_mat = np.sum(np.asarray(
+        [factor * ru_mat ** i for i, factor in enumerate(list_fact)]), axis=0)
     xd_mat = np.float32(np.clip(xcenter + fact_mat * xu_mat, 0, width - 1))
     yd_mat = np.float32(np.clip(ycenter + fact_mat * yu_mat, 0, height - 1))
     indices = np.reshape(yd_mat, (-1, 1)), np.reshape(xd_mat, (-1, 1))
@@ -168,10 +167,8 @@ def unwarp_image_forward(mat, xcenter, ycenter, list_fact):
     yd_list = np.arange(height) - ycenter
     xd_mat, yd_mat = np.meshgrid(xd_list, yd_list)
     rd_mat = np.sqrt(xd_mat ** 2 + yd_mat ** 2)
-    fact_mat = np.sum(
-        np.asarray([factor * rd_mat ** i for i,
-                                             factor in enumerate(list_fact)]),
-        axis=0)
+    fact_mat = np.sum(np.asarray(
+        [factor * rd_mat ** i for i, factor in enumerate(list_fact)]), axis=0)
     xu_mat = np.intp(
         np.round(np.clip(xcenter + fact_mat * xd_mat, 0, width - 1)))
     yu_mat = np.intp(
@@ -210,10 +207,8 @@ def unwarp_slice_backward(mat3D, xcenter, ycenter, list_fact, index):
     xu_list = np.arange(0, width) - xcenter
     yu = index - ycenter
     ru_list = np.sqrt(xu_list ** 2 + yu ** 2)
-    flist = np.sum(
-        np.asarray([factor * ru_list ** i for i,
-                                              factor in enumerate(list_fact)]),
-        axis=0)
+    flist = np.sum(np.asarray(
+        [factor * ru_list ** i for i, factor in enumerate(list_fact)]), axis=0)
     xd_list = np.clip(xcenter + flist * xu_list, 0, width - 1)
     yd_list = np.clip(ycenter + flist * yu, 0, height - 1)
     yd_min = np.int16(np.floor(np.amin(yd_list)))
@@ -287,27 +282,21 @@ def unwarp_chunk_slices_backward(mat3D, xcenter, ycenter, list_fact,
     xu_list = np.arange(0, width) - xcenter
     yu1 = start_index - ycenter
     ru_list = np.sqrt(xu_list ** 2 + yu1 ** 2)
-    flist = np.sum(
-        np.asarray([factor * ru_list ** i for i,
-                                              factor in enumerate(list_fact)]),
-        axis=0)
+    flist = np.sum(np.asarray(
+        [factor * ru_list ** i for i, factor in enumerate(list_fact)]), axis=0)
     yd_list1 = np.clip(ycenter + flist * yu1, 0, height - 1)
     yu2 = stop_index - ycenter
     ru_list = np.sqrt(xu_list ** 2 + yu2 ** 2)
-    flist = np.sum(
-        np.asarray([factor * ru_list ** i for i,
-                                              factor in enumerate(list_fact)]),
-        axis=0)
+    flist = np.sum(np.asarray(
+        [factor * ru_list ** i for i, factor in enumerate(list_fact)]), axis=0)
     yd_list2 = np.clip(ycenter + flist * yu2, 0, height - 1)
     yd_min = np.int16(np.floor(np.amin(yd_list1)))
     yd_max = np.int16(np.ceil(np.amax(yd_list2))) + 1
     yu_list = np.arange(start_index, stop_index + 1) - ycenter
     xu_mat, yu_mat = np.meshgrid(xu_list, yu_list)
     ru_mat = np.sqrt(xu_mat ** 2 + yu_mat ** 2)
-    fact_mat = np.sum(
-        np.asarray([factor * ru_mat ** i for i,
-                                             factor in enumerate(list_fact)]),
-        axis=0)
+    fact_mat = np.sum(np.asarray(
+        [factor * ru_mat ** i for i, factor in enumerate(list_fact)]), axis=0)
     xd_mat = np.float32(np.clip(xcenter + fact_mat * xu_mat, 0, width - 1))
     yd_mat = np.float32(
         np.clip(ycenter + fact_mat * yu_mat, 0, height - 1)) - yd_min
@@ -342,6 +331,7 @@ def calc_residual_hor(list_ulines, xcenter, ycenter):
     """
     list_data = []
     for i, line in enumerate(list_ulines):
+        line = np.asarray(line)
         y_list = line[:, 0] - ycenter
         x_list = line[:, 1] - xcenter
         (a_fact, b_fact) = np.polyfit(x_list, y_list, 1)
@@ -378,6 +368,7 @@ def calc_residual_ver(list_ulines, xcenter, ycenter):
     """
     list_data = []
     for i, line in enumerate(list_ulines):
+        line = np.asarray(line)
         y_list = line[:, 0] - ycenter
         x_list = line[:, 1] - xcenter
         (a_fact, b_fact) = np.polyfit(y_list, x_list, 1)
@@ -406,9 +397,8 @@ def check_distortion(list_data):
     bool
     """
     check = False
-    res_list = list_data[:, 1]
-    perc_err = (
-            1.0 * len(res_list[res_list > 1.0]) / len(res_list))
+    res_list = np.asarray(list_data[:, 1])
+    perc_err = (1.0 * len(res_list[res_list > 1.0]) / len(res_list))
     if perc_err > 0.15:
         check = True
     return check

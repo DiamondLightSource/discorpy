@@ -55,4 +55,3 @@ mat_cor = post.unwarp_image_backward(mat_pad, xcenter + pad,
                                      ycenter + pad, list_ffact)
 mat_cor = mat_cor[pad:pad + height, pad:pad + width]
 io.save_image(output_base + "/overlay.jpg", (mat0 + 0.5*mat_cor))
-

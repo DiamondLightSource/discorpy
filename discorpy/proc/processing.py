@@ -21,6 +21,8 @@
 # Optics Express 23, 32859-32868 (2015), https://doi.org/10.1364/OE.23.032859
 # Publication date: 10th July 2018
 # ============================================================================
+# Contributors:
+# ============================================================================
 
 """
 Module of processing methods:
@@ -56,7 +58,8 @@ def _para_fit_hor(list_lines, xcenter, ycenter):
     num_line = len(list_lines)
     list_coef = np.zeros((num_line, 3), dtype=np.float32)
     list_slines = []
-    for i, line in enumerate(list_lines):
+    for i, iline in enumerate(list_lines):
+        line = np.asarray(iline)
         list_coef[i] = np.asarray(np.polyfit(line[:, 1] - xcenter,
                                              line[:, 0] - ycenter, 2))
         list_temp = np.asarray(
@@ -88,7 +91,8 @@ def _para_fit_ver(list_lines, xcenter, ycenter):
     num_line = len(list_lines)
     list_coef = np.zeros((num_line, 3), dtype=np.float32)
     list_slines = []
-    for i, line in enumerate(list_lines):
+    for i, iline in enumerate(list_lines):
+        line = np.asarray(iline)
         list_coef[i] = np.asarray(
             np.polyfit(line[:, 0] - ycenter, line[:, 1] - xcenter, 2))
         list_temp = np.asarray(
@@ -256,8 +260,8 @@ def find_cod_fine(list_hor_lines, list_ver_lines, xcenter, ycenter, dot_dist):
     ycenter : float
         Center of distortion in y-direction.
     """
-    step = 2.0
-    list_xshift = np.arange(-dot_dist / 2, dot_dist / 2 + step, step)
+    step0 = 2.0
+    list_xshift = np.arange(-dot_dist, dot_dist + step0, step0)
     list_yshift = list_xshift
     (xshift, yshift) = _calc_metric(
         list_hor_lines, list_ver_lines, xcenter, ycenter, list_xshift,
@@ -265,7 +269,7 @@ def find_cod_fine(list_hor_lines, list_ver_lines, xcenter, ycenter, dot_dist):
     xcenter1 = xcenter + xshift
     ycenter1 = ycenter + yshift
     step = 0.5
-    list_xshift = np.arange(-3, 3 + step, step)
+    list_xshift = np.arange(-step0, step0 + step, step)
     list_yshift = list_xshift
     (xshift, yshift) = _calc_metric(
         list_hor_lines, list_ver_lines, xcenter1, ycenter1, list_xshift,

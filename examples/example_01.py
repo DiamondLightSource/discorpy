@@ -20,7 +20,9 @@
 # correction with sub-pixel accuracy for X-ray micro-tomography"
 # Optics Express 23, 32859-32868 (2015), https://doi.org/10.1364/OE.23.032859
 # Publication date: 10th July 2018
-#============================================================================
+# ============================================================================
+# Contributors:
+# ============================================================================
 
 import timeit
 import numpy as np
@@ -38,7 +40,7 @@ time_start = timeit.default_timer()
 # -----------------------------------------------------------------------------
 # Initial parameters
 file_path = "../data/dot_pattern_03.jpg"
-output_base = "E:/correction/"
+output_base = "E:/tmp/correction/"
 num_coef = 5  # Number of polynomial coefficients
 norm = False  # Correct non-uniform background if True
 # -----------------------------------------------------------------------------

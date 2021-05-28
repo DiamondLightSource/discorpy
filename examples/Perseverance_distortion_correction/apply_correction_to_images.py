@@ -18,8 +18,8 @@
 #============================================================================
 
 """
-Example to show how to apply distortion correction to images of the Hazard Cameras
-(Hazcams) on the underside of NASA’s Perseverance Mars rover.
+Example to show how to apply distortion correction to images of the Hazard
+Cameras (Hazcams) on the underside of NASA’s Perseverance Mars rover.
 """
 import numpy as np
 import discorpy.losa.loadersaver as io
