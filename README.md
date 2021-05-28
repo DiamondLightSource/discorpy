@@ -88,8 +88,5 @@ Details of how to estimate distortion coefficients of that camera without using
 a calibration target are shown [here](https://github.com/DiamondLightSource/discorpy/blob/master/examples/Perseverance_distortion_correction/Distortion_correction_for_Perseverance_camera.md)  
 
 ![Mars_rover](data/demo/Mars_Rover_camera.jpg)
-
-- Applying distortion correction with sub-pixel accuracy to an [X-ray tomographic dataset](https://doi.org/10.5281/zenodo.3339628)
-  helps to improve the visibility of small features in reconstructed images:
   
        
