@@ -89,16 +89,16 @@ Demonstrations
 - Apply to a visible dot-target collected at [Beamline I12](https://www.diamond.ac.uk/Instruments/Imaging-and-Microscopy/I12/Detectors-at-I12.html),
 Diamond Light Source, UK:
 
-![I12_before_after1](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/i12_data_1.jpg)
+    ![I12_before_after1](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/i12_data_1.jpg)
 
-![I12_before_after2](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/i12_data_2.jpg)
+    ![I12_before_after2](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/i12_data_2.jpg)
 
 - Apply to an X-ray dot-target collected at [Beamline I13](https://www.diamond.ac.uk/Instruments/Imaging-and-Microscopy/I13/Diamond-Manchester_Imaging_Branchline/Facilities_and_equipment_Imaging.html),
 Diamond Light Source, UK:
 
-![I13_before_after1](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/i13_data_1.jpg)
+    ![I13_before_after1](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/i13_data_1.jpg)
 
-![I13_before_after2](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/i13_data_2.jpg)
+    ![I13_before_after2](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/i13_data_2.jpg)
 
 - Improvement of a tomographic reconstructed image after distortion correction.
   + Before the correction:
@@ -114,6 +114,6 @@ Diamond Light Source, UK:
 Details of how to estimate distortion coefficients of that camera without using
 a calibration target are shown [here](https://github.com/DiamondLightSource/discorpy/blob/master/examples/Perseverance_distortion_correction/Distortion_correction_for_Perseverance_camera.md)  
 
-![Mars_rover](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/Mars_Rover_camera.jpg)
+    ![Mars_rover](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/Mars_Rover_camera.jpg)
   
        
