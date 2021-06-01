@@ -85,6 +85,114 @@ def _get_key(name, obj):
                     return key_path
 
 
+def get_hdf_information(file_path):
+    """
+    Get information of datasets in a hdf/nxs file.
+
+    Parameters
+    ----------
+    file_path : str
+        Path to the file.
+
+    Returns
+    -------
+    list_key : str
+        Keys to the datasets.
+    list_shape : tuple of int
+        Shapes of the datasets.
+    list_type : str
+        Types of the datasets.
+    """
+    ifile = h5py.File(file_path, 'r')
+    keys = []
+    ifile.visit(keys.append)
+    list_key = []
+    list_shape = []
+    list_type = []
+    for key in keys:
+        data = ifile[key]
+        if isinstance(data, h5py.Group):
+            for key2, _ in list(data.items()):
+                list_key.append(key + "/" + key2)
+        else:
+            list_key.append(data.name)
+    for i, key in enumerate(list_key):
+        data = ifile[list_key[i]]
+        try:
+            shape = data.shape
+        except AttributeError:
+            shape = "None"
+        try:
+            dtype = data.dtype
+        except AttributeError:
+            dtype = "None"
+        if isinstance(data, list):
+            if len(data) == 1:
+                if not isinstance(data, np.ndarray):
+                    dtype = str(list(data)[0])
+                    dtype = dtype.replace("b'", "'")
+        list_shape.append(shape)
+        list_type.append(dtype)
+    ifile.close()
+    return list_key, list_shape, list_type
+
+
+def find_hdf_key(file_path, pattern):
+    """
+    Find datasets matching the pattern in a hdf/nxs file.
+
+    Parameters
+    ----------
+    file_path : str
+        Path to the file.
+    pattern : str
+        Pattern to find the full names of the datasets.
+
+    Returns
+    -------
+    list_key : str
+        Keys to the datasets.
+    list_shape : tuple of int
+        Shapes of the datasets.
+    list_type : str
+        Types of the datasets.
+    """
+    ifile = h5py.File(file_path, 'r')
+    list_key = []
+    keys = []
+    ifile.visit(keys.append)
+    for key in keys:
+        data = ifile[key]
+        if isinstance(data, h5py.Group):
+            for key2, _ in list(data.items()):
+                list_key.append(data.name + "/" + key2)
+        else:
+            list_key.append(data.name)
+    list_dkey = []
+    list_dshape = []
+    list_dtype = []
+    for _, key in enumerate(list_key):
+        if pattern in key:
+            list_dkey.append(key)
+            data = ifile[key]
+            try:
+                shape = data.shape
+            except AttributeError:
+                shape = "None"
+            list_dshape.append(shape)
+            try:
+                dtype = data.dtype
+            except AttributeError:
+                dtype = "None"
+            list_dtype.append(dtype)
+            if isinstance(data, list):
+                if len(data) == 1:
+                    dtype = str(list(data)[0])
+                    dtype = dtype.replace("b'", "'")
+    ifile.close()
+    return list_dkey, list_dshape, list_dtype
+
+
 def load_hdf_file(file_path, key_path=None, index=None, axis=0):
     """
     Load data from a hdf5/nxs file.

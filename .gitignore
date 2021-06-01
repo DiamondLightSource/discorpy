@@ -4,10 +4,11 @@
 *.project
 *.pydevproject
 .idea
-dev
+dev/
 doc/build/
 doc/source/_static/
 doc/source/_templates/
 build/
 dist/
 *egg-info
+recipe/

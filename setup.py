@@ -1,4 +1,8 @@
+import pathlib
 import setuptools
+
+HERE = pathlib.Path(__file__).parent
+README = (HERE / "README.md").read_text()
 
 setuptools.setup(
     name="discorpy",
@@ -6,6 +10,8 @@ setuptools.setup(
     author="Nghia Vo",
     author_email="nghia.vo@diamond.ac.uk",
     description='Radial lens distortion correction in Python',
+    long_description=README,
+    long_description_content_type="text/markdown",
     keywords=['Distortion correction', 'Tomography', 'Radial lens distortion',
               'Camera calibration'],
     url="https://github.com/DiamondLightSource/discorpy",
