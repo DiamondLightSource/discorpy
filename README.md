@@ -45,16 +45,33 @@ Install
         conda install python
         python setup.py install
         ```
- - Using conda:
+- Using conda:
     + Install Miniconda as instructed above.
-    + Open terminal or command prompt and run the following command:     
-      `conda install -c algotom discorpy`
+    + Open terminal or command prompt and run the following commands:
+        * If install to an existing environment:
+       
+            `conda install -c algotom discorpy`
+        * If install to a new environment:
+            ```commandline  
+            conda create -n discorpy
+            conda activate discorpy
+            conda install python
+            conda install -c algotom discorpy
+            ```
 
 - Using pip:
     + Install Miniconda as instructed above.
-    + Open terminal or command prompt and run the following command:  
-      `pip install discorpy`
-
+    + Open terminal or command prompt and run the following commands:
+        * If install to an existing environment:
+        
+            `pip install discorpy`
+        * If install to a new environment:
+            ```commandline  
+            conda create -n discorpy
+            conda activate discorpy
+            conda install python
+            pip install discorpy
+            ```
 
 How to use
 ==========
