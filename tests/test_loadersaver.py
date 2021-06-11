@@ -25,6 +25,7 @@ Tests for methods in loadersaver.py
 """
 
 import os
+import sys
 import unittest
 import shutil
 import h5py
@@ -72,11 +73,15 @@ class LoaderSaverMethods(unittest.TestCase):
         self.assertTrue(os.path.isfile(file_path))
 
     def test_save_plot_image(self):
-        file_path = "data/plot.png"
-        list_lines = [np.asarray([(i, j) for j in range(5, 64, 5)]) for i in
-                      range(5, 64, 5)]
-        losa.save_plot_image(file_path, list_lines, 64, 64, dpi=100)
-        self.assertTrue(os.path.isfile(file_path))
+        ver = sys.version[:3]
+        check = True
+        if ver != "2.7":
+            file_path = "data/plot.png"
+            list_lines = [np.asarray([(i, j) for j in range(5, 64, 5)]) for i in
+                         range(5, 64, 5)]
+            losa.save_plot_image(file_path, list_lines, 64, 64, dpi=100)
+            check = os.path.isfile(file_path)
+        self.assertTrue(check)
 
     def test_save_residual_plot(self):
         file_path = "data/plot1.png"
