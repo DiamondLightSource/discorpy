@@ -422,7 +422,7 @@ def save_plot_image(file_path, list_lines, height, width, overwrite=True,
     _create_folder(file_path)
     if not overwrite:
         file_path = _create_file_name(file_path)
-    fig = plt.figure()
+    fig = plt.figure(frameon=False)
     fig.set_size_inches(width / dpi, height / dpi)
     ax = plt.Axes(fig, [0., 0., 1.0, 1.0])
     ax.set_axis_off()
@@ -472,7 +472,7 @@ def save_residual_plot(file_path, list_data, height, width, overwrite=True,
     _create_folder(file_path)
     if not overwrite:
         file_path = _create_file_name(file_path)
-    fig = plt.figure()
+    fig = plt.figure(frameon=False)
     fig.set_size_inches(width / dpi, height / dpi)
     m_size = 0.5 * min(height / dpi, width / dpi)
     plt.rc('font', size=np.int16(m_size * 3))
