@@ -25,12 +25,13 @@
 # ============================================================================
 
 """
-Module of pre-procesing methods:
+Module of pre-processing methods:
 - Normalize, binarize an image.
-- Determine median dot-size, median distance between two nearest dots,
- and the slopes of grid-lines of a dot-pattern image.
+- Determine the median dot-size, median distance between two nearest dots,
+  and the slopes of grid-lines of a dot-pattern image.
 - Remove non-dot objects or misplaced dots.
 - Group dot-centroids into horizontal lines and vertical lines.
+
 """
 
 import numpy as np
@@ -44,7 +45,7 @@ import skimage.measure as meas
 from skimage.transform import radon
 
 
-def normalization(mat, radius=51):
+def normalization(mat, size=51):
     """
     Correct a non-uniform background of an image using the median filter.
 
@@ -52,7 +53,7 @@ def normalization(mat, radius=51):
     ----------
     mat : array_like
         2D array.
-    radius : int
+    size : int
         Size of the median filter.
 
     Returns
@@ -60,7 +61,7 @@ def normalization(mat, radius=51):
     array_like
         2D array. Corrected background.
     """
-    mat_bck = ndi.median_filter(mat, radius, mode="reflect")
+    mat_bck = ndi.median_filter(mat, size, mode="reflect")
     mean_val = np.mean(mat_bck)
     try:
         mat_cor = mean_val * mat / mat_bck
@@ -153,7 +154,7 @@ def normalization_fft(mat, sigma=10, pad=30):
     return mat_cor
 
 
-def _select_roi(mat, ratio):
+def _select_roi(mat, ratio, square=False):
     """
     Select ROI around the middle of an image.
 
@@ -163,6 +164,8 @@ def _select_roi(mat, ratio):
         2D array.
     ratio : float
         Ratio between the ROI size and the image size.
+    square : bool, optional
+        To get a square area or not.
 
     Returns
     -------
@@ -171,10 +174,16 @@ def _select_roi(mat, ratio):
     """
     (height, width) = mat.shape
     ratio = np.clip(ratio, 0.05, 1.0)
-    depad_hei = np.int16((height - ratio * height) / 2)
-    depad_wid = np.int16((width - ratio * width) / 2)
-    mat = mat[depad_hei:height - depad_hei, depad_wid:width - depad_wid]
-    return mat
+    if square is True:
+        c_hei = height // 2
+        c_wid = width // 2
+        radi = int(ratio * min(height, width)) // 2
+        mat_roi = mat[c_hei - radi:c_hei + radi, c_wid - radi: c_wid + radi]
+    else:
+        depad_hei = int((height - ratio * height) / 2)
+        depad_wid = int((width - ratio * width) / 2)
+        mat_roi = mat[depad_hei:height - depad_hei, depad_wid:width - depad_wid]
+    return mat_roi
 
 
 def _invert_dots_contrast(mat):
@@ -214,6 +223,8 @@ def binarization(mat, ratio=0.3, thres=None, denoise=True):
         threshold.
     thres : float, optional
         Threshold for binarizing. Automatically calculated if None.
+    denoise : bool, optional
+        Apply denoising to the image if True.
 
     Returns
     -------
@@ -332,8 +343,8 @@ def select_dots_based_size(mat, dot_size, ratio=0.3):
     array_like
         2D array. Selected dots.
     """
-    min_size = np.clip(np.int32(dot_size - ratio * dot_size), 0, None)
-    max_size = np.int32(dot_size + ratio * dot_size)
+    min_size = np.clip(dot_size - ratio * dot_size, 0, None)
+    max_size = dot_size + ratio * dot_size
     mat_label, _ = ndi.label(np.int16(mat))
     list_dots = ndi.find_objects(mat_label)
     dots_selected = [dot for dot in list_dots
@@ -478,14 +489,14 @@ def calc_hor_slope(mat, ratio=0.3):
     line_slope = np.tan(best_angle * radi)
     list_tmp = np.sqrt(
         np.ones(num_dots, dtype=np.float32) * line_slope ** 2 + 1.0)
-    list_tmp2 = used_dot[0] * np.ones(num_dots, dtype=np.float32) \
-                - line_slope * used_dot[1]
+    list_tmp2 = used_dot[0] * np.ones(
+        num_dots, dtype=np.float32) - line_slope * used_dot[1]
     list_dist = np.abs(
         line_slope * list_cent[:, 1] - list_cent[:, 0] + list_tmp2) / list_tmp
     dots_selected = np.asarray(
         [dot for i, dot in enumerate(list_cent) if list_dist[i] < dist_error])
     if len(dots_selected) > 1:
-        (slope, _) = np.polyfit(dots_selected[:, 1], dots_selected[:, 0], 1)
+        slope = np.polyfit(dots_selected[:, 1], dots_selected[:, 0], 1)[0]
     else:
         slope = line_slope
     return slope
@@ -528,15 +539,14 @@ def calc_ver_slope(mat, ratio=0.3):
     line_slope = np.tan(best_angle * radi)
     list_tmp = np.sqrt(
         np.ones(num_dots, dtype=np.float32) * line_slope ** 2 + 1.0)
-    list_tmp2 = used_dot[0] * np.ones(num_dots, dtype=np.float32) \
-                - line_slope * used_dot[1]
+    list_tmp2 = used_dot[0] * np.ones(
+        num_dots, dtype=np.float32) - line_slope * used_dot[1]
     list_dist = np.abs(
         line_slope * list_cent[:, 1] - list_cent[:, 0] + list_tmp2) / list_tmp
     dots_selected = np.asarray(
         [dot for i, dot in enumerate(list_cent) if list_dist[i] < dist_error])
     if len(dots_selected) > 1:
-        (slope, _) = np.polyfit(
-            dots_selected[:, 1], dots_selected[:, 0], 1)
+        slope = np.polyfit(dots_selected[:, 1], dots_selected[:, 0], 1)[0]
     else:
         slope = line_slope
     return slope
@@ -568,14 +578,17 @@ def _check_dot_on_line(dot1, dot2, slope, dot_dist, ratio, num_dot_miss):
     check = False
     dist_error = ratio * dot_dist
     search_dist = num_dot_miss * dot_dist
-    xmin = dot1[1] - search_dist
-    xmax = dot1[1] + search_dist
-    if xmin < dot2[1] < xmax:
-        ntemp1 = np.sqrt(slope * slope + 1.0)
-        ntemp2 = dot1[0] - slope * dot1[1]
-        dist_d12 = np.abs(slope * dot2[1] - dot2[0] + ntemp2) / ntemp1
-        if dist_d12 < dist_error:
-            check = True
+    if len(dot1) == 2 and len(dot2) == 2:
+        xmin = dot1[1] - search_dist
+        xmax = dot1[1] + search_dist
+        if xmin < dot2[1] < xmax:
+            ntemp1 = np.sqrt(slope * slope + 1.0)
+            ntemp2 = dot1[0] - slope * dot1[1]
+            dist_d12 = np.abs(slope * dot2[1] - dot2[0] + ntemp2) / ntemp1
+            if dist_d12 < dist_error:
+                check = True
+    else:
+        raise ValueError("Invalid input!!!")
     return check
 
 
@@ -587,7 +600,7 @@ def group_dots_hor_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
     Parameters
     ----------
     mat : array_like
-        2D binary array.
+        A binary image or a list of (y,x)-coordinates of points.
     slope : float
         Horizontal slope of the grid.
     dot_dist : float
@@ -604,12 +617,17 @@ def group_dots_hor_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
     Returns
     -------
     list of array_like
-        List of 2D arrays. Each list is the coordinates (x, y) of dot-centroids
+        List of 2D arrays. Each list is the coordinates (y, x) of dot-centroids
         belong to the same group. Length of each list may be different.
     """
-    mat_label, num_dots = ndi.label(np.int16(mat))
-    list_dots = np.copy(center_of_mass(
-        mat, labels=mat_label, index=np.arange(1, num_dots + 1)))
+    mat = np.asarray(mat)
+    if mat.shape[1] != 2:
+        mat_label, num_dots = ndi.label(np.int16(mat))
+        list_dots = np.copy(center_of_mass(
+            mat, labels=mat_label, index=np.arange(1, num_dots + 1)))
+    else:
+        list_dots = mat
+        num_dots = len(list_dots)
     num_dots_left = num_dots
     list_dots_left = np.copy(list_dots)
     list_dots_left = list_dots_left[list_dots_left[:, 1].argsort()]
@@ -650,7 +668,7 @@ def group_dots_ver_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
     Parameters
     ----------
     mat : array_like
-        2D binary array.
+        A binary image or a list of (y,x)-coordinates of points.
     slope : float
         Vertical slope of the grid.
     dot_dist : float
@@ -667,12 +685,17 @@ def group_dots_ver_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
     Returns
     -------
     list of array_like
-        List of 2D arrays. Each list is the coordinates (x, y) of dot-centroids
+        List of 2D arrays. Each list is the coordinates (y, x) of dot-centroids
         belong to the same group. Length of each list may be different.
     """
-    mat_label, num_dots = ndi.label(np.int16(mat))
-    list_dots = np.copy(center_of_mass(
-        mat, labels=mat_label, index=np.arange(1, num_dots + 1)))
+    mat = np.asarray(mat)
+    if mat.shape[1] != 2:
+        mat_label, num_dots = ndi.label(np.int16(mat))
+        list_dots = np.copy(center_of_mass(
+            mat, labels=mat_label, index=np.arange(1, num_dots + 1)))
+    else:
+        list_dots = mat
+        num_dots = len(list_dots)
     list_dots = np.fliplr(list_dots)  # Swap the coordinates
     num_dots_left = num_dots
     list_dots_left = np.copy(list_dots)
@@ -725,7 +748,7 @@ def remove_residual_dots_hor(list_lines, slope, residual=2.5):
     Returns
     -------
     list of array_like
-        List of 2D arrays. Each list is the coordinates (x, y) of dot-centroids
+        List of 2D arrays. Each list is the coordinates (y, x) of dot-centroids
         belong to the same group. Length of each list may be different.
     """
     list_lines2 = []
@@ -758,7 +781,7 @@ def remove_residual_dots_ver(list_lines, slope, residual=2.5):
     Returns
     -------
     list of float
-        List of 2D array. Each list is the coordinates (x, y) of dot-centroids
+        List of 2D array. Each list is the coordinates (y, x) of dot-centroids
         belong to the same group. Length of each list may be different.
     """
     list_lines2 = []
@@ -773,3 +796,28 @@ def remove_residual_dots_ver(list_lines, slope, residual=2.5):
         dots_left = np.fliplr(dots_left)  # Swap back
         list_lines2.append(dots_left)
     return list_lines2
+
+
+def _make_circle_mask(width, ratio):
+    """
+    Create a circle mask.
+
+    Parameters
+    -----------
+    width : int
+        Width of a square array.
+    ratio : float
+        Ratio between the diameter of the mask and the width of the array.
+
+    Returns
+    ------
+    array_like
+         Square array.
+    """
+    mask = np.zeros((width, width), dtype=np.float32)
+    center = width // 2
+    radius = ratio * center
+    y, x = np.ogrid[-center:width - center, -center:width - center]
+    mask_check = x * x + y * y <= radius * radius
+    mask[mask_check] = 1.0
+    return mask

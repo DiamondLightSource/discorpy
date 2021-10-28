@@ -75,14 +75,14 @@ Install
 
 How to use
 ==========
-- A document explaining step-by-step how to calculate distortion coefficients 
-from a dot pattern image is in the "/doc" folder or can be downloaded from: 
+- A document explaining step-by-step on how to calculate distortion coefficients 
+from a dot pattern image can be downloaded from: 
 https://zenodo.org/record/1322720 
 - Examples of how to use the package are in the "/examples" folder.
 - Coefficients determined by the package can be used by other tomographic 
 software such as [Tomopy](https://tomopy.readthedocs.io/en/latest/api/tomopy.prep.alignment.html) or
 [Savu](https://github.com/DiamondLightSource/Savu/blob/master/savu/plugins/corrections/distortion_correction.py) 
-for correction.
+, or [Algotom](https://github.com/algotom/algotom) for correction.
 
 Demonstrations
 ==============

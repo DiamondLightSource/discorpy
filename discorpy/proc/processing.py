@@ -42,7 +42,7 @@ def _para_fit_hor(list_lines, xcenter, ycenter):
     Parameters
     ----------
     list_lines : list of 2D arrays
-        List of the coordinates of dot-centroids on each line.
+        List of the (y,x)-coordinates of dot-centroids on each line.
     xcenter : float
         Center of distortion in x-direction.
     ycenter : float
@@ -53,7 +53,7 @@ def _para_fit_hor(list_lines, xcenter, ycenter):
     list_coef : list of 1D arrays
         List of the coefficients of each parabola.
     list_slines : list of 2D arrays
-        List of the shifted coordinates of dot-centroids on each line.
+        List of the shifted (y,x)-coordinates of dot-centroids on each line.
     """
     num_line = len(list_lines)
     list_coef = np.zeros((num_line, 3), dtype=np.float32)
@@ -75,7 +75,7 @@ def _para_fit_ver(list_lines, xcenter, ycenter):
     Parameters
     ----------
     list_lines : list of 2D arrays
-        List of the coordinates of dot-centroids on each line.
+        List of the (y,x)-coordinates of dot-centroids on each line.
     xcenter : float
         Center of distortion in x-direction.
     ycenter : float
@@ -86,7 +86,7 @@ def _para_fit_ver(list_lines, xcenter, ycenter):
     list_coef : list of 1D arrays
         List of the coefficients of each parabola.
     list_slines : list of 2D arrays
-        List of the shifted coordinates of dot-centroids on each line.
+        List of the shifted (y,x)-coordinates of dot-centroids on each line.
     """
     num_line = len(list_lines)
     list_coef = np.zeros((num_line, 3), dtype=np.float32)
@@ -108,9 +108,9 @@ def find_cod_coarse(list_hor_lines, list_ver_lines):
     Parameters
     ----------
     list_hor_lines : list of 2D arrays
-        List of the coordinates of dot-centroids on each horizontal line.
+        List of the (y,x)-coordinates of dot-centroids on each horizontal line.
     list_ver_lines : list of 2D arrays
-        List of the coordinates of dot-centroids on each vertical line.
+        List of the (y,x)-coordinates of dot-centroids on each vertical line.
 
     Returns
     -------
@@ -188,9 +188,9 @@ def _calc_metric(list_hor_lines, list_ver_lines, xcenter, ycenter,
     Parameters
     ----------
     list_hor_lines : list of 2D arrays
-        List of the coordinates of dot-centroids on each horizontal line.
+        List of the (y,x)-coordinates of dot-centroids on each horizontal line.
     list_ver_lines : list of 2D arrays
-        List of the coordinates of dot-centroids on each vertical line.
+        List of the (y,x)-coordinates of dot-centroids on each vertical line.
     xcenter : float
         Center of distortion in x-direction.
     ycenter : float
@@ -243,9 +243,9 @@ def find_cod_fine(list_hor_lines, list_ver_lines, xcenter, ycenter, dot_dist):
     Parameters
     ----------
     list_hor_lines : list of 2D arrays
-        List of the coordinates of dot-centroids on each horizontal line.
+        List of the (y,x)-coordinates of dot-centroids on each horizontal line.
     list_ver_lines : list of 2D arrays
-        List of the coordinates of dot-centroids on each vertical line.
+        List of the (y,x)-coordinates of dot-centroids on each vertical line.
     xcenter : float
         Coarse estimation of the CoD in x-direction.
     ycenter : float
@@ -314,7 +314,8 @@ def _check_missing_lines(list_coef_hor, list_coef_ver):
 
 def _func_opt(d0, c0, indexc0, *list_inter):
     """
-    Function for finding the optimum undistorted distance.
+    Function for finding the optimum undistorted distance for radial
+    distortion correction.
     """
     return np.sum(
         np.asarray([(np.sign(c) * np.abs(i - indexc0) * d0 + c0 - c) ** 2
@@ -323,7 +324,7 @@ def _func_opt(d0, c0, indexc0, *list_inter):
 
 def _optimize_intercept(dist_hv, pos_hv, list_inter):
     """
-    Find the optimum undistorted distance.
+    Find the optimum undistorted distance for radial-distortion correction.
     """
     list_arg = [list_inter[pos_hv], pos_hv]
     list_arg.extend(list_inter)
@@ -339,9 +340,9 @@ def _calc_undistor_intercept(list_hor_lines, list_ver_lines, xcenter, ycenter,
     Parameters
     ----------
     list_hor_lines : list of 2D arrays
-        List of the coordinates of dot-centroids on each horizontal line.
+        List of the (y,x)-coordinates of dot-centroids on each horizontal line.
     list_ver_lines : list of 2D arrays
-        List of the coordinates of dot-centroids on each vertical line.
+        List of the (y,x)-coordinates of dot-centroids on each vertical line.
     xcenter : float
         Center of distortion in x-direction.
     ycenter : float
@@ -400,9 +401,9 @@ def calc_coef_backward(list_hor_lines, list_ver_lines, xcenter, ycenter,
     Parameters
     ----------
     list_hor_lines : list of 2D arrays
-        List of the coordinates of dot-centroids on each horizontal line.
+        List of the (y,x)-coordinates of dot-centroids on each horizontal line.
     list_ver_lines : list of 2D arrays
-        List of the coordinates of dot-centroids on each vertical line.
+        List of the (y,x)-coordinates of dot-centroids on each vertical line.
     xcenter : float
         Center of distortion in x-direction.
     ycenter : float
@@ -459,9 +460,9 @@ def calc_coef_forward(list_hor_lines, list_ver_lines, xcenter, ycenter,
     Parameters
     ----------
     list_hor_lines : list of 2D arrays
-        List of the coordinates of dot-centroids on each horizontal line.
+        List of the (y,x)-coordinates of dot-centroids on each horizontal line.
     list_ver_lines : list of 2D arrays
-        List of the coordinates of dot-centroids on each vertical line.
+        List of the (y,x)-coordinates of dot-centroids on each vertical line.
     xcenter : float
         Center of distortion in x-direction.
     ycenter : float
@@ -523,9 +524,9 @@ def calc_coef_backward_from_forward(list_hor_lines, list_ver_lines, xcenter,
     Parameters
     ----------
     list_hor_lines : list of 2D arrays
-        List of the coordinates of dot-centroids on each horizontal line.
+        List of the (y,x)-coordinates of dot-centroids on each horizontal line.
     list_ver_lines : list of 2D arrays
-        List of the coordinates of dot-centroids on each vertical line.
+        List of the (y,x)-coordinates of dot-centroids on each vertical line.
     xcenter : float
         Center of distortion in x-direction.
     ycenter : float
@@ -540,7 +541,7 @@ def calc_coef_backward_from_forward(list_hor_lines, list_ver_lines, xcenter,
     list_bfact : list of floats
         Polynomial coefficients of the backward model.
     """
-    num_fact = np.int16(np.clip(num_fact, 1, 5))
+    num_fact = np.int16(np.clip(num_fact, 1, None))
     list_ffact = np.float64(
         calc_coef_forward(list_hor_lines, list_ver_lines, xcenter, ycenter,
                           num_fact))
@@ -575,3 +576,484 @@ def calc_coef_backward_from_forward(list_hor_lines, list_ver_lines, xcenter,
     Bmatrix = np.asarray(Bmatrix, dtype=np.float64)
     list_bfact = np.linalg.lstsq(Amatrix, Bmatrix, rcond=1e-64)[0]
     return list_ffact, list_bfact
+
+
+
+def find_cod_bailey(list_hor_lines, list_ver_lines):
+    """
+    Find the center of distortion (COD) using the Bailey's approach (Ref. [1]).
+
+    Parameters
+    ----------
+    list_hor_lines : list of 2D-arrays
+        List of the (y,x)-coordinates of points on each horizontal line.
+    list_ver_lines : list of 2D-arrays
+        List of the (y,x)-coordinates of points on each vertical line.
+
+    Returns
+    -------
+    xcenter : float
+        Center of distortion in x-direction.
+    ycenter : float
+        Center of distortion in y-direction.
+
+    References
+    ----------
+    [1].. https://www-ist.massey.ac.nz/dbailey/sprg/pdfs/2002_IVCNZ_59.pdf
+    """
+    (xcenter, ycenter) = find_cod_coarse(list_hor_lines, list_ver_lines)
+    list_coef_hor = _para_fit_hor(list_hor_lines, xcenter, ycenter)[0]
+    list_coef_ver = _para_fit_ver(list_ver_lines, xcenter, ycenter)[0]
+    a1, b1 = np.polyfit(list_coef_hor[:, 2], list_coef_hor[:, 0], 1)[0:2]
+    a2, b2 = np.polyfit(list_coef_ver[:, 2], list_coef_ver[:, 0], 1)[0:2]
+    xcenter = xcenter - b2 / a2
+    ycenter = ycenter - b1 / a1
+    return xcenter, ycenter
+
+
+def generate_non_perspective_parabola_coef(list_hor_lines, list_ver_lines):
+    """
+    Correct the deviation of fitted parabola coefficients of each line caused
+    by perspective distortion. Note that the resulting coefficients are
+    referred to a different origin-coordinate instead of (0, 0).
+
+    Parameters
+    ----------
+    list_hor_lines : list of 2D-arrays
+        List of the (y,x)-coordinates of points on each horizontal line.
+    list_ver_lines : list of 2D-arrays
+        List of the (y,x)-coordinates of points on each vertical line.
+
+    Returns
+    -------
+    list_coef_hor : list of 1D-arrays
+        List of the corrected coefficients for horizontal lines.
+    list_coef_ver : list of 1D-arrays
+        List of the corrected coefficients for vertical lines.
+    xcenter : float
+        Center of distortion in x-direction.
+    ycenter : float
+        Center of distortion in y-direction.
+    """
+    num_hline, num_vline = len(list_hor_lines), len(list_ver_lines)
+    xcenter, ycenter = find_cod_bailey(list_hor_lines, list_ver_lines)
+    list_coef_hor = _para_fit_hor(list_hor_lines, xcenter, ycenter)[0]
+    list_coef_ver = _para_fit_ver(list_ver_lines, xcenter, ycenter)[0]
+    ah, bh = np.polyfit(list_coef_hor[:, 2], list_coef_hor[:, 1], 1)[0:2]
+    av, bv = np.polyfit(list_coef_ver[:, 2], -list_coef_ver[:, 1], 1)[0:2]
+    if np.abs(ah - av) >= 0.001:
+        b0 = (ah * bv - av * bh) / (ah - av)
+    else:
+        b0 = (bh + bv) * 0.5
+    list_coef_hor[:, 1] = b0 * np.ones(num_hline)
+    list_coef_ver[:, 1] = -b0 * np.ones(num_vline)
+    pos_hor = np.argmax(np.abs(np.diff(np.sign(list_coef_hor[:, 0])))) + 1
+    pos_ver = np.argmax(np.abs(np.diff(np.sign(list_coef_ver[:, 0])))) + 1
+    num_use = min(3, num_hline // 2 - 1, num_vline // 2 - 1)
+    (posh1, posh2) = (
+        max(0, pos_hor - num_use), min(num_hline, pos_hor + num_use + 1))
+    (posv1, posv2) = (
+        max(0, pos_ver - num_use), min(num_vline, pos_ver + num_use + 1))
+    dist_hor = np.mean(np.abs(np.diff(list_coef_hor[posh1: posh2, 2])))
+    dist_ver = np.mean(np.abs(np.diff(list_coef_ver[posv1: posv2, 2])))
+    if dist_hor > dist_ver:
+        list_coef_ver[:, 2] = list_coef_ver[:, 2] * dist_hor / dist_ver
+        list_coef_ver[:, 0] = list_coef_ver[:, 0] * dist_hor / dist_ver
+    else:
+        list_coef_hor[:, 2] = list_coef_hor[:, 2] * dist_ver / dist_hor
+        list_coef_hor[:, 0] = list_coef_hor[:, 0] * dist_ver / dist_hor
+    return list_coef_hor, list_coef_ver, xcenter, ycenter
+
+
+def _find_cross_point_between_parabolas(para_coef_hor, para_coef_ver):
+    """
+    Find a cross point between two parabolas.
+
+    Parameters
+    ----------
+    para_coef_hor : array_like
+        Coefficients of a horizontal parabola.
+    para_coef_ver : array_like
+        Coefficients of a vertical parabola.
+
+    Returns
+    -------
+    y, x : floats
+        Coordinate of the cross point.
+    """
+    a1, b1, c1 = para_coef_hor[0:3]
+    a2, b2, c2 = para_coef_ver[0:3]
+    xvals = np.float32(np.real(
+        np.roots([a1 ** 2 * a2, 2 * a1 * a2 * b1,
+                  a2 * b1 ** 2 + a1 * b2 + 2 * a1 * a2 * c1,
+                  -1 + b1 * b2 + 2 * a2 * b1 * c1,
+                  b2 * c1 + a2 * c1 ** 2 + c2])))
+    if len(xvals) == 0:
+        raise ValueError("Can't find a cross point between two parabolas")
+    if len(xvals) > 1:
+        x = xvals[np.argmin(np.abs(xvals - c2))]
+    else:
+        x = xvals[0]
+    y = a1 * x ** 2 + b1 * x + c1
+    return y, x
+
+
+def regenerate_grid_points_parabola(list_hor_lines, list_ver_lines,
+                                    perspective=False):
+    """
+    Regenerating grid points by finding cross points between horizontal lines
+    and vertical lines using their parabola coefficients.
+
+    Parameters
+    ----------
+    list_hor_lines : list of 2D-arrays
+        List of the (y,x)-coordinates of points on each horizontal line.
+    list_ver_lines : list of 2D-arrays
+        List of the (y,x)-coordinates of points on each vertical line.
+    perspective : bool, optional
+        Apply perspective correction if True.
+
+    Returns
+    -------
+    new_hor_lines : list of 2D-arrays
+        List of the updated (y,x)-coordinates of points on each horizontal
+        line.
+    new_ver_lines : list of 2D-arrays
+        List of the updated (y,x)-coordinates of points on each vertical line.
+    """
+    if perspective is True:
+        results = generate_non_perspective_parabola_coef(list_hor_lines,
+                                                         list_ver_lines)
+        list_coef_hor, list_coef_ver, xcenter, ycenter = results
+    else:
+        xcenter, ycenter = find_cod_bailey(list_hor_lines, list_ver_lines)
+        list_coef_hor = _para_fit_hor(list_hor_lines, xcenter, ycenter)[0]
+        list_coef_ver = _para_fit_ver(list_ver_lines, xcenter, ycenter)[0]
+    num_hline, num_vline = len(list_coef_hor), len(list_coef_ver)
+    new_hor_lines = np.zeros((num_hline, num_vline, 2), dtype=np.float32)
+    new_ver_lines = np.zeros((num_vline, num_hline, 2), dtype=np.float32)
+    for i in range(num_hline):
+        for j in range(num_vline):
+            y, x = _find_cross_point_between_parabolas(list_coef_hor[i],
+                                                       list_coef_ver[j])
+            new_hor_lines[i, j] = np.asarray([y + ycenter, x + xcenter])
+            new_ver_lines[j, i] = np.asarray([y + ycenter, x + xcenter])
+    return list_hor_lines, list_ver_lines
+
+
+def generate_linear_coef(list_hor_lines, list_ver_lines, xcenter=0.0,
+                         ycenter=0.0):
+    """
+    Get linear coefficients of horizontal and vertical lines from linear fit.
+
+    Parameters
+    ----------
+    list_hor_lines : list of 2D-arrays
+        List of the (y,x)-coordinates of points on each horizontal line.
+    list_ver_lines : list of 2D-arrays
+        List of the (y,x)-coordinates of points on each vertical line.
+    xcenter : float
+        X-origin of the coordinate system.
+    ycenter : float
+        Y-origin of the coordinate system.
+
+    Returns
+    -------
+    list_coef_hor : list of 1D-arrays
+        List of the linear coefficients for horizontal lines.
+    list_coef_ver : list of 1D-arrays
+        List of the linear coefficients for vertical lines.
+    """
+    num_hline, num_vline = len(list_hor_lines), len(list_ver_lines)
+    list_coef_hor = np.zeros((num_hline, 2), dtype=np.float32)
+    list_coef_ver = np.zeros((num_vline, 2), dtype=np.float32)
+    for i in range(num_hline):
+        list_coef_hor[i] = np.polyfit(list_hor_lines[i][:, 1] - xcenter,
+                                      list_hor_lines[i][:, 0] - ycenter, 1)
+    for i in range(num_vline):
+        list_coef_ver[i] = np.polyfit(list_ver_lines[i][:, 0] - ycenter,
+                                      list_ver_lines[i][:, 1] - xcenter, 1)
+    return list_coef_hor, list_coef_ver
+
+
+def _find_cross_point_between_lines(line_coef_hor, line_coef_ver):
+    """
+    Find a cross point between two lines.
+
+    Parameters
+    ----------
+    line_coef_hor : array_like
+        Coefficients of a horizontal line.
+    line_coef_ver : array_like
+        Coefficients of a vertical line.
+
+    Returns
+    -------
+    y, x : floats
+        Coordinate of the cross point.
+    """
+    a1, b1 = line_coef_hor
+    a2, b2 = line_coef_ver
+    y = (a1 * b2 + b1) / (1.0 - a1 * a2)
+    x = a2 * y + b2
+    return y, x
+
+
+def _func_opt_pers(d0, c0, indexc0, *list_inter):
+    """
+    Function for finding the optimum undistorted distance for
+    perspective-distortion correction.
+    """
+    return np.sum(
+        np.asarray([(np.sign(c) * (i - indexc0) * d0 + c0 - c) ** 2
+                    for i, c in enumerate(list_inter)]))
+
+
+def _optimize_intercept_perspective(dist_hv, pos_hv, list_inter):
+    """
+    Find the optimum undistorted distance for perspective-distortion
+    correction.
+    """
+    list_arg = [list_inter[pos_hv], pos_hv]
+    list_arg.extend(list_inter)
+    minimum = optimize.minimize(_func_opt_pers, dist_hv, args=tuple(list_arg))
+    return minimum.x[0]
+
+
+def _calc_undistor_intercept_perspective(list_hor_lines, list_ver_lines,
+                                         equal_dist=True, expand=False,
+                                         optimizing=False):
+    """
+    Calculate the intercepts of undistorted lines from perspective distortion.
+
+    Parameters
+    ----------
+    list_hor_lines : list of 2D-arrays
+        List of the (y,x)-coordinates of points on each horizontal line.
+    list_ver_lines : list of 2D-arrays
+        List of the (y,x)-coordinates of points on each vertical line.
+    equal_dist : bool
+        Use the condition that lines are equidistant if True.
+    expand : bool
+        Expand the undistorted grid if True.
+    optimizing : bool
+        Apply optimization for finding line-distance if True.
+
+    Returns
+    -------
+    u_intercept_hor : array_like
+        1D array. List of undistorted intercepts of the horizontal lines.
+    u_intercept_ver : array_like
+        1D array. List of undistorted intercepts of the vertical lines.
+    """
+    list_coef_hor, list_coef_ver = generate_linear_coef(list_hor_lines,
+                                                        list_ver_lines)
+    num_hline, num_vline = len(list_hor_lines), len(list_ver_lines)
+    pos_hor, pos_ver = num_hline // 2, num_vline // 2
+    num_use = min(num_hline // 2 - 1, num_vline // 2 - 1)
+    (posh1, posh2) = (max(0, pos_hor - num_use),
+                      min(num_hline, pos_hor + num_use + 1))
+    (posv1, posv2) = (max(0, pos_ver - num_use),
+                      min(num_vline, pos_ver + num_use + 1))
+    if expand is True:
+        dist_hor = np.max(np.abs(np.diff(list_coef_hor[posh1: posh2, 1])))
+        dist_ver = np.max(np.abs(np.diff(list_coef_ver[posv1: posv2, 1])))
+    else:
+        dist_hor = np.mean(np.abs(np.diff(list_coef_hor[posh1: posh2, 1])))
+        dist_ver = np.mean(np.abs(np.diff(list_coef_ver[posv1: posv2, 1])))
+    if optimizing is True:
+        dist_hor = _optimize_intercept_perspective(dist_hor, pos_hor,
+                                                        list_coef_hor[:, 1])
+        dist_ver = _optimize_intercept_perspective(dist_ver, pos_ver,
+                                                        list_coef_ver[:, 1])
+    if equal_dist is True:
+        if expand is True:
+            dist = max(dist_hor, dist_ver)
+        else:
+            dist = (dist_hor + dist_ver) * 0.5
+        dist_hor = dist_ver = dist
+    u_intercept_hor = np.zeros(num_hline, dtype=np.float32)
+    u_intercept_ver = np.zeros(num_vline, dtype=np.float32)
+    for i in range(num_hline):
+        dist = (i - pos_hor) * dist_hor
+        u_intercept_hor[i] = np.sign(list_coef_hor[i, 1]) * dist + \
+                             list_coef_hor[pos_hor, 1]
+    for i in range(num_vline):
+        dist = (i - pos_ver) * dist_ver
+        u_intercept_ver[i] = np.sign(list_coef_ver[i, 1]) * dist + \
+                             list_coef_ver[pos_ver, 1]
+    return u_intercept_hor, u_intercept_ver
+
+
+def regenerate_grid_points_linear(list_hor_lines, list_ver_lines):
+    """
+    Regenerating grid points by finding cross points between horizontal lines
+    and vertical lines using their linear coefficients.
+
+    Parameters
+    ----------
+    list_hor_lines : list of 2D-arrays
+        List of the (y,x)-coordinates of points on each horizontal line.
+    list_ver_lines : list of 2D-arrays
+        List of the (y,x)-coordinates of points on each vertical line.
+
+    Returns
+    -------
+    new_hor_lines : list of 2D-arrays
+        List of the updated (y,x)-coordinates of points on each horizontal
+        line.
+    new_ver_lines : list of 2D-arrays
+        List of the updated (y,x)-coordinates of points on each vertical line.
+    """
+    num_hline, num_vline = len(list_hor_lines), len(list_ver_lines)
+    list_coef_hor, list_coef_ver = generate_linear_coef(list_hor_lines,
+                                                        list_ver_lines)
+    new_hor_lines = np.zeros((num_hline, num_vline, 2), dtype=np.float32)
+    new_ver_lines = np.zeros((num_vline, num_hline, 2), dtype=np.float32)
+    for i in range(num_hline):
+        for j in range(num_vline):
+            y, x = _find_cross_point_between_lines(list_coef_hor[i],
+                                                   list_coef_ver[j])
+            new_hor_lines[i, j] = np.asarray([y, x])
+            new_ver_lines[j, i] = np.asarray([y, x])
+    return new_hor_lines, new_ver_lines
+
+
+def generate_undistorted_perspective_lines(list_hor_lines, list_ver_lines,
+                                           equal_dist=True, expand=False,
+                                           optimizing=False):
+    """
+    Generate undistorted lines from perspective lines.
+
+    Parameters
+    ----------
+    list_hor_lines : list of 2D-arrays
+        List of the (y,x)-coordinates of points on each horizontal line.
+    list_ver_lines : list of 2D-arrays
+        List of the (y,x)-coordinates of points on each vertical line.
+    equal_dist : bool
+        Use the condition that lines are equidistant if True.
+    expand : bool
+        Expand the undistorted grid if True.
+    optimizing : bool
+        Apply optimization for finding line-distance if True.
+
+    Returns
+    -------
+    list_uhor_lines : list of 2D-arrays
+        List of the (y,x)-coordinates of points on undistorted horizontal
+        lines.
+    list_uver_lines : list of 2D-arrays
+        List of the (y,x)-coordinates of points on undistorted vertical lines.
+    """
+    num_hline, num_vline = len(list_hor_lines), len(list_ver_lines)
+    list_coef_hor, list_coef_ver = generate_linear_coef(list_hor_lines,
+                                                        list_ver_lines)
+    ah, bh = np.polyfit(list_coef_hor[:, 1], list_coef_hor[:, 0], 1)[0:2]
+    av, bv = np.polyfit(list_coef_ver[:, 1], -list_coef_ver[:, 0], 1)[0:2]
+    if np.abs(ah - av) >= 0.0001:
+        a0 = (ah * bv - av * bh) / (ah - av)
+    else:
+        a0 = (bh + bv) * 0.5
+    list_coef_uhor = np.copy(list_coef_hor)
+    list_coef_uver = np.copy(list_coef_ver)
+    list_coef_uhor[:, 0] = a0 * np.ones(num_hline)
+    list_coef_uver[:, 0] = -a0 * np.ones(num_vline)
+    results = _calc_undistor_intercept_perspective(list_hor_lines,
+                                                   list_ver_lines, equal_dist,
+                                                   expand, optimizing)
+    list_coef_uhor[:, 1] = results[0]
+    list_coef_uver[:, 1] = results[1]
+    list_uhor_lines = np.zeros((num_hline, num_vline, 2), dtype=np.float32)
+    list_uver_lines = np.zeros((num_vline, num_hline, 2), dtype=np.float32)
+    for i in range(num_hline):
+        for j in range(num_vline):
+            y, x = _find_cross_point_between_lines(list_coef_uhor[i],
+                                                   list_coef_uver[j])
+            list_uhor_lines[i, j] = np.asarray([y, x])
+            list_uver_lines[j, i] = np.asarray([y, x])
+    return list_uhor_lines, list_uver_lines
+
+
+def generate_source_target_perspective_points(list_hor_lines, list_ver_lines,
+                                              equal_dist=True, expand=False,
+                                              optimizing=False):
+    """
+    Generate source points (distorted) and target points (undistorted).
+
+    Parameters
+    ----------
+    list_hor_lines : list of 2D-arrays
+        List of the (y,x)-coordinates of points on each horizontal line.
+    list_ver_lines : list of 2D-arrays
+        List of the (y,x)-coordinates of points on each vertical line.
+    equal_dist : bool
+        Use the condition that lines are equidistant if True.
+    expand : bool
+        Expand the undistorted grid if True.
+    optimizing : bool
+        Apply optimization for finding line-distance if True.
+
+    Returns
+    -------
+    source_points : list of 1D-arrays
+        List of the (y,x)-coordinates of distorted points.
+    target_points : list of 1D-arrays
+        List of the (y,x)-coordinates of undistorted points.
+    """
+    list_hor_slines, list_ver_slines = regenerate_grid_points_linear(
+        list_hor_lines, list_ver_lines)
+    list_hor_tlines, _ = generate_undistorted_perspective_lines(
+        list_hor_slines, list_ver_slines, equal_dist, expand, optimizing)
+    source_points = []
+    target_points = []
+    for i in range(len(list_hor_lines)):
+        for j in range(len(list_ver_lines)):
+            source_points.append(list_hor_slines[i, j])
+            target_points.append(list_hor_tlines[i, j])
+    return np.asarray(source_points), np.asarray(target_points)
+
+
+def calc_perspective_coefficients(source_points, target_points,
+                                  mapping="backward"):
+    """
+    Calculate perspective coefficients of a matrix to map from source points
+    to target points (Ref. [1]). Note that the coordinate of a point are in
+    (y, x)-order. This is to be consistent with other functions in the module.
+
+    Parameters
+    ----------
+    source_points : array_like
+        List of the (y,x)-coordinates of distorted points.
+    target_points : array_like
+        List of the (y,x)-coordinates of undistorted points.
+    mapping : {'backward', 'forward'}
+        To select mapping direction.
+
+    Returns
+    -------
+    array_like
+        1D array of 8 coefficients.
+
+    References
+    ----------
+    [1].. https://doi.org/10.1016/S0262-8856(98)00183-8
+
+    """
+    if mapping == "forward":
+        s_points = np.fliplr(np.asarray(source_points))
+        t_points = np.fliplr(np.asarray(target_points))
+    else:
+        s_points = np.fliplr(np.asarray(target_points))
+        t_points = np.fliplr(np.asarray(source_points))
+    Amatrix = []
+    for p1, p2 in zip(s_points, t_points):
+        Amatrix.append(
+            [p1[0], p1[1], 1, 0, 0, 0, -p2[0] * p1[0], -p2[0] * p1[1]])
+        Amatrix.append(
+            [0, 0, 0, p1[0], p1[1], 1, -p2[1] * p1[0], -p2[1] * p1[1]])
+    Amatrix = np.asarray(Amatrix, dtype=np.float64)
+    Bmatrix = np.transpose(
+        np.ndarray.flatten(np.asarray(t_points, dtype=np.float64)))
+    list_coef = np.linalg.lstsq(Amatrix, Bmatrix, rcond=1e-64)[0]
+    return list_coef

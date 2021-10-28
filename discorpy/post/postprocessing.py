@@ -100,7 +100,10 @@ def unwarp_line_backward(list_lines, xcenter, ycenter, list_fact):
             list_arg.extend(list_fact)
             minimum = optimize.minimize(_func_diff, rd, args=tuple(list_arg))
             ru = minimum.x[0]
-            factor = ru / rd
+            if rd != 0.0:
+                factor = ru / rd
+            else:
+                factor = 0.0
             uline[j, 1] = xcenter + factor * xd
             uline[j, 0] = ycenter + factor * yd
         list_ulines.append(uline)
@@ -402,3 +405,83 @@ def check_distortion(list_data):
     if perc_err > 0.15:
         check = True
     return check
+
+
+def correct_perspective_line(list_lines, list_coef):
+    """
+    Apply perspective correction to lines.
+
+    Parameters
+    ----------
+    list_lines : list of 2D-arrays
+        List of the (y,x)-coordinates of points on each line.
+    list_coef : list of floats
+        Coefficients of the forward-mapping matrix.
+
+    Returns
+    -------
+    list_clines : list of 2D arrays
+        List of the corrected (y,x)-coordinates of points on each line.
+    """
+    if len(list_coef) != 8:
+        raise ValueError("!!! Eight coefficients are required !!!")
+    c1, c2, c3, c4, c5, c6, c7, c8 = list_coef
+    list_clines = []
+    for i, iline in enumerate(list_lines):
+        line = np.asarray(iline)
+        x = line[:, 1]
+        y = line[:, 0]
+        xn = (c1 * x + c2 * y + c3) / (c7 * x + c8 * y + 1.0)
+        yn = (c4 * x + c5 * y + c6) / (c7 * x + c8 * y + 1.0)
+        list_clines.append(np.asarray(list(zip(yn, xn))))
+    return list_clines
+
+
+def _generate_perspective_map(mat, list_coef):
+    """
+    Generate mapping indices between images.
+    """
+    c1, c2, c3, c4, c5, c6, c7, c8 = list_coef
+    (height, width) = mat.shape
+    xu_list = np.arange(width)
+    yu_list = np.arange(height)
+    xu_mat, yu_mat = np.meshgrid(xu_list, yu_list)
+    mat_tmp = (c7 * xu_mat + c8 * yu_mat + 1.0)
+    xd_mat = (c1 * xu_mat + c2 * yu_mat + c3) / mat_tmp
+    yd_mat = (c4 * xu_mat + c5 * yu_mat + c6) / mat_tmp
+    xd_mat = np.float32(np.clip(xd_mat, 0, width - 1))
+    yd_mat = np.float32(np.clip(yd_mat, 0, height - 1))
+    indices = np.reshape(yd_mat, (-1, 1)), np.reshape(xd_mat, (-1, 1))
+    return indices
+
+
+def correct_perspective_image(mat, list_coef, order=1, mode="reflect",
+                              map_index=None):
+    """
+
+    Parameters
+    ----------
+    mat : array_like
+        2D array. Image for correction.
+    list_coef : list of floats
+        Coefficients of the backward-mapping matrix.
+    order : int, optional.
+        The order of the spline interpolation.
+    mode : {'reflect', 'grid-mirror', 'constant', 'grid-constant', 'nearest',
+           'mirror', 'grid-wrap', 'wrap'}, optional
+        To determine how to handle image boundaries.
+    map_index : array_like
+        Indices for mapping. Generated if None is given.
+
+    Returns
+    -------
+    array_like
+        Corrected image.
+    """
+    if len(list_coef) != 8:
+        raise ValueError("!!! Eight coefficients are required !!!")
+    (height, width) = mat.shape
+    if map_index is None:
+        map_index = _generate_perspective_map(mat, list_coef)
+    mat_corr = map_coordinates(mat, map_index, order=order, mode=mode)
+    return mat_corr.reshape((height, width))

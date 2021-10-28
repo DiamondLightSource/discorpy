@@ -27,10 +27,12 @@
 
 """
 Module for I/O tasks:
+
 - Load data from an image file (tif, png, jpg) or a hdf file.
-- Save a 2D array as a tif/png/jpg image or 2D, 3D array to a hdf file.
-- Save a plot of data points as an image.
-- Save and load metadata to and from a text file.
+- Save a 2D array as a tif/png/jpg image or a 2D, 3D array to a hdf file.
+- Save a plot of data points to an image.
+- Save/load metadata to/from a text file.
+
 """
 
 import os
