@@ -117,3 +117,56 @@ class ProcessingMethods(unittest.TestCase):
         error4 = np.abs((list_bfact[1] - self.list_fact[1]) / self.list_fact[1])
         self.assertTrue(
             error1 < 0.1 and error2 < 0.2 and error3 < 0.1 and error4 < 0.2)
+
+    def test_find_cod_bailey(self):
+        x_cod, y_cod = proc.find_cod_bailey(self.list_hor_dlines,
+                                            self.list_ver_dlines)
+        self.assertTrue((np.abs(x_cod - self.x0) < 1.0) and
+                        (np.abs(y_cod - self.y0) < 1.0))
+
+    def test_regenerate_grid_points_parabola(self):
+        list_hline1, list_vline1 = proc.regenerate_grid_points_parabola(
+            self.list_hor_dlines, self.list_ver_dlines, perspective=True)
+        list_hline2, list_vline2 = proc.regenerate_grid_points_parabola(
+            self.list_hor_dlines, self.list_ver_dlines, perspective=False)
+        num_hpoint1 = np.sum(np.asarray([len(line) for line in list_hline1]))
+        num_vpoint1 = np.sum(np.asarray([len(line) for line in list_vline1]))
+        num_hpoint2 = np.sum(np.asarray([len(line) for line in list_hline2]))
+        num_vpoint2 = np.sum(np.asarray([len(line) for line in list_vline2]))
+        self.assertTrue(num_vpoint1 == num_vpoint2 and
+                        num_hpoint1 == num_hpoint2 and
+                        num_hpoint2 == num_vpoint1)
+
+    def test_regenerate_grid_points_linear(self):
+        list_hline, list_vline = proc.regenerate_grid_points_linear(
+            self.list_hor_dlines, self.list_ver_dlines)
+        num_hpoint = np.sum(np.asarray([len(line) for line in list_hline]))
+        num_vpoint = np.sum(np.asarray([len(line) for line in list_vline]))
+        self.assertTrue(num_vpoint == num_hpoint)
+
+    def test_generate_undistorted_perspective_lines(self):
+        uhor_lines = proc.generate_undistorted_perspective_lines(
+            self.list_hor_dlines, self.list_ver_dlines,
+            equal_dist=True, expand=False,
+            optimizing=False)[0]
+        num_hpoint1 = np.sum(np.asarray([len(line) for line in uhor_lines]))
+        uhor_lines = proc.generate_undistorted_perspective_lines(
+            self.list_hor_dlines, self.list_ver_dlines,
+            equal_dist=True, expand=False,
+            optimizing=True)[0]
+        num_hpoint2 = np.sum(np.asarray([len(line) for line in uhor_lines]))
+        uhor_lines = proc.generate_undistorted_perspective_lines(
+            self.list_hor_dlines, self.list_ver_dlines,
+            equal_dist=False, expand=True,
+            optimizing=False)[0]
+        num_hpoint3 = np.sum(np.asarray([len(line) for line in uhor_lines]))
+        self.assertTrue(num_hpoint1 == num_hpoint2 and
+                        num_hpoint2 == num_hpoint3)
+
+    def test_generate_source_target_perspective_points(self):
+        num_points = np.sum(
+            np.asarray([len(line) for line in self.list_hor_dlines]))
+        s_points, t_points = proc.generate_source_target_perspective_points(
+            self.list_hor_dlines, self.list_ver_dlines)
+        self.assertTrue(num_points == len(s_points) and
+                        num_points == len(t_points))

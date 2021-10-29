@@ -123,8 +123,10 @@ def find_cod_coarse(list_hor_lines, list_ver_lines):
     (list_coef_ver, list_ver_lines) = _para_fit_ver(list_ver_lines, 0.0, 0.0)
     pos_hor = np.argmax(np.abs(np.diff(np.sign(list_coef_hor[:, 0])))) + 1
     pos_ver = np.argmax(np.abs(np.diff(np.sign(list_coef_ver[:, 0])))) + 1
-    ycenter0 = (list_coef_hor[pos_hor - 1, 2] + list_coef_hor[pos_hor, 2]) * 0.5
-    xcenter0 = (list_coef_ver[pos_ver - 1, 2] + list_coef_ver[pos_ver, 2]) * 0.5
+    ycenter0 = (list_coef_hor[pos_hor - 1, 2] + list_coef_hor[
+        pos_hor, 2]) * 0.5
+    xcenter0 = (list_coef_ver[pos_ver - 1, 2] + list_coef_ver[
+        pos_ver, 2]) * 0.5
     slope_hor = (list_coef_hor[pos_hor - 1, 1] + list_coef_hor[
         pos_hor, 1]) * 0.5
     slope_ver = (list_coef_ver[pos_ver - 1, 1] + list_coef_ver[
@@ -578,7 +580,6 @@ def calc_coef_backward_from_forward(list_hor_lines, list_ver_lines, xcenter,
     return list_ffact, list_bfact
 
 
-
 def find_cod_bailey(list_hor_lines, list_ver_lines):
     """
     Find the center of distortion (COD) using the Bailey's approach (Ref. [1]).
@@ -611,7 +612,7 @@ def find_cod_bailey(list_hor_lines, list_ver_lines):
     return xcenter, ycenter
 
 
-def generate_non_perspective_parabola_coef(list_hor_lines, list_ver_lines):
+def _generate_non_perspective_parabola_coef(list_hor_lines, list_ver_lines):
     """
     Correct the deviation of fitted parabola coefficients of each line caused
     by perspective distortion. Note that the resulting coefficients are
@@ -722,8 +723,8 @@ def regenerate_grid_points_parabola(list_hor_lines, list_ver_lines,
         List of the updated (y,x)-coordinates of points on each vertical line.
     """
     if perspective is True:
-        results = generate_non_perspective_parabola_coef(list_hor_lines,
-                                                         list_ver_lines)
+        results = _generate_non_perspective_parabola_coef(list_hor_lines,
+                                                          list_ver_lines)
         list_coef_hor, list_coef_ver, xcenter, ycenter = results
     else:
         xcenter, ycenter = find_cod_bailey(list_hor_lines, list_ver_lines)
@@ -741,8 +742,8 @@ def regenerate_grid_points_parabola(list_hor_lines, list_ver_lines,
     return list_hor_lines, list_ver_lines
 
 
-def generate_linear_coef(list_hor_lines, list_ver_lines, xcenter=0.0,
-                         ycenter=0.0):
+def _generate_linear_coef(list_hor_lines, list_ver_lines, xcenter=0.0,
+                          ycenter=0.0):
     """
     Get linear coefficients of horizontal and vertical lines from linear fit.
 
@@ -846,8 +847,8 @@ def _calc_undistor_intercept_perspective(list_hor_lines, list_ver_lines,
     u_intercept_ver : array_like
         1D array. List of undistorted intercepts of the vertical lines.
     """
-    list_coef_hor, list_coef_ver = generate_linear_coef(list_hor_lines,
-                                                        list_ver_lines)
+    list_coef_hor, list_coef_ver = _generate_linear_coef(list_hor_lines,
+                                                         list_ver_lines)
     num_hline, num_vline = len(list_hor_lines), len(list_ver_lines)
     pos_hor, pos_ver = num_hline // 2, num_vline // 2
     num_use = min(num_hline // 2 - 1, num_vline // 2 - 1)
@@ -863,9 +864,9 @@ def _calc_undistor_intercept_perspective(list_hor_lines, list_ver_lines,
         dist_ver = np.mean(np.abs(np.diff(list_coef_ver[posv1: posv2, 1])))
     if optimizing is True:
         dist_hor = _optimize_intercept_perspective(dist_hor, pos_hor,
-                                                        list_coef_hor[:, 1])
+                                                   list_coef_hor[:, 1])
         dist_ver = _optimize_intercept_perspective(dist_ver, pos_ver,
-                                                        list_coef_ver[:, 1])
+                                                   list_coef_ver[:, 1])
     if equal_dist is True:
         if expand is True:
             dist = max(dist_hor, dist_ver)
@@ -906,8 +907,8 @@ def regenerate_grid_points_linear(list_hor_lines, list_ver_lines):
         List of the updated (y,x)-coordinates of points on each vertical line.
     """
     num_hline, num_vline = len(list_hor_lines), len(list_ver_lines)
-    list_coef_hor, list_coef_ver = generate_linear_coef(list_hor_lines,
-                                                        list_ver_lines)
+    list_coef_hor, list_coef_ver = _generate_linear_coef(list_hor_lines,
+                                                         list_ver_lines)
     new_hor_lines = np.zeros((num_hline, num_vline, 2), dtype=np.float32)
     new_ver_lines = np.zeros((num_vline, num_hline, 2), dtype=np.float32)
     for i in range(num_hline):
@@ -947,8 +948,8 @@ def generate_undistorted_perspective_lines(list_hor_lines, list_ver_lines,
         List of the (y,x)-coordinates of points on undistorted vertical lines.
     """
     num_hline, num_vline = len(list_hor_lines), len(list_ver_lines)
-    list_coef_hor, list_coef_ver = generate_linear_coef(list_hor_lines,
-                                                        list_ver_lines)
+    list_coef_hor, list_coef_ver = _generate_linear_coef(list_hor_lines,
+                                                         list_ver_lines)
     ah, bh = np.polyfit(list_coef_hor[:, 1], list_coef_hor[:, 0], 1)[0:2]
     av, bv = np.polyfit(list_coef_ver[:, 1], -list_coef_ver[:, 0], 1)[0:2]
     if np.abs(ah - av) >= 0.0001:
