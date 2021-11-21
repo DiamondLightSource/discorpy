@@ -1115,7 +1115,7 @@ def generate_4_source_target_perspective_points(points, input_order="yx",
     target_points : list of 1D-arrays
         List of the (y,x)-coordinates of undistorted points.
     """
-    points = np.asarray(points)
+    points = np.asarray(points, dtype=np.float32)
     if input_order == "xy":
         points = np.fliplr(points)
     if len(points) != 4:
