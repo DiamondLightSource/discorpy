@@ -169,7 +169,8 @@ class ProcessingMethods(unittest.TestCase):
                      [40.77223206, -0.74988769], [45.02819462, 46.6898311]]
         s_points, t_points = proc.generate_4_source_target_perspective_points(
             points, scale="mean", equal_dist=False)
-        num2 = np.mean(np.abs(t_points - np.asarray(t_points0)))
+        num2 = np.mean(np.abs(
+            np.float32(t_points) - np.asarray(t_points0, dtype=np.float32)))
         print("Error {}".format(num2))
         self.assertTrue(num2 <= 1.0e-6)
 
