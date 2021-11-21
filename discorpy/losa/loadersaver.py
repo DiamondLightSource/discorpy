@@ -376,6 +376,10 @@ def save_image(file_path, mat, overwrite=True):
     file_base, file_ext = os.path.splitext(file_path)
     if not ((file_ext == ".tif") or (file_ext == ".tiff")):
         mat = np.uint8(255 * (mat - np.min(mat)) / (np.max(mat) - np.min(mat)))
+    else:
+        if len(mat.shape) > 2:
+            axis_m = np.argmin(mat.shape)
+            mat = np.mean(mat, axis=axis_m)
     _create_folder(file_path)
     if not overwrite:
         file_path = _create_file_name(file_path)
@@ -646,3 +650,60 @@ def load_metadata_txt(file_path):
     ycenter = list_data[1]
     list_fact = list_data[2:]
     return xcenter, ycenter, list_fact
+
+
+def save_plot_points(file_path, list_points, height, width, overwrite=True,
+                    dpi=100, marker="o", color="blue"):
+    """
+    Save the plot of dot-centroids to an image. Useful to check if the dots
+    are arranged properly where dots on the same line having the same color.
+
+    Parameters
+    ----------
+    file_path : str
+        Output file path.
+    list_points : list of 1D-array
+        List of the (y-x)-coordinates of points.
+    height : int
+        Height of the image.
+    width : int
+        Width of the image.
+    overwrite : bool, optional
+        Overwrite the existing file if True.
+    dpi : int, optional
+        The resolution in dots per inch.
+    marker : str
+        Plot marker. Full list is at:
+        https://matplotlib.org/stable/api/markers_api.html
+    color : str
+        Marker color. Full list is at:
+        https://matplotlib.org/stable/tutorials/colors/colors.html
+
+    Returns
+    -------
+    str
+        Updated file path.
+    """
+    if "\\" in file_path:
+        raise ValueError(
+            "Please use a file path following the Unix convention")
+    _create_folder(file_path)
+    if not overwrite:
+        file_path = _create_file_name(file_path)
+    fig = plt.figure(frameon=False)
+    fig.set_size_inches(width / dpi, height / dpi)
+    ax = plt.Axes(fig, [0., 0., 1.0, 1.0])
+    ax.set_axis_off()
+    fig.add_axes(ax)
+    plt.axis((0, width, 0, height))
+    m_size = 0.5 * min(height / dpi, width / dpi)
+    for point in list_points:
+        plt.plot(point[1], height - point[0], marker, color=color,
+                 markersize=m_size)
+    try:
+        plt.savefig(file_path, dpi=dpi)
+    except IOError:
+        print("Couldn't write to file {}".format(file_path))
+        raise
+    plt.close()
+    return file_path

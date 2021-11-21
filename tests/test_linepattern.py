@@ -28,7 +28,7 @@ import unittest
 import numpy as np
 import scipy.ndimage as ndi
 import discorpy.prep.linepattern as lipa
-import matplotlib.pyplot as plt
+
 
 class LinepatternMethods(unittest.TestCase):
 
@@ -45,6 +45,7 @@ class LinepatternMethods(unittest.TestCase):
             mat[step + pad - 2:hei - step - pad + 3, i - 2:i + 3] = 1.0
             num_vline = num_vline + 1
         mat_lines = ndi.gaussian_filter(1.0 - 0.2 * mat, 1)
+        np.random.seed(1)
         self.mat = mat_lines + 0.05 * np.random.rand(hei, wid)
         self.dist = step
         self.num_hline, self.num_vline = num_hline, num_vline
@@ -86,7 +87,6 @@ class LinepatternMethods(unittest.TestCase):
                                                      norm=False,
                                                      subpixel=False))
         self.assertTrue(num_line == self.num_hline - 1)
-
 
     def test_get_cross_points_ver_lines(self):
         slope_hor, dist_hor = lipa.calc_slope_distance_hor_lines(self.mat,

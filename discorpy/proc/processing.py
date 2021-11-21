@@ -30,6 +30,9 @@ Module of processing methods:
 - Calculate undistorted intercepts of gridlines.
 - Calculate distortion coefficients of the backward model, the forward model,
 and the backward-from-forward model.
+- Correct perspective distortion affecting curve lines.
+- Generate non-perspective points or lines from perspective points or lines.
+- Calculate perspective coefficients.
 """
 import numpy as np
 from scipy import optimize
@@ -51,7 +54,7 @@ def _para_fit_hor(list_lines, xcenter, ycenter):
     Returns
     -------
     list_coef : list of 1D arrays
-        List of the coefficients of each parabola.
+        List of the coefficients of each parabola (y=ax**2+bx+c).
     list_slines : list of 2D arrays
         List of the shifted (y,x)-coordinates of dot-centroids on each line.
     """
@@ -84,7 +87,7 @@ def _para_fit_ver(list_lines, xcenter, ycenter):
     Returns
     -------
     list_coef : list of 1D arrays
-        List of the coefficients of each parabola.
+        List of the coefficients of each parabola (x=ay**2+by+c).
     list_slines : list of 2D arrays
         List of the shifted (y,x)-coordinates of dot-centroids on each line.
     """
@@ -580,6 +583,68 @@ def calc_coef_backward_from_forward(list_hor_lines, list_ver_lines, xcenter,
     return list_ffact, list_bfact
 
 
+def transform_coef_backward_and_forward(list_fact, mapping="backward",
+                                        ref_points=None):
+    """
+    Transform polynomial coefficients of a radial distortion model between
+    forward mapping and backward mapping.
+
+    Parameters
+    ----------
+    list_fact : list of floats
+        Polynomial coefficients of the radial distortion model.
+    mapping : {'backward', 'forward'}
+        Transformation direction.
+    ref_points : list of 1D-arrays, optional
+        List of the (y,x)-coordinates of points used for the transformation.
+        Generated if None given.
+
+    Returns
+    -------
+    list of floats
+        Polynomial coefficients of the reversed model.
+    """
+    if ref_points is None:
+        ref_points = [[i, j] for i in range(0, 2000, 50) for j in
+                      range(0, 2000, 50)]
+    else:
+        num_points = len(ref_points)
+        if num_points < len(list_fact):
+            raise ValueError("Number of reference-points must be equal or "
+                             "larger than the number of coefficients!!!")
+    Amatrix = []
+    Bmatrix = []
+    list_expo = np.arange(len(list_fact), dtype=np.int16)
+    if mapping == "forward":
+        for point in ref_points:
+            xu = np.float64(point[1])
+            yu = np.float64(point[0])
+            ru = np.sqrt(xu * xu + yu * yu)
+            factor = np.float64(
+                np.sum(list_fact * np.power(ru, list_expo)))
+            if factor != 0.0:
+                Fb = 1 / factor
+                rd = factor * ru
+                Amatrix.append(np.power(rd, list_expo))
+                Bmatrix.append(Fb)
+    else:
+        for point in ref_points:
+            xd = np.float64(point[1])
+            yd = np.float64(point[0])
+            rd = np.sqrt(xd * xd + yd * yd)
+            factor = np.float64(
+                np.sum(list_fact * np.power(rd, list_expo)))
+            if factor != 0.0:
+                Fb = 1 / factor
+                ru = factor * rd
+                Amatrix.append(np.power(ru, list_expo))
+                Bmatrix.append(Fb)
+    Amatrix = np.asarray(Amatrix, dtype=np.float64)
+    Bmatrix = np.asarray(Bmatrix, dtype=np.float64)
+    trans_fact = np.linalg.lstsq(Amatrix, Bmatrix, rcond=1e-64)[0]
+    return trans_fact
+
+
 def find_cod_bailey(list_hor_lines, list_ver_lines):
     """
     Find the center of distortion (COD) using the Bailey's approach (Ref. [1]).
@@ -673,13 +738,13 @@ def _find_cross_point_between_parabolas(para_coef_hor, para_coef_ver):
     Parameters
     ----------
     para_coef_hor : array_like
-        Coefficients of a horizontal parabola.
+        Coefficients of a horizontal parabola (y=ax**2+bx+c).
     para_coef_ver : array_like
-        Coefficients of a vertical parabola.
+        Coefficients of a vertical parabola (x=ay**2+by+c).
 
     Returns
     -------
-    y, x : floats
+    x, y : floats
         Coordinate of the cross point.
     """
     a1, b1, c1 = para_coef_hor[0:3]
@@ -696,11 +761,11 @@ def _find_cross_point_between_parabolas(para_coef_hor, para_coef_ver):
     else:
         x = xvals[0]
     y = a1 * x ** 2 + b1 * x + c1
-    return y, x
+    return x, y
 
 
 def regenerate_grid_points_parabola(list_hor_lines, list_ver_lines,
-                                    perspective=False):
+                                    perspective=True):
     """
     Regenerating grid points by finding cross points between horizontal lines
     and vertical lines using their parabola coefficients.
@@ -735,11 +800,11 @@ def regenerate_grid_points_parabola(list_hor_lines, list_ver_lines,
     new_ver_lines = np.zeros((num_vline, num_hline, 2), dtype=np.float32)
     for i in range(num_hline):
         for j in range(num_vline):
-            y, x = _find_cross_point_between_parabolas(list_coef_hor[i],
+            x, y = _find_cross_point_between_parabolas(list_coef_hor[i],
                                                        list_coef_ver[j])
             new_hor_lines[i, j] = np.asarray([y + ycenter, x + xcenter])
             new_ver_lines[j, i] = np.asarray([y + ycenter, x + xcenter])
-    return list_hor_lines, list_ver_lines
+    return new_hor_lines, new_ver_lines
 
 
 def _generate_linear_coef(list_hor_lines, list_ver_lines, xcenter=0.0,
@@ -784,20 +849,20 @@ def _find_cross_point_between_lines(line_coef_hor, line_coef_ver):
     Parameters
     ----------
     line_coef_hor : array_like
-        Coefficients of a horizontal line.
+        Coefficients of a horizontal line (y=ax+b).
     line_coef_ver : array_like
-        Coefficients of a vertical line.
+        Coefficients of a vertical line (x=ay+b).
 
     Returns
     -------
-    y, x : floats
+    x, y : floats
         Coordinate of the cross point.
     """
     a1, b1 = line_coef_hor
     a2, b2 = line_coef_ver
     y = (a1 * b2 + b1) / (1.0 - a1 * a2)
     x = a2 * y + b2
-    return y, x
+    return x, y
 
 
 def _func_opt_pers(d0, c0, indexc0, *list_inter):
@@ -806,7 +871,7 @@ def _func_opt_pers(d0, c0, indexc0, *list_inter):
     perspective-distortion correction.
     """
     return np.sum(
-        np.asarray([(np.sign(c) * (i - indexc0) * d0 + c0 - c) ** 2
+        np.asarray([((i - indexc0) * d0 + c0 - c) ** 2
                     for i, c in enumerate(list_inter)]))
 
 
@@ -822,8 +887,8 @@ def _optimize_intercept_perspective(dist_hv, pos_hv, list_inter):
 
 
 def _calc_undistor_intercept_perspective(list_hor_lines, list_ver_lines,
-                                         equal_dist=True, expand=False,
-                                         optimizing=False):
+                                         equal_dist=True, scale="mean",
+                                         optimizing=True):
     """
     Calculate the intercepts of undistorted lines from perspective distortion.
 
@@ -835,8 +900,8 @@ def _calc_undistor_intercept_perspective(list_hor_lines, list_ver_lines,
         List of the (y,x)-coordinates of points on each vertical line.
     equal_dist : bool
         Use the condition that lines are equidistant if True.
-    expand : bool
-        Expand the undistorted grid if True.
+    scale : {'mean', 'median', 'min', 'max'}
+        Scale option for the undistorted grid.
     optimizing : bool
         Apply optimization for finding line-distance if True.
 
@@ -856,9 +921,15 @@ def _calc_undistor_intercept_perspective(list_hor_lines, list_ver_lines,
                       min(num_hline, pos_hor + num_use + 1))
     (posv1, posv2) = (max(0, pos_ver - num_use),
                       min(num_vline, pos_ver + num_use + 1))
-    if expand is True:
+    if scale == "max":
         dist_hor = np.max(np.abs(np.diff(list_coef_hor[posh1: posh2, 1])))
         dist_ver = np.max(np.abs(np.diff(list_coef_ver[posv1: posv2, 1])))
+    elif scale == "min":
+        dist_hor = np.min(np.abs(np.diff(list_coef_hor[posh1: posh2, 1])))
+        dist_ver = np.min(np.abs(np.diff(list_coef_ver[posv1: posv2, 1])))
+    elif scale == "median":
+        dist_hor = np.median(np.abs(np.diff(list_coef_hor[posh1: posh2, 1])))
+        dist_ver = np.median(np.abs(np.diff(list_coef_ver[posv1: posv2, 1])))
     else:
         dist_hor = np.mean(np.abs(np.diff(list_coef_hor[posh1: posh2, 1])))
         dist_ver = np.mean(np.abs(np.diff(list_coef_ver[posv1: posv2, 1])))
@@ -868,8 +939,10 @@ def _calc_undistor_intercept_perspective(list_hor_lines, list_ver_lines,
         dist_ver = _optimize_intercept_perspective(dist_ver, pos_ver,
                                                    list_coef_ver[:, 1])
     if equal_dist is True:
-        if expand is True:
+        if scale == "max":
             dist = max(dist_hor, dist_ver)
+        elif scale == "min":
+            dist = min(dist_hor, dist_ver)
         else:
             dist = (dist_hor + dist_ver) * 0.5
         dist_hor = dist_ver = dist
@@ -877,12 +950,10 @@ def _calc_undistor_intercept_perspective(list_hor_lines, list_ver_lines,
     u_intercept_ver = np.zeros(num_vline, dtype=np.float32)
     for i in range(num_hline):
         dist = (i - pos_hor) * dist_hor
-        u_intercept_hor[i] = np.sign(list_coef_hor[i, 1]) * dist + \
-                             list_coef_hor[pos_hor, 1]
+        u_intercept_hor[i] = dist + list_coef_hor[pos_hor, 1]
     for i in range(num_vline):
         dist = (i - pos_ver) * dist_ver
-        u_intercept_ver[i] = np.sign(list_coef_ver[i, 1]) * dist + \
-                             list_coef_ver[pos_ver, 1]
+        u_intercept_ver[i] = dist + list_coef_ver[pos_ver, 1]
     return u_intercept_hor, u_intercept_ver
 
 
@@ -913,7 +984,7 @@ def regenerate_grid_points_linear(list_hor_lines, list_ver_lines):
     new_ver_lines = np.zeros((num_vline, num_hline, 2), dtype=np.float32)
     for i in range(num_hline):
         for j in range(num_vline):
-            y, x = _find_cross_point_between_lines(list_coef_hor[i],
+            x, y = _find_cross_point_between_lines(list_coef_hor[i],
                                                    list_coef_ver[j])
             new_hor_lines[i, j] = np.asarray([y, x])
             new_ver_lines[j, i] = np.asarray([y, x])
@@ -921,8 +992,8 @@ def regenerate_grid_points_linear(list_hor_lines, list_ver_lines):
 
 
 def generate_undistorted_perspective_lines(list_hor_lines, list_ver_lines,
-                                           equal_dist=True, expand=False,
-                                           optimizing=False):
+                                           equal_dist=True, scale="mean",
+                                           optimizing=True):
     """
     Generate undistorted lines from perspective lines.
 
@@ -934,8 +1005,8 @@ def generate_undistorted_perspective_lines(list_hor_lines, list_ver_lines,
         List of the (y,x)-coordinates of points on each vertical line.
     equal_dist : bool
         Use the condition that lines are equidistant if True.
-    expand : bool
-        Expand the undistorted grid if True.
+    scale : {'mean', 'median', 'min', 'max'}
+        Scale option for the undistorted grid.
     optimizing : bool
         Apply optimization for finding line-distance if True.
 
@@ -962,14 +1033,14 @@ def generate_undistorted_perspective_lines(list_hor_lines, list_ver_lines,
     list_coef_uver[:, 0] = -a0 * np.ones(num_vline)
     results = _calc_undistor_intercept_perspective(list_hor_lines,
                                                    list_ver_lines, equal_dist,
-                                                   expand, optimizing)
+                                                   scale, optimizing)
     list_coef_uhor[:, 1] = results[0]
     list_coef_uver[:, 1] = results[1]
     list_uhor_lines = np.zeros((num_hline, num_vline, 2), dtype=np.float32)
     list_uver_lines = np.zeros((num_vline, num_hline, 2), dtype=np.float32)
     for i in range(num_hline):
         for j in range(num_vline):
-            y, x = _find_cross_point_between_lines(list_coef_uhor[i],
+            x, y = _find_cross_point_between_lines(list_coef_uhor[i],
                                                    list_coef_uver[j])
             list_uhor_lines[i, j] = np.asarray([y, x])
             list_uver_lines[j, i] = np.asarray([y, x])
@@ -977,8 +1048,8 @@ def generate_undistorted_perspective_lines(list_hor_lines, list_ver_lines,
 
 
 def generate_source_target_perspective_points(list_hor_lines, list_ver_lines,
-                                              equal_dist=True, expand=False,
-                                              optimizing=False):
+                                              equal_dist=True, scale="mean",
+                                              optimizing=True):
     """
     Generate source points (distorted) and target points (undistorted).
 
@@ -990,8 +1061,8 @@ def generate_source_target_perspective_points(list_hor_lines, list_ver_lines,
         List of the (y,x)-coordinates of points on each vertical line.
     equal_dist : bool
         Use the condition that lines are equidistant if True.
-    expand : bool
-        Expand the undistorted grid if True.
+    scale : {'mean', 'median', 'min', 'max'}
+        Scale option for the undistorted grid.
     optimizing : bool
         Apply optimization for finding line-distance if True.
 
@@ -1005,14 +1076,106 @@ def generate_source_target_perspective_points(list_hor_lines, list_ver_lines,
     list_hor_slines, list_ver_slines = regenerate_grid_points_linear(
         list_hor_lines, list_ver_lines)
     list_hor_tlines, _ = generate_undistorted_perspective_lines(
-        list_hor_slines, list_ver_slines, equal_dist, expand, optimizing)
+        list_hor_slines, list_ver_slines, equal_dist, scale, optimizing)
     source_points = []
     target_points = []
-    for i in range(len(list_hor_lines)):
-        for j in range(len(list_ver_lines)):
-            source_points.append(list_hor_slines[i, j])
-            target_points.append(list_hor_tlines[i, j])
+    for i in range(len(list_hor_slines)):
+        for j in range(len(list_ver_slines)):
+            p1 = list_hor_slines[i, j]
+            p2 = list_hor_tlines[i, j]
+            if p1[0] > 0 and p1[1] > 0 and p2[0] > 0 and p2[1] > 0:
+                source_points.append(list_hor_slines[i, j])
+                target_points.append(list_hor_tlines[i, j])
     return np.asarray(source_points), np.asarray(target_points)
+
+
+def generate_4_source_target_perspective_points(points, input_order="yx",
+                                                equal_dist=False,
+                                                scale="mean"):
+    """
+    Generate 4 rectangular points corresponding to 4 perspective-distorted
+    points.
+
+    Parameters
+    ----------
+    points : list of 1D-arrays
+        List of the coordinates of 4 perspective-distorted points.
+    input_order : {'yx', 'xy'}
+        Order of the coordinates of input-points.
+    equal_dist : bool
+        Use the condition that the rectangular making of 4-points is square if
+        True.
+    scale : {'mean', 'min', 'max', float}
+        Scale option for the undistorted points.
+
+    Returns
+    -------
+    source_points : list of 1D-arrays
+        List of the (y,x)-coordinates of distorted points.
+    target_points : list of 1D-arrays
+        List of the (y,x)-coordinates of undistorted points.
+    """
+    points = np.asarray(points)
+    if input_order == "xy":
+        points = np.fliplr(points)
+    if len(points) != 4:
+        raise ValueError("Input must be a list of 4 points!!!")
+    list_sort = points[points[:, 0].argsort()]
+    p12 = list_sort[0:2]
+    p12 = p12[p12[:, 1].argsort()]
+    ((y1, x1), (y2, x2)) = p12
+    p34 = list_sort[-2:]
+    p34 = p34[p34[:, 1].argsort()]
+    ((y3, x3), (y4, x4)) = p34
+    source_points = np.asarray([[y1, x1], [y2, x2], [y3, x3], [y4, x4]])
+    a12 = (y1 - y2) / (x1 - x2)
+    b12 = y1 - a12 * x1
+    a34 = (y3 - y4) / (x3 - x4)
+    b34 = y3 - a34 * x3
+    ah, bh = (a12 + a34) * 0.5, (b12 + b34) * 0.5
+    a13 = (x1 - x3) / (y1 - y3)
+    b13 = x1 - a13 * y1
+    a24 = (x2 - x4) / (y2 - y4)
+    b24 = x2 - a24 * y2
+    av, bv = (a13 + a24) * 0.5, (b13 + b24) * 0.5
+    a0 = np.sign(ah) * (np.abs(ah) + np.abs(av)) * 0.5
+    dist12 = np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+    dist13 = np.sqrt((x1 - x3) ** 2 + (y1 - y3) ** 2)
+    dist24 = np.sqrt((x2 - x4) ** 2 + (y2 - y4) ** 2)
+    dist34 = np.sqrt((x3 - x4) ** 2 + (y3 - y4) ** 2)
+    if scale == "max":
+        dist_h = max(dist12, dist34)
+        dist_v = max(dist13, dist24)
+        if equal_dist is True:
+            dist_h = dist_v = max(dist_v, dist_h)
+    elif scale == "min":
+        dist_h = min(dist12, dist34)
+        dist_v = min(dist13, dist24)
+        if equal_dist is True:
+            dist_h = dist_v = min(dist_v, dist_h)
+    else:
+        dist_h = (dist12 + dist34) * 0.5
+        dist_v = (dist13 + dist24) * 0.5
+        if isinstance(scale, float):
+            dist_h = dist_h * scale
+            dist_v = dist_v * scale
+        if equal_dist is True:
+            dist_h = dist_v = (dist_v + dist_h) * 0.5
+    dist_h, dist_v = dist_h * 0.5, dist_v * 0.5
+    b1 = bh - np.abs(dist_v / np.cos(np.arctan(a0)))
+    b2 = bh + np.abs(dist_v / np.cos(np.arctan(a0)))
+    b3 = bv - np.abs(dist_h / np.cos(np.arctan(a0)))
+    b4 = bv + np.abs(dist_h / np.cos(np.arctan(a0)))
+    y1 = (a0 * b3 + b1) / (1.0 + a0 ** 2)
+    x1 = -a0 * y1 + b3
+    y2 = (a0 * b4 + b1) / (1.0 + a0 ** 2)
+    x2 = -a0 * y2 + b4
+    y3 = (a0 * b3 + b2) / (1.0 + a0 ** 2)
+    x3 = -a0 * y3 + b3
+    y4 = (a0 * b4 + b2) / (1.0 + a0 ** 2)
+    x4 = -a0 * y4 + b4
+    target_points = np.asarray([[y1, x1], [y2, x2], [y3, x3], [y4, x4]])
+    return source_points, target_points
 
 
 def calc_perspective_coefficients(source_points, target_points,
@@ -1020,7 +1183,7 @@ def calc_perspective_coefficients(source_points, target_points,
     """
     Calculate perspective coefficients of a matrix to map from source points
     to target points (Ref. [1]). Note that the coordinate of a point are in
-    (y, x)-order. This is to be consistent with other functions in the module.
+    (y,x)-order. This is to be consistent with other functions in the module.
 
     Parameters
     ----------
@@ -1058,3 +1221,29 @@ def calc_perspective_coefficients(source_points, target_points,
         np.ndarray.flatten(np.asarray(t_points, dtype=np.float64)))
     list_coef = np.linalg.lstsq(Amatrix, Bmatrix, rcond=1e-64)[0]
     return list_coef
+
+
+def update_center(list_lines, xcenter, ycenter):
+    """
+    Update the coordinate-center of points on lines.
+
+    Parameters
+    ----------
+    list_lines : list of 2D-arrays
+        List of the (y,x)-coordinates of points on lines.
+    xcenter : float
+        X-origin of the coordinate system.
+    ycenter : float
+        Y-origin of the coordinate system.
+
+    Returns
+    -------
+        list of 2D-arrays.
+    """
+    updated_lines = []
+    for i, iline in enumerate(list_lines):
+        line = np.asarray(iline)
+        list_temp = np.asarray(
+            [(dot[0] + ycenter, dot[1] + xcenter) for dot in line])
+        updated_lines.append(list_temp)
+    return updated_lines

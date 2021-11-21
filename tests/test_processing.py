@@ -147,21 +147,13 @@ class ProcessingMethods(unittest.TestCase):
     def test_generate_undistorted_perspective_lines(self):
         uhor_lines = proc.generate_undistorted_perspective_lines(
             self.list_hor_dlines, self.list_ver_dlines,
-            equal_dist=True, expand=False,
-            optimizing=False)[0]
+            equal_dist=True, optimizing=False)[0]
         num_hpoint1 = np.sum(np.asarray([len(line) for line in uhor_lines]))
         uhor_lines = proc.generate_undistorted_perspective_lines(
             self.list_hor_dlines, self.list_ver_dlines,
-            equal_dist=True, expand=False,
-            optimizing=True)[0]
+            equal_dist=False, optimizing=True)[0]
         num_hpoint2 = np.sum(np.asarray([len(line) for line in uhor_lines]))
-        uhor_lines = proc.generate_undistorted_perspective_lines(
-            self.list_hor_dlines, self.list_ver_dlines,
-            equal_dist=False, expand=True,
-            optimizing=False)[0]
-        num_hpoint3 = np.sum(np.asarray([len(line) for line in uhor_lines]))
-        self.assertTrue(num_hpoint1 == num_hpoint2 and
-                        num_hpoint2 == num_hpoint3)
+        self.assertTrue(num_hpoint1 == num_hpoint2)
 
     def test_generate_source_target_perspective_points(self):
         num_points = np.sum(
@@ -170,3 +162,58 @@ class ProcessingMethods(unittest.TestCase):
             self.list_hor_dlines, self.list_ver_dlines)
         self.assertTrue(num_points == len(s_points) and
                         num_points == len(t_points))
+
+    def test_generate_4_source_target_perspective_points(self):
+        points = [[5, 5], [6, 50], [40, 7], [45, 57]]
+        t_points0 = [[3.58143506, 2.58661269], [7.83739762, 50.02633148],
+                     [40.77223206, -0.74988769], [45.02819462, 46.6898311]]
+        s_points, t_points = proc.generate_4_source_target_perspective_points(
+            points, scale="mean", equal_dist=False)
+        num1 = np.mean(np.abs(s_points - np.asarray(points)))
+        num2 = np.mean(np.abs(t_points - np.asarray(t_points0)))
+        self.assertTrue(num1 == 0.0 and num2 <= 1.0e-6)
+
+    def test_calc_perspective_coefficients(self):
+        s_points = [[5, 5], [6, 50], [40, 7], [45, 57]]
+        t_points = [[3.58143506, 2.58661269], [7.83739762, 50.02633148],
+                     [40.77223206, -0.74988769], [45.02819462, 46.6898311]]
+        backward_coef = proc.calc_perspective_coefficients(s_points, t_points,
+                                                           mapping="backward")
+        b_coef0 = [8.31034232e-01, 1.11425384e-01, 2.38551326e+00,
+                   -6.50926172e-02, 8.30299316e-01, 2.12884603e+00,
+                   -1.67982946e-03, -2.46465092e-03]
+
+        forward_coef = proc.calc_perspective_coefficients(s_points, t_points,
+                                                           mapping="forward")
+        f_coef0 = [1.19832778e+00, -1.68236843e-01, -2.50047647e+00,
+                   8.82260677e-02, 1.19760396e+00, -2.75997890e+00,
+                   2.23043277e-03, 2.66906651e-03]
+        num1 = np.mean(np.abs(backward_coef - np.asarray(b_coef0)))
+        num2 = np.mean(np.abs(forward_coef - np.asarray(f_coef0)))
+        self.assertTrue(num1 <= 1.0e-6 and num2 <= 1.0e-6)
+
+    def test_update_center(self):
+        lines1 = np.asarray(
+            [[[1, 2], [1, 6], [1, 10]], [[3, 2], [3, 6], [3, 10]]])
+        xc, yc = 5, 6
+        lines2 = proc.update_center(lines1, xc, yc)
+        results = np.concatenate((lines2[0], lines2[1]),
+                                 axis=0) - np.concatenate(
+            (lines1[0], lines1[1]), axis=0)
+        num1 = np.abs(np.mean(results[:, 0]) - yc)
+        num2 = np.abs(np.mean(results[:, 1]) - xc)
+        self.assertTrue(num1 == 0.0 and num2 == 0.0)
+
+    def test_transform_coef_backward_and_forward(self):
+        ffacts1 = np.asarray([1.0, -2.0e-3, 5.0e-6])
+        bfacts1 = np.asarray([1.0, 2.0e-3, 2.0e-6])
+        points = [[i, j] for i in range(30) for j in range(30)]
+        bfacts2 = proc.transform_coef_backward_and_forward(ffacts1,
+                                                           mapping="backward",
+                                                           ref_points=points)
+        ffacts2 = proc.transform_coef_backward_and_forward(bfacts2,
+                                                           mapping="forward",
+                                                           ref_points=points)
+        num1 = np.mean(np.abs(ffacts2 - ffacts1))
+        num2 = np.mean(np.abs(bfacts2 - bfacts1))
+        self.assertTrue(num1 <= 1.0e-3 and num2 <= 1.0e-3)

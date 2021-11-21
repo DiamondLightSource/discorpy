@@ -24,12 +24,13 @@
 Module of pre-processing methods for handling a line-pattern image:
 - Determine the slopes and distances between lines.
 - Extract points belong to a line.
+- Convert a chessboard image to a line-pattern image.
 """
 
 import numpy as np
-import discorpy.prep.preprocessing as prep
 import scipy.ndimage as ndi
 from skimage.transform import radon
+import discorpy.prep.preprocessing as prep
 
 
 def locate_subpixel_point(list_point, option="min"):
@@ -93,10 +94,25 @@ def get_local_extrema_points(list_data, option="min", radius=7, sensitive=0.1,
     if denoise is True:
         list_data = ndi.gaussian_filter(list_data, 3)
     num_point = len(list_data)
-    if norm is True:
-        size = np.clip(min(int(0.05 * num_point), 61), 5, None)
-        list_data = list_data / ndi.median_filter(list_data, size)
     radius = np.clip(radius, 1, num_point // 4)
+    if norm is True:
+        xlist = np.arange(num_point)
+        mat_comb = np.asarray(np.vstack((xlist, list_data)))
+        mat_sort = mat_comb[:, mat_comb[1, :].argsort()]
+        list_sort = mat_sort[1]
+        ndrop = int(0.25 * num_point)
+        (a1, a0) = np.polyfit(xlist[ndrop:-ndrop - 1],
+                              list_sort[ndrop:-ndrop - 1], 1)
+        list_fit = a1 * xlist + a0
+        l_thres, u_thres = a0, a1 * xlist[-1] + a0
+        list_sort[(list_fit >= l_thres) & (list_fit <= u_thres)] = list_fit[
+            (list_fit >= l_thres) & (list_fit <= u_thres)]
+        mat_sort[1] = list_sort
+        nmean = np.mean(np.abs(list_fit))
+        backgr = mat_sort[:, mat_sort[0, :].argsort()][1]
+        list_data = np.divide(list_data, backgr,
+                              out=nmean * np.ones_like(list_data),
+                              where=backgr != 0)
     points = []
     for i in range(radius, num_point - radius - 1, 1):
         val, pos = list_data[i], i
@@ -123,7 +139,32 @@ def get_local_extrema_points(list_data, option="min", radius=7, sensitive=0.1,
     return np.asarray(points)
 
 
-def calc_slope_distance_hor_lines(mat, ratio=0.2, search_range=30.0, radius=7,
+def _make_circle_mask(width, ratio):
+    """
+    Create a circle mask.
+
+    Parameters
+    -----------
+    width : int
+        Width of a square array.
+    ratio : float
+        Ratio between the diameter of the mask and the width of the array.
+
+    Returns
+    ------
+    array_like
+         Square array.
+    """
+    mask = np.zeros((width, width), dtype=np.float32)
+    center = width // 2
+    radius = ratio * center
+    y, x = np.ogrid[-center:width - center, -center:width - center]
+    mask_check = x * x + y * y <= radius * radius
+    mask[mask_check] = 1.0
+    return mask
+
+
+def calc_slope_distance_hor_lines(mat, ratio=0.3, search_range=30.0, radius=9,
                                   sensitive=0.1, bgr="bright", denoise=True,
                                   norm=True, subpixel=True):
     """
@@ -165,7 +206,7 @@ def calc_slope_distance_hor_lines(mat, ratio=0.2, search_range=30.0, radius=7,
     if bgr == "bright":
         mat_roi = np.max(mat_roi) - mat_roi
     angle_coarse = 90.0 + np.arange(-search_range, search_range + 1.0)
-    mask = prep._make_circle_mask(mat_roi.shape[0], 0.92)
+    mask = _make_circle_mask(mat_roi.shape[0], 0.92)
     sinogram1 = radon(mat_roi * mask, theta=angle_coarse, circle=True)
     list_max1 = np.amax(sinogram1, axis=0)
     pos_max1 = np.argmax(list_max1)
@@ -181,11 +222,14 @@ def calc_slope_distance_hor_lines(mat, ratio=0.2, search_range=30.0, radius=7,
                                               denoise=denoise, norm=norm,
                                               subpixel=subpixel,
                                               sensitive=sensitive)
-    distance = np.median(np.abs(np.diff(list_ext_point)))
+    if len(list_ext_point) > 3:
+        distance = np.median(np.abs(np.diff(list_ext_point)))
+    else:
+        distance = np.mean(np.abs(np.diff(list_ext_point)))
     return slope, distance
 
 
-def calc_slope_distance_ver_lines(mat, ratio=0.2, search_range=30.0, radius=7,
+def calc_slope_distance_ver_lines(mat, ratio=0.3, search_range=30.0, radius=9,
                                   sensitive=0.1, bgr="bright", denoise=True,
                                   norm=True, subpixel=True):
     """
@@ -225,7 +269,7 @@ def calc_slope_distance_ver_lines(mat, ratio=0.2, search_range=30.0, radius=7,
     if bgr == "bright":
         mat_roi = np.max(mat_roi) - mat_roi
     angle_coarse = np.arange(-search_range, search_range + 1.0)
-    mask = prep._make_circle_mask(mat_roi.shape[0], 0.92)
+    mask = _make_circle_mask(mat_roi.shape[0], 0.92)
     sinogram1 = radon(mat_roi * mask, theta=angle_coarse, circle=True)
     list_max1 = np.amax(sinogram1, axis=0)
     pos_max1 = np.argmax(list_max1)
@@ -241,7 +285,10 @@ def calc_slope_distance_ver_lines(mat, ratio=0.2, search_range=30.0, radius=7,
                                               denoise=denoise, norm=norm,
                                               subpixel=subpixel,
                                               sensitive=sensitive)
-    distance = np.median(np.abs(np.diff(list_ext_point)))
+    if len(list_ext_point) > 3:
+        distance = np.median(np.abs(np.diff(list_ext_point)))
+    else:
+        distance = np.mean(np.abs(np.diff(list_ext_point)))
     return slope, distance
 
 
@@ -364,8 +411,8 @@ def get_tilted_profile(mat, index, angle_deg, direction):
 
 
 def get_cross_points_hor_lines(mat, slope_ver, dist_ver, ratio=1.0, norm=True,
-                               offset=0, bgr="bright", radius=7, sensitive=0.1,
-                               denoise=True, subpixel=True):
+                               offset=0, bgr="bright", radius=7,
+                               sensitive=0.1, denoise=True, subpixel=True):
     """
     Get points on horizontal lines of a line-pattern image by intersecting with
     a list of generated vertical-lines.
@@ -429,8 +476,8 @@ def get_cross_points_hor_lines(mat, slope_ver, dist_ver, ratio=1.0, norm=True,
 
 
 def get_cross_points_ver_lines(mat, slope_hor, dist_hor, ratio=1.0, norm=True,
-                               offset=0, bgr="bright", radius=7, sensitive=0.1,
-                               denoise=True, subpixel=True):
+                               offset=0, bgr="bright", radius=7,
+                               sensitive=0.1, denoise=True, subpixel=True):
     """
     Get points on vertical lines of a line-pattern image by intersecting with
     a list of generated horizontal-lines.
@@ -491,3 +538,34 @@ def get_cross_points_ver_lines(mat, slope_hor, dist_hor, ratio=1.0, norm=True,
         ylist1 = rlist * np.sin(angle) + ylist[0]
         list_points.extend(np.asarray(list(zip(ylist1, xlist1))))
     return np.asarray(list_points)
+
+
+def convert_chessboard_to_linepattern(mat, smooth=False, bgr="bright"):
+    """
+    Convert a chessboard image to a line-pattern image.
+
+    Parameters
+    ----------
+    mat : array_like
+        2D array.
+    smooth : bool, optional
+        Apply a gaussian smoothing filter if True.
+    bgr : {'bright', 'dark'}
+        Select the background of the output image.
+
+    Returns
+    -------
+    array_like
+        Line-pattern image.
+    """
+    if smooth is True:
+        mat = ndi.gaussian_filter(mat, 1, mode="nearest")
+    mat_line = np.mean(np.abs(np.gradient(mat)), axis=0)
+    if smooth is True:
+        mat_line = np.pad(mat_line[4:-4, 4:-4], 4, mode="edge")
+    else:
+        mat_line = np.pad(mat_line[2:-2, 2:-2], 2, mode="edge")
+    if bgr == "bright":
+        mat_line = np.max(mat_line) - mat_line
+    mat_line = mat_line / np.mean(np.abs(mat_line))
+    return mat_line

@@ -153,3 +153,25 @@ autodoc_mock_imports = [
     'PIL'
 ]
 autodoc_member_order = 'bysource'
+
+# -- Options for LaTeX output ---------------------------------------------
+latex_elements = {
+    # The paper size ('letterpaper' or 'a4paper').
+    # 'papersize': 'letterpaper',
+
+    # The font size ('10pt', '11pt' or '12pt').
+    # 'pointsize': '10pt',
+
+    # Additional stuff for the LaTeX preamble.
+    # 'preamble': '',
+}
+
+# Grouping the document tree into LaTeX files. List of tuples
+# (source start file, target name, title,
+#  author, documentclass [howto, manual, or own class]).
+latex_documents = [
+    ('index',
+     project + '.tex',
+     project + u' Documentation',
+     Affiliation, 'manual'),
+]

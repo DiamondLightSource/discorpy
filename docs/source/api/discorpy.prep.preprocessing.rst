@@ -24,3 +24,4 @@
       group_dots_ver_lines
       remove_residual_dots_hor
       remove_residual_dots_ver
+      calculate_threshold

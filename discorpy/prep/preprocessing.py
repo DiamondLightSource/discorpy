@@ -22,12 +22,11 @@
 
 """
 Module of pre-processing methods:
-- Normalize, binarize an image.
-- Determine the median dot-size, median distance between two nearest dots,
-  and the slopes of grid-lines of a dot-pattern image.
-- Remove non-dot objects or misplaced dots.
-- Group dot-centroids into horizontal lines and vertical lines.
-
+-  Normalize, binarize an image.
+-  Determine the median dot-size, median distance between two nearest dots,
+   and the slopes of grid-lines of a dot-pattern image.
+-  Remove non-dot objects or misplaced dots.
+-  Group dot-centroids into horizontal lines and vertical lines.
 """
 
 import numpy as np
@@ -111,7 +110,7 @@ def _apply_fft_filter(mat, sigma, pad):
     array_like
         2D array. Filtered image.
     """
-    mat = np.pad(mat, ((pad, pad), (pad, pad)), mode='symmetric')
+    mat = np.pad(mat, ((pad, pad), (pad, pad)), mode='reflect')
     (height, width) = mat.shape
     window = _make_window(height, width, sigma)
     xlist = np.arange(0, width)
@@ -122,7 +121,7 @@ def _apply_fft_filter(mat, sigma, pad):
     return mat[pad:height - pad, pad:width - pad]
 
 
-def normalization_fft(mat, sigma=10, pad=30):
+def normalization_fft(mat, sigma=10, pad=100):
     """
     Correct a non-uniform background image using a Fourier Gaussian filter.
 
@@ -617,13 +616,15 @@ def group_dots_hor_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
         belong to the same group. Length of each list may be different.
     """
     mat = np.asarray(mat)
-    if mat.shape[1] != 2:
+    if mat.shape[-1] > 2:
         mat_label, num_dots = ndi.label(np.int16(mat))
         list_dots = np.copy(center_of_mass(
             mat, labels=mat_label, index=np.arange(1, num_dots + 1)))
     else:
         list_dots = mat
         num_dots = len(list_dots)
+        if num_dots == 0:
+            raise ValueError("Input is empty!!!")
     num_dots_left = num_dots
     list_dots_left = np.copy(list_dots)
     list_dots_left = list_dots_left[list_dots_left[:, 1].argsort()]
@@ -685,13 +686,15 @@ def group_dots_ver_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
         belong to the same group. Length of each list may be different.
     """
     mat = np.asarray(mat)
-    if mat.shape[1] != 2:
+    if mat.shape[-1] > 2:
         mat_label, num_dots = ndi.label(np.int16(mat))
         list_dots = np.copy(center_of_mass(
             mat, labels=mat_label, index=np.arange(1, num_dots + 1)))
     else:
         list_dots = mat
         num_dots = len(list_dots)
+        if num_dots == 0:
+            raise ValueError("Input is empty!!!")
     list_dots = np.fliplr(list_dots)  # Swap the coordinates
     num_dots_left = num_dots
     list_dots_left = np.copy(list_dots)
@@ -794,26 +797,41 @@ def remove_residual_dots_ver(list_lines, slope, residual=2.5):
     return list_lines2
 
 
-def _make_circle_mask(width, ratio):
+def calculate_threshold(mat, bgr="bright", snr=2.0):
     """
-    Create a circle mask.
+    Calculate a threshold value based on Algorithm 4 in Ref. [1].
 
     Parameters
-    -----------
-    width : int
-        Width of a square array.
-    ratio : float
-        Ratio between the diameter of the mask and the width of the array.
+    ----------
+    mat : array_like
+        2D array.
+    bgr : {"bright", "dark"}
+        To indicate the brightness of the background against image features.
+    snr : float
+        Ratio (>1.0) used to separate image features against noise. Greater is
+        less sensitive.
 
     Returns
-    ------
-    array_like
-         Square array.
+    -------
+    float
+        Threshold value.
+
+    References
+    ----------
+    .. [1] https://doi.org/10.1364/OE.26.028396
     """
-    mask = np.zeros((width, width), dtype=np.float32)
-    center = width // 2
-    radius = ratio * center
-    y, x = np.ogrid[-center:width - center, -center:width - center]
-    mask_check = x * x + y * y <= radius * radius
-    mask[mask_check] = 1.0
-    return mask
+    size = max(mat.shape)
+    list_sort = np.sort(np.ndarray.flatten(mat))
+    list_dsp = ndi.zoom(list_sort, (1.0 * size) / len(list_sort))
+    npoint = len(list_dsp)
+    xlist = np.arange(0, npoint, 1.0)
+    ndrop = np.int16(0.25 * npoint)
+    (slope, intercept) = np.polyfit(xlist[ndrop:-ndrop - 1],
+                                    list_dsp[ndrop:-ndrop - 1], 1)
+    y_end = intercept + slope * xlist[-1]
+    noise_level = np.abs(y_end - intercept)
+    if bgr == "bright":
+        threshold = intercept - noise_level * snr * 0.5
+    else:
+        threshold = y_end + noise_level * snr * 0.5
+    return threshold

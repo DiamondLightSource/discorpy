@@ -19,3 +19,5 @@
       calc_residual_hor
       calc_residual_ver
       check_distortion
+      correct_perspective_line
+      correct_perspective_image

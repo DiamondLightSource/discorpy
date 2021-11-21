@@ -13,6 +13,7 @@ Pre-processing
 
 .. toctree::
    api/discorpy.prep.preprocessing
+   api/discorpy.prep.linepattern
 
 Processing
 ----------

@@ -106,7 +106,8 @@ def unwarp_line_backward(list_lines, xcenter, ycenter, list_fact):
     return list_ulines
 
 
-def unwarp_image_backward(mat, xcenter, ycenter, list_fact):
+def unwarp_image_backward(mat, xcenter, ycenter, list_fact, order=1,
+                          mode="reflect"):
     """
     Unwarp an image using a backward model.
 
@@ -120,6 +121,11 @@ def unwarp_image_backward(mat, xcenter, ycenter, list_fact):
         Center of distortion in y-direction.
     list_fact : list of float
         Polynomial coefficients of the backward model.
+    order : int, optional.
+        The order of the spline interpolation.
+    mode : {'reflect', 'grid-mirror', 'constant', 'grid-constant', 'nearest',
+           'mirror', 'grid-wrap', 'wrap'}, optional
+        To determine how to handle image boundaries.
 
     Returns
     -------
@@ -136,7 +142,7 @@ def unwarp_image_backward(mat, xcenter, ycenter, list_fact):
     xd_mat = np.float32(np.clip(xcenter + fact_mat * xu_mat, 0, width - 1))
     yd_mat = np.float32(np.clip(ycenter + fact_mat * yu_mat, 0, height - 1))
     indices = np.reshape(yd_mat, (-1, 1)), np.reshape(xd_mat, (-1, 1))
-    mat = map_coordinates(mat, indices, order=1, mode='reflect')
+    mat = map_coordinates(mat, indices, order=order, mode=mode)
     return mat.reshape((height, width))
 
 

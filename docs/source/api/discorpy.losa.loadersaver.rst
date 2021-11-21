@@ -22,3 +22,4 @@
       open_hdf_stream
       save_metadata_txt
       load_metadata_txt
+      save_plot_points

@@ -6,14 +6,15 @@ README = (HERE / "README.md").read_text()
 
 setuptools.setup(
     name="discorpy",
-    version="1.3",
+    version="1.4",
     author="Nghia Vo",
     author_email="nghia.vo@diamond.ac.uk",
-    description='Radial lens distortion correction in Python',
+    description='Correction for radial distortion and perspective distortion '
+                'in Python',
     long_description=README,
     long_description_content_type="text/markdown",
     keywords=['Distortion correction', 'Tomography', 'Radial lens distortion',
-              'Camera calibration'],
+              'Camera calibration', 'Perspective distortion'],
     url="https://github.com/DiamondLightSource/discorpy",
     download_url='https://github.com/DiamondLightSource/discorpy.git',
     license="Apache 2.0",

@@ -14,16 +14,19 @@ https://doi.org/10.1364/OE.23.032859.
 
 Update notes
 ============
-- 25/02/2021: the package name is changed from Vounwarp to Discorpy. The old-name package is still available at https://github.com/nghia-vo/vounwarp 
+- 25/02/2021: the package name is changed from Vounwarp to Discorpy. The old-name 
+package is still available at https://github.com/nghia-vo/vounwarp 
 and installable using conda-forge channel: https://anaconda.org/conda-forge/vounwarp
+- 22/11/2021: Correction for perspective distortion, pre-processing methods for
+line-pattern images and chessboard images are added to the package.
 
 Features
 ========
-- Pre-processing methods for finding coordinates of dot-centroids, grouping them
- into lines, removing non-dot objects or misplaced dots.
-- Procesing methods for calculating distortion parameters; which are the 
-center of distortion and polynomial coefficients; of a backward model, a forward
-model, and a backward-from-forward model.
+- Pre-processing methods for: extracting reference-points from a dot-pattern image,
+line-pattern image, and chessboard image; grouping these points line-by-line. 
+- Processing methods for calculating the optical center, coefficients of polynomial 
+models for correcting radial distortion, and parameters of a model for correcting 
+perspective distortion.
 - Post-processing methods for: unwarping lines of points, images, or slices of 
 a 3D dataset; evaluating the accuracy of correction results.
 - Some methods may be useful for other applications:
