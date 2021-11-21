@@ -169,9 +169,8 @@ class ProcessingMethods(unittest.TestCase):
                      [40.77223206, -0.74988769], [45.02819462, 46.6898311]]
         s_points, t_points = proc.generate_4_source_target_perspective_points(
             points, scale="mean", equal_dist=False)
-        num1 = np.mean(np.abs(s_points - np.asarray(points)))
         num2 = np.mean(np.abs(t_points - np.asarray(t_points0)))
-        self.assertTrue(num1 <= 1.0e-6 and num2 <= 1.0e-6)
+        self.assertTrue(num2 <= 1.0e-6)
 
     def test_calc_perspective_coefficients(self):
         s_points = [[5, 5], [6, 50], [40, 7], [45, 57]]
