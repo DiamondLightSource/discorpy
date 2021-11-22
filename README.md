@@ -1,7 +1,7 @@
 # Discorpy
 (**Dis**)tortion (**Cor**)rection (**Py**)thon-package
 
-### Distortion calibration and correction software for tomography detector systems
+*Distortion calibration and correction software for lens-based detector systems*
 
 **Discorpy** is an open-source Python package for radial distortion correction 
 with sub-pixel accuracy as required by tomography detector systems. 
@@ -12,6 +12,8 @@ pattern image. The package implements methods published, Nghia T. Vo et al.
 tomography" Optics Express 23, 32859-32868 (2015), 
 https://doi.org/10.1364/OE.23.032859. From version 1.4, correction for perspective
 distortion has been added to the package.
+
+**Author:** Nghia Vo, *Diamond Light Source, UK.*
 
 Update notes
 ============
@@ -35,54 +37,20 @@ a 3D dataset; evaluating the accuracy of correction results.
   * Select binary objects in a certain range of values.
   * Unwarp slices of a 3D dataset.
 
-Install
-=======
-- To install from the source codes:
-    * Download the source codes from this github page (click-> Code -> Download ZIP). 
-    Unzip to a local folder.
-    * Install [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
-    * Open command prompt, navigate to the source folder, run the following 
-    commands:
-        ```commandline
-        conda create -n discorpy
-        conda activate discorpy
-        conda install python
-        python setup.py install
-        ```
-- Using conda:
-    + Install Miniconda as instructed above.
-    + Open terminal or command prompt and run the following commands:
-        * If install to an existing environment:
-       
-            `conda install -c algotom discorpy`
-        * If install to a new environment:
-            ```commandline  
-            conda create -n discorpy
-            conda activate discorpy
-            conda install python
-            conda install -c algotom discorpy
-            ```
+Documentation
+=============
 
-- Using pip:
-    + Install Miniconda as instructed above.
-    + Open terminal or command prompt and run the following commands:
-        * If install to an existing environment:
-        
-            `pip install discorpy`
-        * If install to a new environment:
-            ```commandline  
-            conda create -n discorpy
-            conda activate discorpy
-            conda install python
-            pip install discorpy
-            ```
+- https://discorpy.readthedocs.io/en/latest/
+
+Installation
+============
+- https://discorpy.readthedocs.io/en/latest/install.html
 
 How to use
 ==========
-- A document explaining step-by-step on how to calculate distortion coefficients 
-from a dot pattern image can be downloaded from: 
-https://zenodo.org/record/1322720 
-- Examples of how to use the package are in the "/examples" folder.
+- A technical report explaining step-by-step on how to calculate distortion coefficients 
+from a dot pattern image can be downloaded from [Zenodo](https://zenodo.org/record/1322720). 
+- Examples of how to use the package are in the "/examples" folder of this repo.
 - Coefficients determined by the package can be used by other tomographic 
 software such as [Tomopy](https://tomopy.readthedocs.io/en/latest/api/tomopy.prep.alignment.html) or
 [Savu](https://github.com/DiamondLightSource/Savu/blob/master/savu/plugins/corrections/distortion_correction.py) 
@@ -119,5 +87,3 @@ Details of how to estimate distortion coefficients of that camera without using
 a calibration target are shown [here](https://github.com/DiamondLightSource/discorpy/blob/master/examples/Perseverance_distortion_correction/Distortion_correction_for_Perseverance_camera.md)  
 
     ![Mars_rover](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/Mars_Rover_camera.jpg)
-  
-       
