@@ -10,6 +10,3 @@ python:
    install:
       - requirements: docs/envs/requirements-doc.txt
 
-formats:
-  - pdf
-  - epub
