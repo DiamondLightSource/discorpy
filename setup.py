@@ -38,4 +38,5 @@ setuptools.setup(
         "h5py",
         "pillow"
     ],
+    python_requires='>=2.7',
 )
