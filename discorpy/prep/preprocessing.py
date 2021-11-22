@@ -22,11 +22,13 @@
 
 """
 Module of pre-processing methods:
--  Normalize, binarize an image.
--  Determine the median dot-size, median distance between two nearest dots,
-   and the slopes of grid-lines of a dot-pattern image.
--  Remove non-dot objects or misplaced dots.
--  Group dot-centroids into horizontal lines and vertical lines.
+
+- Normalize, binarize an image.
+- Determine the median dot-size, median distance between two nearest dots,
+  and the slopes of grid-lines of a dot-pattern image.
+- Remove non-dot objects or misplaced dots.
+- Group dot-centroids into horizontal lines and vertical lines.
+
 """
 
 import numpy as np

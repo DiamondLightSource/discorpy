@@ -3,15 +3,13 @@
 
 *Distortion calibration and correction software for lens-based detector systems*
 
-**Discorpy** is an open-source Python package for radial distortion correction 
+**Discorpy** is an open-source Python package for distortion correction 
 with sub-pixel accuracy as required by tomography detector systems. 
-It calculates parameters of a polynomial model of radial lens distortion, which 
-are the center of distortion and the polynomial coefficients, using a grid 
-pattern image. The package implements methods published, Nghia T. Vo et al.
+It calculates parameters of correction models using a grid pattern image. 
+The package implements methods published by Nghia T. Vo et al.
 "Radial lens distortion correction with sub-pixel accuracy for X-ray micro-
-tomography" Optics Express 23, 32859-32868 (2015), 
-https://doi.org/10.1364/OE.23.032859. From version 1.4, correction for perspective
-distortion has been added to the package.
+tomography," Optics Express, 23, 32859-32868 (2015), https://doi.org/10.1364/OE.23.032859. 
+From version 1.4, correction for perspective distortion has been added to the package.
 
 **Author:** Nghia Vo, *Diamond Light Source, UK.*
 
@@ -30,8 +28,8 @@ line-pattern image, and chessboard image; grouping these points line-by-line.
 - Processing methods for calculating the optical center, coefficients of polynomial 
 models for correcting radial distortion, and parameters of a model for correcting 
 perspective distortion.
-- Post-processing methods for: unwarping lines of points, images, or slices of 
-a 3D dataset; evaluating the accuracy of correction results.
+- Post-processing methods for: undistorting lines of points, images, or slices of 
+a 3D dataset; and evaluating the accuracy of the correction results.
 - Some methods may be useful for other applications:
   * Correct non-uniform background using a FFT-based filter and a median filter.
   * Select binary objects in a certain range of values.
@@ -48,13 +46,7 @@ Installation
 
 How to use
 ==========
-- A technical report explaining step-by-step on how to calculate distortion coefficients 
-from a dot pattern image can be downloaded from [Zenodo](https://zenodo.org/record/1322720). 
-- Examples of how to use the package are in the "/examples" folder of this repo.
-- Coefficients determined by the package can be used by other tomographic 
-software such as [Tomopy](https://tomopy.readthedocs.io/en/latest/api/tomopy.prep.alignment.html) or
-[Savu](https://github.com/DiamondLightSource/Savu/blob/master/savu/plugins/corrections/distortion_correction.py) 
-, or [Algotom](https://github.com/algotom/algotom) for correction.
+- https://discorpy.readthedocs.io/en/latest/usage.html
 
 Demonstrations
 ==============

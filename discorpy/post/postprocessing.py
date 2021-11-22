@@ -22,9 +22,11 @@
 
 """
 Module of post-processing methods:
-- Unwarp a line of dots, an image.
+
+- Correct distortion for a line of dots or an image.
 - Generate unwarped slices of a 3D dataset.
-- Calculate the residual of unwarped dots.
+- Calculate the residual of undistorted dots.
+
 """
 import numpy as np
 from scipy import optimize

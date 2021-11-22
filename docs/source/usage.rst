@@ -2,7 +2,7 @@
 Usage
 =====
  
-- A document explaining step-by-step on how to calculate distortion coefficients
+- A technical report explaining step-by-step on how to calculate distortion coefficients
   from a dot pattern image can be downloaded from `Zenodo <https://zenodo.org/record/1322720>`_.
 - Examples of how to use the package are in the "/examples" folder at the `github page <https://github.com/DiamondLightSource/discorpy/tree/master/examples>`_.
 - Coefficients determined by the package can be used by other tomographic

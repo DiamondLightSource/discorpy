@@ -15,16 +15,18 @@
 # ============================================================================
 # Author: Nghia T. Vo
 # E-mail: nghia.vo@diamond.ac.uk
-# Publication date: November 2021
+# Publication date: 21 November 2021
 # ============================================================================
 # Contributors:
 # ============================================================================
 
 """
 Module of pre-processing methods for handling a line-pattern image:
+
 - Determine the slopes and distances between lines.
 - Extract points belong to a line.
 - Convert a chessboard image to a line-pattern image.
+
 """
 
 import numpy as np

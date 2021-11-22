@@ -26,13 +26,15 @@
 
 """
 Module of processing methods:
+
 - Fit lines of dots to parabolas, find the center of distortion.
 - Calculate undistorted intercepts of gridlines.
 - Calculate distortion coefficients of the backward model, the forward model,
-and the backward-from-forward model.
+  and the backward-from-forward model.
 - Correct perspective distortion affecting curve lines.
 - Generate non-perspective points or lines from perspective points or lines.
 - Calculate perspective coefficients.
+
 """
 import numpy as np
 from scipy import optimize
