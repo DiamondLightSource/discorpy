@@ -28,7 +28,7 @@ Using conda
 
       .. code-block:: console
 
-         conda install -c algotom discorpy
+         conda install -c conda-forge discorpy
 
     + If install to a new environment:
 
@@ -37,7 +37,7 @@ Using conda
          conda create -n discorpy
          conda activate discorpy
          conda install python
-         conda install -c algotom discorpy
+         conda install -c conda-forge discorpy
 
 Using pip
 ---------
