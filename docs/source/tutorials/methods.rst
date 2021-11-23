@@ -163,7 +163,8 @@ find x-center and y-center of the distortion. Another approach, which is slower
 but more accurate, is shown in :cite:`Vo:2015`. The technique varies the COD around
 the coarse-estimated COD and calculate a corresponding metric (Fig. 7). The best
 COD is the one having the minimum metric. This approach, however, is sensitive
-to perspective distortion.
+to perspective distortion. In practice, it is found that the coarse COD is
+accurate enough.
 
 .. figure:: figs/methods/fig7.png
   :figwidth: 45 %
