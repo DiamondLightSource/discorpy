@@ -31,12 +31,12 @@ setuptools.setup(
         "Topic :: Scientific/Engineering :: Image Processing"
     ],
     install_requires=[
-        "matplotlib-base",
-        "numpy",
+        "numpy<1.22",
+        "matplotlib",
         "scipy",
         "scikit-image",
         "h5py",
         "pillow"
     ],
-    python_requires='>=2.7',
+    python_requires='>=3.7',
 )
