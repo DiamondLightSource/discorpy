@@ -31,7 +31,7 @@ setuptools.setup(
         "Topic :: Scientific/Engineering :: Image Processing"
     ],
     install_requires=[
-        "matplotlib",
+        "matplotlib-base",
         "numpy",
         "scipy",
         "scikit-image",
