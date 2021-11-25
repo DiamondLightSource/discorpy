@@ -1,3 +1,5 @@
+.. _methods:
+
 Methods for correcting distortions
 ==================================
 
@@ -173,6 +175,7 @@ accurate enough.
 
   Figure 7. Metric map of the CoD search.
 
+.. _Correcting perspective effect:
 
 Correcting perspective effect
 -----------------------------
