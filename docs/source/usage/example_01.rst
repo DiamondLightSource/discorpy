@@ -1,3 +1,5 @@
+.. _example_01:
+
 Process a high-quality calibration image
 ========================================
 
@@ -42,7 +44,7 @@ acquired at Beamline I12, Diamond Light Source.
         mat1 = prep.select_dots_based_size(mat1, dot_size)
         # Remove non-elliptical objects
         mat1 = prep.select_dots_based_ratio(mat1)
-        io.save_image(output_base + "/fig2.jpg", mat1) # Save image for checking
+        io.save_image(output_base + "/segmented_dots.jpg", mat1) # Save image for checking
         # Calculate the slopes of horizontal lines and vertical lines.
         hor_slope = prep.calc_hor_slope(mat1)
         ver_slope = prep.calc_ver_slope(mat1)
@@ -70,15 +72,13 @@ acquired at Beamline I12, Diamond Light Source.
         list_hor_lines = prep.group_dots_hor_lines(mat1, hor_slope, dot_dist)
         # Group points to vertical lines
         list_ver_lines = prep.group_dots_ver_lines(mat1, ver_slope, dot_dist)
-        # Optional: remove horizontal outliner
+        # Optional: remove horizontal outliners
         list_hor_lines = prep.remove_residual_dots_hor(list_hor_lines, hor_slope)
-        # Optional: remove vertical outliner
+        # Optional: remove vertical outliners
         list_ver_lines = prep.remove_residual_dots_ver(list_ver_lines, ver_slope)
         # Save output for checking
-        io.save_plot_image(output_base + "/horizontal_lines.png", list_hor_lines,
-                   height, width)
-        io.save_plot_image(output_base + "/vertical_lines.png", list_ver_lines,
-                   height, width)
+        io.save_plot_image(output_base + "/horizontal_lines.png", list_hor_lines, height, width)
+        io.save_plot_image(output_base + "/vertical_lines.png", list_ver_lines, height, width)
 
         # Optional: correct perspective effect. Only available from Discorpy 1.4
         # list_hor_lines, list_ver_lines = proc.regenerate_grid_points_parabola(

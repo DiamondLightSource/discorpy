@@ -71,6 +71,8 @@ In Discorpy, Python lists are mainly used to store Numpy arrays with different
 size. For example, in the :ref:`grouping <methods>` step, the number of extracted
 reference-points on each line are not the same.
 
+.. _axes_origin:
+
 It is important to be aware that different methods may use different coordinate systems.
 In the image coordinate system, the origin is at the top-left corner of the image.
 For example, the `center-of-mass <https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.center_of_mass.html>`_
@@ -86,3 +88,4 @@ Examples
 .. toctree::
 
     usage/example_01
+    usage/example_02

@@ -487,6 +487,7 @@ def save_residual_plot(file_path, list_data, height, width, overwrite=True,
         print("Couldn't write to file {}".format(file_path))
         raise
     plt.close()
+    plt.rcParams.update(plt.rcParamsDefault)
     return file_path
 
 
