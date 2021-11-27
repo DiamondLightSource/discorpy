@@ -5,8 +5,9 @@ version: 2
 sphinx:
   configuration: docs/source/conf.py
 
+formats: all
+
 python:
    version: 3.7
    install:
       - requirements: docs/envs/requirements-doc.txt
-
