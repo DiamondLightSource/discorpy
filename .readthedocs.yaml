@@ -11,4 +11,3 @@ python:
    version: 3.7
    install:
       - requirements: docs/envs/requirements-doc.txt
-
