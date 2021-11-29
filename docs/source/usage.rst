@@ -1,3 +1,5 @@
+.. _usage:
+
 =====
 Usage
 =====
@@ -6,7 +8,7 @@ Resources
 ---------
 
 - A technical report explaining step-by-step on how to calculate distortion
-  coefficients from a dot pattern image can be downloaded from `Zenodo <https://zenodo.org/record/1322720>`_.
+  coefficients from a dot pattern image is available at `Zenodo <https://zenodo.org/record/1322720>`_.
 - Examples of how to use the package are in the "/examples" folder at the `github page <https://github.com/DiamondLightSource/discorpy/tree/master/examples>`_.
 - Coefficients determined by the package can be used by other tomographic
   software such as `Tomopy <https://tomopy.readthedocs.io/en/latest/api/tomopy.prep.alignment.html>`_ or
@@ -82,10 +84,10 @@ horizontal lines refers to the bottom-left origin, however the one of vertical
 lines refers to the top-left origin with coordinates swapped. This is necessary
 to avoid the numerical problem of fitting lines nearly perpendicular to the axis.
 
-Examples
---------
+Demonstrations
+--------------
 
 .. toctree::
 
-    usage/example_01
-    usage/example_02
+    usage/demo_01
+    usage/demo_02

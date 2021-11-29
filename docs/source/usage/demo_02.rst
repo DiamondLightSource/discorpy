@@ -59,18 +59,21 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
         #>> Horizontal slope: -0.03194770332102831. Vertical slope: 0.03625649318792672
 
     .. figure:: figs/example_02/fig1.jpg
+      :name: fig_31
       :figwidth: 100 %
       :align: center
       :figclass: align-center
 
-      Figure 1. (a) X-ray target image. (b) Segmented image.
+      . (a) X-ray target image. (b) Segmented image.
+
 
     .. figure:: figs/example_02/fig2.png
+      :name: fig_32
       :figwidth: 100 %
       :align: center
       :figclass: align-center
 
-      Figure 2. (a) Horizontal lines. (b) Vertical lines.
+      . (a) Horizontal lines. (b) Vertical lines.
 
 - As can be seen from the highlighted output above, the slopes of horizontal lines and
   vertical lines are quite different, compared to the results in :ref:`example 1 <example_01>`.
@@ -101,6 +104,7 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
         plt.show()
 
     .. figure:: figs/example_02/fig3.png
+      :name: fig_0
       :figwidth: 100 %
       :align: center
       :figclass: align-center
@@ -143,6 +147,7 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
                            height, width)
 
     .. figure:: figs/example_02/fig4.png
+      :name: fig_0
       :figwidth: 100 %
       :align: center
       :figclass: align-center
@@ -151,6 +156,7 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
       vs c-coefficients. (b) Plot of b-coefficients vs c-coefficients.
 
     .. figure:: figs/example_02/fig5.png
+      :name: fig_0
       :figwidth: 100 %
       :align: center
       :figclass: align-center
@@ -192,6 +198,7 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
         io.save_image(output_base + "/difference.tif", corrected_mat - mat0)
 
     .. figure:: figs/example_02/fig6.png
+      :name: fig_0
       :figwidth: 100 %
       :align: center
       :figclass: align-center
@@ -201,6 +208,7 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
       (b) For vertical lines.
 
     .. figure:: figs/example_02/fig7.png
+      :name: fig_0
       :figwidth: 100 %
       :align: center
       :figclass: align-center
@@ -210,6 +218,7 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
       (a) For horizontal lines. (b) For vertical lines.
 
     .. figure:: figs/example_02/fig8.png
+      :name: fig_0
       :figwidth: 100 %
       :align: center
       :figclass: align-center
@@ -218,8 +227,11 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
       effect. (a) For horizontal lines. (b) For vertical lines.
 
     .. figure:: figs/example_02/fig9.jpg
+      :name: fig_0
       :figwidth: 75 %
       :align: center
       :figclass: align-center
 
       Figure 9. Difference between images before and after distortion correction.
+
+Click :download:`here <./codes/demo_02.py>` to download the Python codes.

@@ -25,11 +25,12 @@ acquired at Beamline I12, Diamond Light Source.
         (height, width) = mat0.shape
 
     .. figure:: figs/example_01/fig1.jpg
-      :figwidth: 75 %
-      :align: center
-      :figclass: align-center
+        :name: fig_23
+        :figwidth: 75 %
+        :align: center
+        :figclass: align-center
 
-      Figure 1. Visible dot-target.
+        Visible dot-target.
 
 - Extract reference-points:
 
@@ -53,11 +54,12 @@ acquired at Beamline I12, Diamond Light Source.
         #>> Horizontal slope: 0.01124473800478091. Vertical slope -0.011342266682773354
 
     .. figure:: figs/example_01/fig2.jpg
-      :figwidth: 75 %
-      :align: center
-      :figclass: align-center
+        :name: fig_24
+        :figwidth: 75 %
+        :align: center
+        :figclass: align-center
 
-      Figure 2. Segmented dots.
+        Segmented dots.
 
 - As can be seen from the highlighted output above, the slopes of horizontal lines and
   vertical lines are nearly the same (note that their signs are opposite due to
@@ -86,12 +88,13 @@ acquired at Beamline I12, Diamond Light Source.
 
 
     .. figure:: figs/example_01/fig3.png
-      :figwidth: 100 %
-      :align: center
-      :figclass: align-center
+        :name: fig_25
+        :figwidth: 100 %
+        :align: center
+        :figclass: align-center
 
-      Figure 3. Reference-points (center-of-mass of dots) after grouped into
-      horizontal lines (a) and vertical lines (b).
+        Reference-points (center-of-mass of dots) after grouped into
+        horizontal lines (a) and vertical lines (b).
 
 - We can check the straightness of lines of points by calculating the distances
   of the grouped points to their fitted straight lines. This helps to assess if
@@ -108,15 +111,16 @@ acquired at Beamline I12, Diamond Light Source.
                               list_ver_data, height, width)
 
     .. figure:: figs/example_01/fig4.png
-      :figwidth: 100 %
-      :align: center
-      :figclass: align-center
+        :name: fig_26
+        :figwidth: 100 %
+        :align: center
+        :figclass: align-center
 
-      Figure 4. Plot of the distances of the dot-centroids from their fitted
-      straight line against their distances from the axes origin. (a) For
-      horizontal lines. (b) For vertical lines.
+        Plot of the distances of the dot-centroids from their fitted
+        straight line against their distances from the axes origin. (a) For
+        horizontal lines. (b) For vertical lines.
 
-- As shown in Fig. 4, the residual is more than 12 pixels which means that
+- As shown in :numref:`fig_26`, the residual is more than 12 pixels which means that
   distortion is significant and needs to be corrected. The next step is to
   calculate the center of distortion (COD) and the coefficients of the backward
   mapping for :ref:`a radial distortion model <methods>`.
@@ -166,22 +170,25 @@ acquired at Beamline I12, Diamond Light Source.
 
 
     .. figure:: figs/example_01/fig5.png
-      :figwidth: 100 %
-      :align: center
-      :figclass: align-center
+        :name: fig_27
+        :figwidth: 100 %
+        :align: center
+        :figclass: align-center
 
-      Figure 5. (a) Unwarpped horizontal lines. (b) Unwarpped vertical lines.
+        . (a) Unwarpped horizontal lines. (b) Unwarpped vertical lines.
+
 
     .. figure:: figs/example_01/fig6.png
-      :figwidth: 100 %
-      :align: center
-      :figclass: align-center
+        :name: fig_28
+        :figwidth: 100 %
+        :align: center
+        :figclass: align-center
 
-      Figure 6. Residual of the unwarpped points. Note that the origin of the
-      coordinate system is at the center of distortion. (a) For horizontal lines.
-      (b) For vertical lines.
+        Residual of the unwarpped points. Note that the origin of the
+        coordinate system is at the center of distortion. (a) For horizontal lines.
+        (b) For vertical lines.
 
-- As can be seen from Fig. 6 the accuracy of the correction results is sub-pixel.
+- As can be seen from :numref:`fig_28` the accuracy of the correction results is sub-pixel.
   The last step of the workflow is to use the determined model for correcting images.
 
     .. code-block:: python
@@ -196,16 +203,20 @@ acquired at Beamline I12, Diamond Light Source.
         io.save_image(output_base + "/difference.tif", corrected_mat - mat0)
 
     .. figure:: figs/example_01/fig7.jpg
+      :name: fig_29
       :figwidth: 75 %
       :align: center
       :figclass: align-center
 
-      Figure 7. Corrected image.
+      Corrected image.
 
     .. figure:: figs/example_01/fig8.jpg
+      :name: fig_30
       :figwidth: 75 %
       :align: center
       :figclass: align-center
 
-      Figure 8. Difference between images before (Fig. 1) and after (Fig. 7)
+      Difference between images before (:numref:`fig_23`) and after (:numref:`fig_29`)
       the correction.
+
+Click :download:`here <./codes/demo_01.py>` to download the Python codes.
