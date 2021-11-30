@@ -104,19 +104,19 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
         plt.show()
 
     .. figure:: figs/example_02/fig3.png
-      :name: fig_0
+      :name: fig_33
       :figwidth: 100 %
       :align: center
       :figclass: align-center
 
-      Figure 3. (a) Plot of a-coefficients vs c-coefficients of parabolic fits.
-      (b) Plot of b-coefficients vs c-coefficients.
+      . (a) Plot of a-coefficients vs c-coefficients of parabolic fits. (b) Plot
+      of b-coefficients vs c-coefficients.
 
-- As can be seen in Fig. 3(b), the slopes are significantly different between
+- As can be seen in :numref:`fig_33` (b), the slopes are significantly different between
   two groups of lines. To correct this perspective effect, the coefficients of
-  parabolas are adjusted (Fig. 4) to satisfy the conditions as explained in :ref:`section
+  parabolas are adjusted (:numref:`fig_34`) to satisfy the conditions as explained in :ref:`section
   2.2 <Correcting perspective effect>`. After that, grid of points are
-  regenerated using these updated coefficients (Fig. 5).
+  regenerated using these updated coefficients (:numref:`fig_35`).
 
     .. code-block:: python
         :emphasize-lines: 18-19
@@ -147,27 +147,27 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
                            height, width)
 
     .. figure:: figs/example_02/fig4.png
-      :name: fig_0
+      :name: fig_34
       :figwidth: 100 %
       :align: center
       :figclass: align-center
 
-      Figure 4. Parabola coefficients after correction. (a) Plot of a-coefficients
+      Parabola coefficients after correction. (a) Plot of a-coefficients
       vs c-coefficients. (b) Plot of b-coefficients vs c-coefficients.
 
     .. figure:: figs/example_02/fig5.png
-      :name: fig_0
+      :name: fig_35
       :figwidth: 100 %
       :align: center
       :figclass: align-center
 
-      Figure 5. Grid points regenerated using the updated parabola-coefficients.
-      Note that there are no missing points as compared to Fig. 2. (a) Horizontal lines.
-      (b) Vertical lines.
+      Grid points regenerated using the updated parabola-coefficients.
+      Note that there are no missing points as compared to :numref:`fig_32`.
+      (a) Horizontal lines. (b) Vertical lines.
 
 - The rest of the workflow is to calculate the center of distortion and coefficients
-  of the backward model, then unwarp the image. As can be seen in Fig. 7 and
-  Fig. 8, the improvement of the accuracy after correcting the perspective effect is clear.
+  of the backward model, then unwarp the image. As can be seen in :numref:`fig_37` and
+  :numref:`fig_38`, the improvement of the accuracy after correcting the perspective effect is clear.
 
     .. code-block:: python
 
@@ -198,40 +198,40 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
         io.save_image(output_base + "/difference.tif", corrected_mat - mat0)
 
     .. figure:: figs/example_02/fig6.png
-      :name: fig_0
+      :name: fig_36
       :figwidth: 100 %
       :align: center
       :figclass: align-center
 
-      Figure 6. Residual of the distorted points. The origin of the coordinate
+      Residual of the distorted points. The origin of the coordinate
       system is at the top-left of an image. (a) For horizontal lines.
       (b) For vertical lines.
 
     .. figure:: figs/example_02/fig7.png
-      :name: fig_0
+      :name: fig_37
       :figwidth: 100 %
       :align: center
       :figclass: align-center
 
-      Figure 7. Residual of the unwarpped points with perspective effect. The
+      Residual of the unwarpped points with perspective effect. The
       origin of the coordinate system is at the center of distortion.
       (a) For horizontal lines. (b) For vertical lines.
 
     .. figure:: figs/example_02/fig8.png
-      :name: fig_0
+      :name: fig_38
       :figwidth: 100 %
       :align: center
       :figclass: align-center
 
-      Figure 8. Residual of the unwarpped points after correcting the perspective
+      Residual of the unwarpped points after correcting the perspective
       effect. (a) For horizontal lines. (b) For vertical lines.
 
     .. figure:: figs/example_02/fig9.jpg
-      :name: fig_0
+      :name: fig_39
       :figwidth: 75 %
       :align: center
       :figclass: align-center
 
-      Figure 9. Difference between images before and after distortion correction.
+      Difference between images before and after distortion correction.
 
 Click :download:`here <./codes/demo_02.py>` to download the Python codes.
