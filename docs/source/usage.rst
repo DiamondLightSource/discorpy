@@ -92,3 +92,4 @@ Demonstrations
     usage/demo_01
     usage/demo_02
     usage/demo_03
+    usage/demo_04

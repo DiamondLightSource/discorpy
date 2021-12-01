@@ -43,6 +43,11 @@ https://github.com/DiamondLightSource/discorpy
 
 Nghia T. Vo - Diamond Light Source, UK.
 
+**Keywords:**
+
+Camera calibration, radial lens distortion, perspective distortion, distortion
+correction, tomography.
+
 
 Contents
 ========

@@ -18,8 +18,9 @@ Update notes
 - 25/02/2021: the package name is changed from Vounwarp to Discorpy. The old-name 
 package is still available at https://github.com/nghia-vo/vounwarp 
 and installable using conda-forge channel: https://anaconda.org/conda-forge/vounwarp
-- 21/11/2021: Correction for perspective distortion, pre-processing methods for
-line-pattern images and chessboard images are added to the package.
+- 21/11/2021: correction for perspective distortion, pre-processing methods for
+line-pattern images and chessboard images was added to the package. Version 1.4 
+was released.
 
 Features
 ========

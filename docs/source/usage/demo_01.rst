@@ -1,4 +1,4 @@
-.. _example_01:
+.. _demo_01:
 
 Process a high-quality calibration image
 ========================================

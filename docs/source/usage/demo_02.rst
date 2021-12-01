@@ -76,7 +76,7 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
       . (a) Horizontal lines. (b) Vertical lines.
 
 - As can be seen from the highlighted output above, the slopes of horizontal lines and
-  vertical lines are quite different, compared to the results in :ref:`example 1 <example_01>`.
+  vertical lines are quite different, compared to the results in :ref:`demo 1 <demo_01>`.
   This indicates that there is a perspective effect. We can confirm that by plotting
   coefficients of parabolic fits of lines. Note that the signs of b-coefficients of
   parabolic fits for horizontal lines are reversed because they use a different
