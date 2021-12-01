@@ -58,7 +58,7 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
         print("Horizontal slope: {0}. Vertical slope: {1}".format(hor_slope, ver_slope))
         #>> Horizontal slope: -0.03194770332102831. Vertical slope: 0.03625649318792672
 
-    .. figure:: figs/example_02/fig1.jpg
+    .. figure:: figs/demo_02/fig1.jpg
       :name: fig_31
       :figwidth: 100 %
       :align: center
@@ -67,7 +67,7 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
       . (a) X-ray target image. (b) Segmented image.
 
 
-    .. figure:: figs/example_02/fig2.png
+    .. figure:: figs/demo_02/fig2.png
       :name: fig_32
       :figwidth: 100 %
       :align: center
@@ -103,7 +103,7 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
         plt.ylabel("b-coefficient")
         plt.show()
 
-    .. figure:: figs/example_02/fig3.png
+    .. figure:: figs/demo_02/fig3.png
       :name: fig_33
       :figwidth: 100 %
       :align: center
@@ -146,7 +146,7 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
         io.save_plot_image(output_base + "/vertical_lines_regenerated.png", list_ver_lines,
                            height, width)
 
-    .. figure:: figs/example_02/fig4.png
+    .. figure:: figs/demo_02/fig4.png
       :name: fig_34
       :figwidth: 100 %
       :align: center
@@ -155,7 +155,7 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
       Parabola coefficients after correction. (a) Plot of a-coefficients
       vs c-coefficients. (b) Plot of b-coefficients vs c-coefficients.
 
-    .. figure:: figs/example_02/fig5.png
+    .. figure:: figs/demo_02/fig5.png
       :name: fig_35
       :figwidth: 100 %
       :align: center
@@ -197,7 +197,7 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
         io.save_image(output_base + "/corrected_image.tif", corrected_mat)
         io.save_image(output_base + "/difference.tif", corrected_mat - mat0)
 
-    .. figure:: figs/example_02/fig6.png
+    .. figure:: figs/demo_02/fig6.png
       :name: fig_36
       :figwidth: 100 %
       :align: center
@@ -207,7 +207,7 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
       system is at the top-left of an image. (a) For horizontal lines.
       (b) For vertical lines.
 
-    .. figure:: figs/example_02/fig7.png
+    .. figure:: figs/demo_02/fig7.png
       :name: fig_37
       :figwidth: 100 %
       :align: center
@@ -217,7 +217,7 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
       origin of the coordinate system is at the center of distortion.
       (a) For horizontal lines. (b) For vertical lines.
 
-    .. figure:: figs/example_02/fig8.png
+    .. figure:: figs/demo_02/fig8.png
       :name: fig_38
       :figwidth: 100 %
       :align: center
@@ -226,7 +226,7 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
       Residual of the unwarpped points after correcting the perspective
       effect. (a) For horizontal lines. (b) For vertical lines.
 
-    .. figure:: figs/example_02/fig9.jpg
+    .. figure:: figs/demo_02/fig9.jpg
       :name: fig_39
       :figwidth: 75 %
       :align: center

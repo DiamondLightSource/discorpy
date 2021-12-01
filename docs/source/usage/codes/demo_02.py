@@ -6,8 +6,8 @@ import discorpy.proc.processing as proc
 import discorpy.post.postprocessing as post
 
 # Initial parameters
-file_path = "../../../data/dot_pattern_02.jpg"
-output_base = "./output_example_02/"
+file_path = "C:/data/dot_pattern_02.jpg"
+output_base = "./output_demo_02/"
 num_coef = 5  # Number of polynomial coefficients
 mat0 = io.load_image(file_path)  # Load image
 (height, width) = mat0.shape
@@ -115,6 +115,7 @@ io.save_residual_plot(output_base + "/ver_residual_after_correction.png",
 #     output_base + "/coefficients_radial_distortion.txt")
 # Correct the image
 corrected_mat = post.unwarp_image_backward(mat0, xcenter, ycenter, list_fact)
-# Save results. Note that the output is 32-bit numpy array. Convert to lower-bit if need to.
+# Save results. Note that the output is 32-bit numpy array.
+# Convert to lower-bit data before saving to tiff if need to.
 io.save_image(output_base + "/corrected_image.tif", corrected_mat)
 io.save_image(output_base + "/difference.tif", corrected_mat - mat0)

@@ -477,9 +477,11 @@ def save_residual_plot(file_path, list_data, height, width, overwrite=True,
     fig = plt.figure(frameon=False)
     fig.set_size_inches(width / dpi, height / dpi)
     m_size = 0.5 * min(height / dpi, width / dpi)
-    plt.rc('font', size=np.int16(m_size * 3))
-    plt.xlabel('Radius')
-    plt.ylabel('Residual')
+    plt.rc('font', size=np.int16(m_size * 4))
+    plt.rcParams['font.family'] = 'Times New Roman'
+    plt.rcParams['font.weight'] = 'bold'
+    plt.xlabel('Radius', fontweight='bold')
+    plt.ylabel('Residual', fontweight='bold')
     plt.plot(list_data[:, 0], list_data[:, 1], '.', markersize=m_size)
     try:
         plt.savefig(file_path, dpi=dpi, bbox_inches='tight')

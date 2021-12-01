@@ -94,7 +94,7 @@ def _make_window(height, width, sigma=10):
     return window
 
 
-def _apply_fft_filter(mat, sigma, pad):
+def _apply_fft_filter(mat, sigma, pad, mode='reflect'):
     """
     Apply a Fourier Gaussian filter.
 
@@ -112,7 +112,7 @@ def _apply_fft_filter(mat, sigma, pad):
     array_like
         2D array. Filtered image.
     """
-    mat = np.pad(mat, ((pad, pad), (pad, pad)), mode='reflect')
+    mat = np.pad(mat, ((pad, pad), (pad, pad)), mode=mode)
     (height, width) = mat.shape
     window = _make_window(height, width, sigma)
     xlist = np.arange(0, width)
@@ -123,7 +123,7 @@ def _apply_fft_filter(mat, sigma, pad):
     return mat[pad:height - pad, pad:width - pad]
 
 
-def normalization_fft(mat, sigma=10, pad=100):
+def normalization_fft(mat, sigma=10, pad=100, mode='reflect'):
     """
     Correct a non-uniform background image using a Fourier Gaussian filter.
 
@@ -135,13 +135,15 @@ def normalization_fft(mat, sigma=10, pad=100):
         Sigma of the Gaussian.
     pad : int
         Pad width.
+    mode : str
+        Padding mode.
 
     Returns
     -------
     array_like
         2D array. Corrected background image.
     """
-    mat_bck = _apply_fft_filter(mat, sigma, pad)
+    mat_bck = _apply_fft_filter(mat, sigma, pad, mode=mode)
     mean_val = np.mean(mat_bck)
     try:
         mat_cor = mean_val * mat / mat_bck

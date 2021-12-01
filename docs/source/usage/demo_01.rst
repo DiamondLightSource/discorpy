@@ -24,7 +24,7 @@ acquired at Beamline I12, Diamond Light Source.
         mat0 = io.load_image(file_path) # Load image
         (height, width) = mat0.shape
 
-    .. figure:: figs/example_01/fig1.jpg
+    .. figure:: figs/demo_01/fig1.jpg
         :name: fig_23
         :figwidth: 75 %
         :align: center
@@ -53,7 +53,7 @@ acquired at Beamline I12, Diamond Light Source.
 
         #>> Horizontal slope: 0.01124473800478091. Vertical slope -0.011342266682773354
 
-    .. figure:: figs/example_01/fig2.jpg
+    .. figure:: figs/demo_01/fig2.jpg
         :name: fig_24
         :figwidth: 75 %
         :align: center
@@ -87,7 +87,7 @@ acquired at Beamline I12, Diamond Light Source.
         #                      list_hor_lines, list_ver_lines, perspective=True)
 
 
-    .. figure:: figs/example_01/fig3.png
+    .. figure:: figs/demo_01/fig3.png
         :name: fig_25
         :figwidth: 100 %
         :align: center
@@ -110,7 +110,7 @@ acquired at Beamline I12, Diamond Light Source.
         io.save_residual_plot(output_base + "/ver_residual_before_correction.png",
                               list_ver_data, height, width)
 
-    .. figure:: figs/example_01/fig4.png
+    .. figure:: figs/demo_01/fig4.png
         :name: fig_26
         :figwidth: 100 %
         :align: center
@@ -169,7 +169,7 @@ acquired at Beamline I12, Diamond Light Source.
                               list_ver_data, height, width)
 
 
-    .. figure:: figs/example_01/fig5.png
+    .. figure:: figs/demo_01/fig5.png
         :name: fig_27
         :figwidth: 100 %
         :align: center
@@ -178,7 +178,7 @@ acquired at Beamline I12, Diamond Light Source.
         . (a) Unwarpped horizontal lines. (b) Unwarpped vertical lines.
 
 
-    .. figure:: figs/example_01/fig6.png
+    .. figure:: figs/demo_01/fig6.png
         :name: fig_28
         :figwidth: 100 %
         :align: center
@@ -202,7 +202,7 @@ acquired at Beamline I12, Diamond Light Source.
         io.save_image(output_base + "/corrected_image.tif", corrected_mat)
         io.save_image(output_base + "/difference.tif", corrected_mat - mat0)
 
-    .. figure:: figs/example_01/fig7.jpg
+    .. figure:: figs/demo_01/fig7.jpg
       :name: fig_29
       :figwidth: 75 %
       :align: center
@@ -210,7 +210,7 @@ acquired at Beamline I12, Diamond Light Source.
 
       Corrected image.
 
-    .. figure:: figs/example_01/fig8.jpg
+    .. figure:: figs/demo_01/fig8.jpg
       :name: fig_30
       :figwidth: 75 %
       :align: center
