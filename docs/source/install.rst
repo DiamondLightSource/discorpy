@@ -78,3 +78,16 @@ Using pip
          conda activate discorpy
          conda install python
          pip install discorpy
+
+Using Google Colab
+------------------
+
+Above instructions are for installing Discorpy locally. Users can also run
+Discorpy remotely on `Google Colab <https://colab.research.google.com/>`_. This
+requires a Google account. As shown in the screenshot below, Discorpy is installed
+by running "pip install discorpy" at the first line of the notebook. Images can
+be upload/download to/from a Google Drive or a url address.
+
+.. image:: img/google_colab.png
+  :width: 100 %
+  :align: center

@@ -28,6 +28,7 @@ Module of pre-processing methods:
   and the slopes of grid-lines of a dot-pattern image.
 - Remove non-dot objects or misplaced dots.
 - Group dot-centroids into horizontal lines and vertical lines.
+- Calculate a threshold value for binarizing.
 
 """
 
@@ -826,10 +827,10 @@ def calculate_threshold(mat, bgr="bright", snr=2.0):
     """
     size = max(mat.shape)
     list_sort = np.sort(np.ndarray.flatten(mat))
-    list_dsp = ndi.zoom(list_sort, (1.0 * size) / len(list_sort))
+    list_dsp = ndi.zoom(list_sort, 1.0 * size/len(list_sort), mode='nearest')
     npoint = len(list_dsp)
     xlist = np.arange(0, npoint, 1.0)
-    ndrop = np.int16(0.25 * npoint)
+    ndrop = int(0.25 * npoint)
     (slope, intercept) = np.polyfit(xlist[ndrop:-ndrop - 1],
                                     list_dsp[ndrop:-ndrop - 1], 1)
     y_end = intercept + slope * xlist[-1]

@@ -647,7 +647,7 @@ def transform_coef_backward_and_forward(list_fact, mapping="backward",
     return trans_fact
 
 
-def find_cod_bailey(list_hor_lines, list_ver_lines):
+def find_cod_bailey(list_hor_lines, list_ver_lines, iteration=2):
     """
     Find the center of distortion (COD) using the Bailey's approach (Ref. [1]).
 
@@ -676,6 +676,13 @@ def find_cod_bailey(list_hor_lines, list_ver_lines):
     a2, b2 = np.polyfit(list_coef_ver[:, 2], list_coef_ver[:, 0], 1)[0:2]
     xcenter = xcenter - b2 / a2
     ycenter = ycenter - b1 / a1
+    for i in range(iteration):
+        list_coef_hor = _para_fit_hor(list_hor_lines, xcenter, ycenter)[0]
+        list_coef_ver = _para_fit_ver(list_ver_lines, xcenter, ycenter)[0]
+        a1, b1 = np.polyfit(list_coef_hor[:, 2], list_coef_hor[:, 0], 1)[0:2]
+        a2, b2 = np.polyfit(list_coef_ver[:, 2], list_coef_ver[:, 0], 1)[0:2]
+        xcenter = xcenter - b2 / a2
+        ycenter = ycenter - b1 / a1
     return xcenter, ycenter
 
 
