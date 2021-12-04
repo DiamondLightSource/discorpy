@@ -84,11 +84,9 @@ list_hor_lines, list_ver_lines = proc.regenerate_grid_points_parabola(
     list_hor_lines, list_ver_lines, perspective=True)
 # Save output for checking
 io.save_plot_image(output_base + "/horizontal_lines_regenerated.png",
-                   list_hor_lines,
-                   height, width)
+                   list_hor_lines, height, width)
 io.save_plot_image(output_base + "/vertical_lines_regenerated.png",
-                   list_ver_lines,
-                   height, width)
+                   list_ver_lines, height, width)
 
 (xcenter, ycenter) = proc.find_cod_coarse(list_hor_lines, list_ver_lines)
 list_fact = proc.calc_coef_backward(list_hor_lines, list_ver_lines,

@@ -7,9 +7,9 @@ It is used to calculate parameters of a polynomial model of radial lens distorti
 which are the center of distortion and the polynomial coefficients, using a grid
 pattern image.
 
-Since version 1.4, correction for perspective distortion is included to
+Since version 1.4, correction for perspective distortion is added to
 Discorpy. Methods for processing line-pattern and chessboard image are also
-added to the package.
+included in the package.
 
 A key feature of methods implemented in Discorpy, compared to other software,
 is that radial distortion, the center of distortion, and perspective distortion
@@ -18,19 +18,19 @@ Discorpy was developed for calibrating lens-coupled detectors of tomography
 systems but it also can be used for commercial cameras.
 
 .. image:: img/index/dot_pattern.jpg
-  :width: 100 %
+  :width: 80 %
   :align: center
 
 |
 
 .. image:: img/index/dots_extracted.jpg
-  :width: 100 %
+  :width: 80 %
   :align: center
 
 |
 
 .. image:: img/index/Mars_rover_camera.jpg
-  :width: 100 %
+  :width: 80 %
   :align: center
 
 |

@@ -51,6 +51,9 @@ How to use
 
 Demonstrations
 ==============
+
+- https://discorpy.readthedocs.io/en/latest/usage.html#demonstrations 
+
 - Apply to a visible dot-target collected at [Beamline I12](https://www.diamond.ac.uk/Instruments/Imaging-and-Microscopy/I12/Detectors-at-I12.html),
 Diamond Light Source, UK:
 

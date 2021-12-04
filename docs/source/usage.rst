@@ -30,7 +30,7 @@ Here we only show some examples related to how they may be used with Discorpy.
 
      import numpy as np
 
-     # Declare Python lists
+     # Declare a Python list
      points_n1 = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
      # Declare a Numpy array
      points_n2 = np.asarray(points_n1, dtype=np.float32)
@@ -41,12 +41,12 @@ Here we only show some examples related to how they may be used with Discorpy.
 
   .. code-block:: python
 
-     # For Python lists
+     # For a Python list
      element1 = points_n1[0][1]
      # For a Numpy array
      element2 = points_n2[0,1]
 
-     # For Python lists
+     # For a Python list
      sub_set1 = points_n1[0][0:2]
      # For a Numpy array
      sub_set2 = points_n2[0,0:2]
@@ -55,7 +55,7 @@ Here we only show some examples related to how they may be used with Discorpy.
 
   .. code-block:: python
 
-     # For Python lists
+     # For a Python list
      points_m1 = points_n1 + 1.0 # >> Raise an error
      # For a Numpy array
      points_m2 = points_n2 + 1.0 # >> Add 1.0 to every element of the array.
@@ -64,9 +64,9 @@ Here we only show some examples related to how they may be used with Discorpy.
 
   .. code-block:: python
 
-     # Python list can store different objects with different size.
+     # A Python list can store different objects with different size.
      points_n1 =([[[0.0, 1.0], [1.0, 2.0]], np.ones((3,2))])
-     # Numpy arrays can only store numpy objects with the same size.
+     # A Numpy array can only store Numpy objects with the same size.
      points_n2 = np.asarray(([[[0.0, 1.0], [1.0, 2.0]], np.ones((2,2))]))
 
 In Discorpy, Python lists are mainly used to store Numpy arrays with different
@@ -93,3 +93,4 @@ Demonstrations
     usage/demo_02
     usage/demo_03
     usage/demo_04
+    usage/demo_05
