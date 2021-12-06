@@ -18,6 +18,8 @@ systems but it also can be used for commercial cameras.
   :width: 100 %
   :align: center
 
+|
+
 .. image:: img/index/Mars_rover_camera.jpg
   :width: 100 %
   :align: center

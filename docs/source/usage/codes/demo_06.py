@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import scipy.ndimage as ndi
 
 # Initial parameters
-file_path = "../../../data/laptop_camera/chessboard.jpg"
+file_path = "C:/data/laptop_camera/chessboard.jpg"
 output_base = "./for_demo_06/"
 num_coef = 5  # Number of polynomial coefficients
 mat0 = io.load_image(file_path) # Load image
