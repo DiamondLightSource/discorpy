@@ -1,5 +1,5 @@
 Correct both radial distortion and perspective distortion
----------------------------------------------------------
+=========================================================
 
 The following workflow shows how to use Discorpy to correct both radial distortion
 and perspective distortion from a dot-pattern image (:numref:`fig_56` (a)) shared on
