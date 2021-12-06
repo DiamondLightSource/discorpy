@@ -1,7 +1,7 @@
 Calibrate a camera using a chessboard image
 ===========================================
 
-The following workflow shows to calibrate a commercial camera using a chessboard
+The following workflow shows how to calibrate a commercial camera using a chessboard
 image. First of all, the chessboard pattern was created using this
 `website <https://markhedleyjones.com/projects/calibration-checkerboard-collection>`_.
 The generated pattern was printed and stuck to a flat wall (:numref:`fig_65`).
