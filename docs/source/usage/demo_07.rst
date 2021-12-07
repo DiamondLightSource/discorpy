@@ -14,6 +14,11 @@ look like a scanned one.
 
     .. code-block:: python
 
+        import numpy as np
+        import discorpy.losa.loadersaver as io
+        import discorpy.proc.processing as proc
+        import discorpy.post.postprocessing as post
+
         # Load image
         file_path = "C:/data/demo/perspective_demo.jpg"
         output_base = "./for_demo_07/"

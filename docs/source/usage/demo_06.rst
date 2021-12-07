@@ -13,6 +13,13 @@ Laptop. The pincushion distortion is visible in the image.
 
     .. code-block:: python
 
+        import numpy as np
+        import discorpy.losa.loadersaver as io
+        import discorpy.prep.preprocessing as prep
+        import discorpy.prep.linepattern as lprep
+        import discorpy.proc.processing as proc
+        import discorpy.post.postprocessing as post
+
         # Initial parameters
         file_path = "C:/data/laptop_camera/chessboard.jpg"
         output_base = "./for_demo_06/"

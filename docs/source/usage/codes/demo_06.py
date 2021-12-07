@@ -4,8 +4,6 @@ import discorpy.prep.preprocessing as prep
 import discorpy.prep.linepattern as lprep
 import discorpy.proc.processing as proc
 import discorpy.post.postprocessing as post
-import matplotlib.pyplot as plt
-import scipy.ndimage as ndi
 
 # Initial parameters
 file_path = "C:/data/laptop_camera/chessboard.jpg"

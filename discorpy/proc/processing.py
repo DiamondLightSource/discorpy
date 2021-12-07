@@ -607,8 +607,8 @@ def transform_coef_backward_and_forward(list_fact, mapping="backward",
         Polynomial coefficients of the reversed model.
     """
     if ref_points is None:
-        ref_points = [[i, j] for i in range(0, 2000, 50) for j in
-                      range(0, 2000, 50)]
+        ref_points = [[i, j] for i in np.arange(-1000, 1000, 50) for j in
+                      np.arange(-1000, 1000, 50)]
     else:
         num_points = len(ref_points)
         if num_points < len(list_fact):

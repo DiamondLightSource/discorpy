@@ -14,29 +14,24 @@ are determined and corrected independently using a single calibration image.
 Discorpy was developed for calibrating lens-coupled detectors of tomography
 systems but it also can be used for commercial cameras.
 
+**Showcases**: https://discorpy.readthedocs.io/en/latest/usage.html#demonstrations
+
 .. image:: img/index/dot_pattern.jpg
   :width: 100 %
   :align: center
-
-|
 
 .. image:: img/index/Mars_rover_camera.jpg
   :width: 100 %
   :align: center
 
-**Source code:**
+|
 
-https://github.com/DiamondLightSource/discorpy
+**Source code:** https://github.com/DiamondLightSource/discorpy
 
-**Author:**
+**Author:** Nghia T. Vo - Diamond Light Source, UK.
 
-Nghia T. Vo - Diamond Light Source, UK.
-
-**Keywords:**
-
-Camera calibration, radial lens distortion, perspective distortion, distortion
-correction, tomography.
-
+**Keywords:** Camera calibration, radial lens distortion, perspective distortion,
+distortion correction, tomography.
 
 Contents
 ========
