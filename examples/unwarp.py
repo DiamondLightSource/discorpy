@@ -58,6 +58,9 @@ parser.add_argument("-f", dest="flat",
 parser.add_argument("-n", dest="order",
                     help="Number of polynomial coefficients", type=int,
                     required=False, default=5)
+parser.add_argument("-p", dest="perspective",
+                    help="Enable perspective correction", required=False,
+                    defaul=False)
 print("******************************************************************\n")
 print("                    Start the script!!!\n                            ")
 print("******************************************************************\n")
@@ -67,6 +70,7 @@ output_base = args.output
 flat_path = args.flat
 poly_order = args.order
 key_path_hdf = args.key
+perspective = args.perspective
 
 time_start = timeit.default_timer()
 # Load data
@@ -154,6 +158,14 @@ io.save_residual_plot(output_base + "/residual_ver_before_correction.png",
 # if (not check1) and (not check2):
 #     print("!!! Distortion is not significant !!!")
 #     sys.exit(0)
+
+if perspective is True:
+    try:
+        list_hor_lines, list_ver_lines = proc.regenerate_grid_points_parabola(
+            list_hor_lines, list_ver_lines, perspective=perspective)
+    except AttributeError:
+        raise ValueError("Perspective correction only available from "
+                         "Discorpy 1.4!!!")
 
 # Calculate center of distortion. xcenter is the center from the left
 # of the image. ycenter is the center from the top of the image.

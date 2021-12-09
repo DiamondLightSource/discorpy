@@ -16,15 +16,9 @@ systems but it also can be used for commercial cameras.
 
 **Showcases**: https://discorpy.readthedocs.io/en/latest/usage.html#demonstrations
 
-.. image:: img/index/dot_pattern.jpg
+.. image:: img/index/showcase.png
   :width: 100 %
   :align: center
-
-.. image:: img/index/Mars_rover_camera.jpg
-  :width: 100 %
-  :align: center
-
-|
 
 **Source code:** https://github.com/DiamondLightSource/discorpy
 

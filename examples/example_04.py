@@ -40,7 +40,7 @@ of correcting distortion in the projection space and generating sinograms.
 """
 
 
-def calc_distor_coef(mat, num_coef):
+def calc_distor_coef(mat, num_coef, perspective=False):
     # Pre-processing
     mat1 = prep.binarization(mat)
     (dot_size, dot_dist) = prep.calc_size_distance(mat1)
@@ -52,6 +52,13 @@ def calc_distor_coef(mat, num_coef):
     list_ver_lines = prep.group_dots_ver_lines(mat1, ver_slope, dot_dist)
     list_hor_lines = prep.remove_residual_dots_hor(list_hor_lines, hor_slope)
     list_ver_lines = prep.remove_residual_dots_ver(list_ver_lines, ver_slope)
+    if perspective is True:
+        try:
+            list_hor_lines, list_ver_lines = proc.regenerate_grid_points_parabola(
+                list_hor_lines, list_ver_lines, perspective=perspective)
+        except AttributeError:
+            raise ValueError("Perspective correction only available "
+                             "from Discorpy 1.4!!!")
     # Processing
     (xcenter, ycenter) = proc.find_cod_coarse(list_hor_lines, list_ver_lines)
     list_fact = proc.calc_coef_backward(
@@ -65,6 +72,7 @@ time_start = timeit.default_timer()
 file_path = "../data/dot_pattern_05.jpg"
 output_base = "E:/correction/"
 num_coef = 5  # Number of polynomial coefficients
+perspective = False # Correct perspective distortion if True
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
 # Input
@@ -72,7 +80,8 @@ mat0 = io.load_image(file_path)
 (height, width) = mat0.shape
 
 # Calculation of distortion coefficients
-(xcenter, ycenter, list_fact) = calc_distor_coef(mat0, num_coef)
+(xcenter, ycenter, list_fact) = calc_distor_coef(mat0, num_coef,
+                                                 perspective=perspective)
 io.save_metadata_txt(output_base + "/coefficients_bw.txt", xcenter, ycenter,
                      list_fact)
 

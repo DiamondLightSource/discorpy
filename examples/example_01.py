@@ -40,9 +40,10 @@ time_start = timeit.default_timer()
 # -----------------------------------------------------------------------------
 # Initial parameters
 file_path = "../data/dot_pattern_03.jpg"
-output_base = "E:/tmp/correction/"
+output_base = "E:/correction/"
 num_coef = 5  # Number of polynomial coefficients
 norm = False  # Correct non-uniform background if True
+perspective = False # Correct perspective distortion if True
 # -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------
 
@@ -135,6 +136,15 @@ check1 = post.check_distortion(list_hor_data)
 check2 = post.check_distortion(list_ver_data)
 if (not check1) and (not check2):
     print("!!! Distortion is not significant !!!")
+
+
+# Optional: correct perspective effect. Only available from Discorpy 1.4
+if perspective is True:
+    try:
+        list_hor_lines, list_ver_lines = proc.regenerate_grid_points_parabola(
+                            list_hor_lines, list_ver_lines, perspective=True)
+    except AttributeError:
+        raise ValueError("Perspective correction only available from Discorpy 1.4!!!")
 
 # Calculate the center of distortion. xcenter is the center from the left
 # of the image. ycenter is the center from the top of the image.

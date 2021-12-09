@@ -260,7 +260,7 @@ To calculate coefficients of these two models, we need to determine
 the coordinates of reference-points in both the distorted-space and in the
 undistorted-space, correspondingly; and solve a system of linear equations.
 In :cite:`Vo:2015` this task is simplified by finding the intercepts of
-undistorted lines, :math:`(c_i^u, c_j^u)`, instead. A system of linear equations
+undistorted lines, :math:`(c_i^u, c_j^u)`, instead. A system of `linear equations <https://discorpy.readthedocs.io/en/latest/api/discorpy.proc.processing.html#discorpy.proc.processing.calc_coef_forward>`_
 for finding coefficients of the forward mapping is derived as
 
 .. math::
@@ -283,7 +283,7 @@ for finding coefficients of the forward mapping is derived as
 
 where each reference-point provides two equations: one associated with a horizontal
 line (Eq. :eq:`eq_1`) and one with a vertical line (Eq. :eq:`eq_2`). For the
-backward mapping, the equation system is
+backward mapping, the `equation system <https://discorpy.readthedocs.io/en/latest/_modules/discorpy/proc/processing.html#calc_coef_backward>`_ is
 
 .. math::
     :label: eq_6
@@ -376,7 +376,7 @@ as
      y_u = 0 \times {k_1^f} + 0 \times {k_2^f} + 0 \times {k_3^f} + {k_4^f}{x_d} +  {k_5^f}{y_d} + k_6^f - {k_7^f}{x_d}{y_u} - {k_8^f}{y_d}{y_u}
     \end{align}
 
-which can be formulated as a system of linear equations for n couple-of-points
+which can be formulated as a system of linear equations for `n couple-of-points <https://discorpy.readthedocs.io/en/latest/_modules/discorpy/proc/processing.html#calc_perspective_coefficients>`_
 (1 distorted point and its corresponding point in the undistorted space).
 
 .. math::
@@ -475,7 +475,8 @@ easy to perform interpolation.
 
 For radial distortion; given :math:`({x_u}, {y_u})`
 , :math:`({x_{COD}}, {y_{COD}})`, and :math:`(k_0^b, k_1^b,..., k_n^b)` of a backward model;
-the correction routine is as follows:
+the `correction routine <https://discorpy.readthedocs.io/en/latest/_modules/discorpy/post/postprocessing.html#unwarp_image_backward>`_
+is as follows:
 
   + -> Translate the coordinates: :math:`x_u = x_u - x_{COD}`;  :math:`y_u = y_u - y_{COD}`.
   + -> Calculate: :math:`r_u = \sqrt{x_u^2 + y_u^2}`;  :math:`r_d = r_u(k_0^b + {k_1^b}{r_u} + {k_2^b}{r_u^2} + ... + {k_n^b}{r_u^n})`.
@@ -487,8 +488,8 @@ the correction routine is as follows:
   + -> Interpolate the value at :math:`({x_d}, {y_d})` using the values of 4 nearest points.
     Assign the result to the point :math:`({x_u}, {y_u})` in the undistorted image.
 
-Correcting perspective distortion is straightforward. Given :math:`({x_u}, {y_u})`
-and coefficients :math:`(k_1^b, k_2^b,..., k_8^b)`, Eq. :eq:`eq_14` :eq:`eq_15`
+`Correcting perspective distortion <https://discorpy.readthedocs.io/en/latest/_modules/discorpy/post/postprocessing.html#correct_perspective_image>`_
+is straightforward. Given :math:`({x_u}, {y_u})` and coefficients :math:`(k_1^b, k_2^b,..., k_8^b)`, Eq. :eq:`eq_14` :eq:`eq_15`
 are used to calculate :math:`x_d`, :math:`y_d`. Then, the image value at this location
 is calculated by interpolation as explained above.
 
