@@ -1,5 +1,28 @@
 import pathlib
 import setuptools
+import sys
+
+py_ver = sys.version.split(".")[:2]
+python_version = py_ver[0] + "." + py_ver[1]
+
+if python_version <= "3.7":
+    dependencies = [
+        "numpy<1.22",
+        "scipy<=1.7",
+        "matplotlib",
+        "scikit-image",
+        "pillow",
+        "h5py"
+    ]
+else:
+    dependencies = [
+        "numpy<1.23",
+        "matplotlib",
+        "scipy",
+        "scikit-image",
+        "h5py",
+        "pillow"
+    ]
 
 HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
@@ -30,13 +53,6 @@ setuptools.setup(
         "Natural Language :: English",
         "Topic :: Scientific/Engineering :: Image Processing"
     ],
-    install_requires=[
-        "numpy<1.22",
-        "matplotlib",
-        "scipy",
-        "scikit-image",
-        "h5py",
-        "pillow"
-    ],
+    install_requires= dependencies,
     python_requires='>=3.7',
 )
