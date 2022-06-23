@@ -9,23 +9,22 @@ It calculates parameters of correction models using a grid pattern image.
 The package implements methods published by Nghia T. Vo et al.
 "Radial lens distortion correction with sub-pixel accuracy for X-ray micro-
 tomography," Optics Express, 23, 32859-32868 (2015), https://doi.org/10.1364/OE.23.032859. 
-From version 1.4, correction for perspective distortion has been added to the package.
+From version 1.4, perspective distortion correction was added to the package.
 
 **Author:** Nghia Vo, *Diamond Light Source, UK.*
 
 Update notes
 ============
-- 25/02/2021: the package name is changed from Vounwarp to Discorpy. The old-name 
+- 25/02/2021: the package name was changed from Vounwarp to Discorpy. The old-name 
 package is still available at https://github.com/nghia-vo/vounwarp 
 and installable using conda-forge channel: https://anaconda.org/conda-forge/vounwarp
-- 21/11/2021: correction for perspective distortion, pre-processing methods for
-line-pattern images and chessboard images was added to the package. Version 1.4 
-was released.
+- 21/11/2021: Version 1.4 was released with new features: perspective distortion 
+correction, and pre-processing methods for line-pattern images and chessboard images. 
 
 Features
 ========
 - Pre-processing methods for: extracting reference-points from a dot-pattern image,
-line-pattern image, and chessboard image; grouping these points line-by-line. 
+line-pattern image, and chessboard (checkerboard) image; grouping these points line-by-line. 
 - Processing methods for calculating the optical center, coefficients of polynomial 
 models for correcting radial distortion, and parameters of a model for correcting 
 perspective distortion.

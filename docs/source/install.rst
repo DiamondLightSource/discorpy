@@ -11,7 +11,7 @@ Pydev, Pycharm, or Visual Studio Code. After installing these software, users
 need to configure Python interpreter by pointing to the installed location of
 Anaconda. Each software has instructions of how to do that. There is a list of standard
 Python libraries shipped with `Anaconda <https://docs.anaconda.com/anaconda/packages/pkg-docs/>`_,
-known as *base* environment. To install a Python package out of the list, it's a good
+known as the *base* environment. To install a Python package out of the list, it's a good
 practice that users should create a separate environment from the base. This `tutorial <https://www.freecodecamp.org/news/why-you-need-python-environments-and-how-to-manage-them-with-conda-85f155f4353c/>`_
 gives an overview about Python environment. Instructions of how to create a new
 environment and how to install new packages are `here <https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html>`_
