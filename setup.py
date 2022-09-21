@@ -10,6 +10,7 @@ if python_version <= "3.7":
         "h5py",
         "pillow",
         "matplotlib<3.6",
+        "pywavelets<1.4",
         "scikit-image<0.18",
         "scipy<=1.7",
         "numpy<1.22"
