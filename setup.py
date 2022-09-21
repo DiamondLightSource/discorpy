@@ -10,7 +10,7 @@ if python_version <= "3.7":
         "numpy<1.22",
         "scipy<=1.7",
         "matplotlib<3.6",
-        "scikit-image",
+        "scikit-image<0.19.3",
         "pillow",
         "h5py"
     ]
