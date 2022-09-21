@@ -11,7 +11,7 @@ The package implements methods published by Nghia T. Vo et al.
 tomography," Optics Express, 23, 32859-32868 (2015), https://doi.org/10.1364/OE.23.032859. 
 From version 1.4, perspective distortion correction was added to the package.
 
-**Author:** Nghia Vo, *Diamond Light Source, UK.*
+**Author:** Nghia Vo, * Diamond Light Source, UK; NSLS-II, Brookhaven National Laboratory, US.*
 
 Update notes
 ============
