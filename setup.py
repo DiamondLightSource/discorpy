@@ -7,21 +7,21 @@ python_version = py_ver[0] + "." + py_ver[1]
 
 if python_version <= "3.7":
     dependencies = [
-        "numpy<1.22",
-        "scipy<=1.7",
+        "h5py",
+        "pillow",
         "matplotlib<3.6",
         "scikit-image<0.19.3",
-        "pillow",
-        "h5py"
+        "scipy<=1.7",
+        "numpy<1.22"
     ]
 else:
     dependencies = [
-        "numpy",
-        "matplotlib",
-        "scipy",
-        "scikit-image",
         "h5py",
-        "pillow"
+        "pillow",
+        "matplotlib",
+        "scikit-image",
+        "scipy",
+        "numpy"
     ]
 
 HERE = pathlib.Path(__file__).parent
