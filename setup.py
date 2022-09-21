@@ -10,9 +10,9 @@ if python_version <= "3.7":
         "h5py",
         "pillow",
         "matplotlib<3.6",
-        "scikit-image<0.19.3",
+        "scikit-image<0.19",
         "scipy<=1.7",
-        "numpy<1.22"
+        "numpy<1.21"
     ]
 else:
     dependencies = [
