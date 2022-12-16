@@ -6,13 +6,11 @@
 **Discorpy** is an open-source Python package for distortion correction 
 with sub-pixel accuracy as required by tomography detector systems. 
 It calculates parameters of correction models using a grid pattern image.
-The package mainly implements methods published in Optics Express; Nghia T. Vo, Robert C. Atwood, 
-and Michael Drakopoulos, "Radial lens distortion correction with sub-pixel accuracy 
-for X-ray micro-tomography", https://doi.org/10.1364/OE.23.032859. It also 
-provides methods in a full pipeline of data processing. From version 1.4, 
+The package mainly implements methods published in Optics Express: https://doi.org/10.1364/OE.23.032859. 
+It also provides methods in a full pipeline of data processing. From version 1.4, 
 perspective distortion correction was added to the package.
 
-**Author:** Nghia Vo, *Diamond Light Source, UK; NSLS-II, Brookhaven National Laboratory, US.*
+**Author and maintainer:** Nghia Vo, *NSLS-II, Brookhaven National Laboratory, US; Diamond Light Source, UK*
 
 Update notes
 ============
