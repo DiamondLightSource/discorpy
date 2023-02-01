@@ -3,6 +3,8 @@
 
 *Distortion calibration and correction software for lens-based detector systems*
 
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/DiamondLightSource/discorpy/discorpy_ga.yml) [![Downloads](https://static.pepy.tech/personalized-badge/discorpy?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Pypi-downloads)](https://pepy.tech/project/discorpy) [![former_vounwarp_downloads](https://anaconda.org/conda-forge/vounwarp/badges/downloads.svg)](https://anaconda.org/conda-forge/vounwarp) [![Anaconda-Server Badge](https://anaconda.org/conda-forge/discorpy/badges/downloads.svg)](https://anaconda.org/conda-forge/discorpy) ![Read the Docs](https://img.shields.io/readthedocs/discorpy) [![Anaconda-Server Badge](https://anaconda.org/conda-forge/discorpy/badges/platforms.svg)](https://anaconda.org/conda-forge/discorpy) ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/DiamondLightSource/discorpy) [![Anaconda-Server Badge](https://anaconda.org/conda-forge/discorpy/badges/license.svg)](https://anaconda.org/conda-forge/discorpy)
+
 **Discorpy** is an open-source Python package for distortion correction 
 with sub-pixel accuracy as required by tomography detector systems. 
 It calculates parameters of correction models using a grid pattern image.
