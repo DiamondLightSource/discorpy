@@ -18,7 +18,7 @@ if python_version <= "3.7":
 else:
     dependencies = [
         "numpy",
-        "scipy<1.10",
+        "scipy<1.9.2",
         "h5py",
         "pillow",
         "matplotlib",
