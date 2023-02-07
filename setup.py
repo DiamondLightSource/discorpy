@@ -22,7 +22,7 @@ else:
         "h5py",
         "pillow",
         "matplotlib",
-        "scikit-image"
+        "scikit-image<0.20"
     ]
 
 HERE = pathlib.Path(__file__).parent
