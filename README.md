@@ -11,7 +11,7 @@
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/discorpy/badges/platforms.svg)](https://anaconda.org/conda-forge/discorpy) 
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/DiamondLightSource/discorpy) 
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/discorpy/badges/license.svg)](https://anaconda.org/conda-forge/discorpy)
-![Coverage](https://github.com/DiamondLightSource/discorpy/raw/master/docs/coverage_report/coverage.svg)
+![Coverage](https://github.com/DiamondLightSource/discorpy/blob/master/docs/coverage_report/coverage.svg)
 
 
 **Discorpy** is an open-source Python package for distortion correction 
