@@ -2,7 +2,7 @@ Process a line-pattern image
 ============================
 
 The following workflow shows how to use Discorpy to process a line-pattern
-`image <https://github.com/DiamondLightSource/discorpy/blob/master/data/line_pattern_01.jpg>`_,
+`image <https://github.com/DiamondLightSource/discorpy/blob/master/data/line_pattern_01.jpg>`__,
 collected at Beamline I13 Diamond Light Source.
 
 - Load the image, calculate the slopes of lines at the middle of the image and

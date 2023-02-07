@@ -52,7 +52,8 @@ class ProcessingMethods(unittest.TestCase):
                 axis=0)
             xd_list = self.x0 + xu_list * flist
             yd_list = self.y0 + yu_list * flist
-            self.list_hor_dlines.append(np.asarray(list(zip(yd_list, xd_list))))
+            self.list_hor_dlines.append(
+                np.asarray(list(zip(yd_list, xd_list))))
         list_ver_lines = [
             [[height - y, x] for y in np.arange(1, height, dot_dist)] for x
             in np.arange(1, width, dot_dist)]
@@ -67,7 +68,8 @@ class ProcessingMethods(unittest.TestCase):
                 axis=0)
             xd_list = self.x0 + xu_list * flist
             yd_list = self.y0 + yu_list * flist
-            self.list_ver_dlines.append(np.asarray(list(zip(yd_list, xd_list))))
+            self.list_ver_dlines.append(
+                np.asarray(list(zip(yd_list, xd_list))))
         self.dot_dist = dot_dist
         self.list_fact = list_fact
 
@@ -96,6 +98,13 @@ class ProcessingMethods(unittest.TestCase):
         error2 = np.abs((list_fact[1] - self.list_fact[1]) / self.list_fact[1])
         self.assertTrue(error1 < 0.1 and error2 < 0.1)
 
+        list_fact = proc.calc_coef_backward(self.list_hor_dlines,
+                                            self.list_ver_dlines,
+                                            x_cod, y_cod, 2, optimizing=True)
+        error1 = np.abs((list_fact[0] - self.list_fact[0]) / self.list_fact[0])
+        error2 = np.abs((list_fact[1] - self.list_fact[1]) / self.list_fact[1])
+        self.assertTrue(error1 < 0.1 and error2 < 0.15)
+
     def test_calc_coef_fordward(self):
         x_cod, y_cod = proc.find_cod_coarse(self.list_hor_dlines,
                                             self.list_ver_dlines)
@@ -111,10 +120,14 @@ class ProcessingMethods(unittest.TestCase):
                                             self.list_ver_dlines)
         list_ffact, list_bfact = proc.calc_coef_backward_from_forward(
             self.list_hor_dlines, self.list_ver_dlines, x_cod, y_cod, 2)
-        error1 = np.abs((list_ffact[0] - self.list_fact[0]) / self.list_fact[0])
-        error2 = np.abs((list_ffact[1] + self.list_fact[1]) / self.list_fact[1])
-        error3 = np.abs((list_bfact[0] - self.list_fact[0]) / self.list_fact[0])
-        error4 = np.abs((list_bfact[1] - self.list_fact[1]) / self.list_fact[1])
+        error1 = np.abs(
+            (list_ffact[0] - self.list_fact[0]) / self.list_fact[0])
+        error2 = np.abs(
+            (list_ffact[1] + self.list_fact[1]) / self.list_fact[1])
+        error3 = np.abs(
+            (list_bfact[0] - self.list_fact[0]) / self.list_fact[0])
+        error4 = np.abs(
+            (list_bfact[1] - self.list_fact[1]) / self.list_fact[1])
         self.assertTrue(
             error1 < 0.1 and error2 < 0.2 and error3 < 0.1 and error4 < 0.2)
 
@@ -145,15 +158,31 @@ class ProcessingMethods(unittest.TestCase):
         self.assertTrue(num_vpoint == num_hpoint)
 
     def test_generate_undistorted_perspective_lines(self):
-        uhor_lines = proc.generate_undistorted_perspective_lines(
-            self.list_hor_dlines, self.list_ver_dlines,
+        f_alias = proc.generate_undistorted_perspective_lines
+        uhor_lines = f_alias(self.list_hor_dlines, self.list_ver_dlines,
             equal_dist=True, optimizing=False)[0]
         num_hpoint1 = np.sum(np.asarray([len(line) for line in uhor_lines]))
-        uhor_lines = proc.generate_undistorted_perspective_lines(
-            self.list_hor_dlines, self.list_ver_dlines,
+        uhor_lines = f_alias(self.list_hor_dlines, self.list_ver_dlines,
             equal_dist=False, optimizing=True)[0]
         num_hpoint2 = np.sum(np.asarray([len(line) for line in uhor_lines]))
         self.assertTrue(num_hpoint1 == num_hpoint2)
+
+        uhor_lines = f_alias(self.list_hor_dlines, self.list_ver_dlines,
+                             scale="max")[0]
+        num_hpoint1 = np.sum(np.asarray([len(line) for line in uhor_lines]))
+        uhor_lines = f_alias(self.list_hor_dlines, self.list_ver_dlines,
+                             scale="min")[0]
+        num_hpoint2 = np.sum(np.asarray([len(line) for line in uhor_lines]))
+        uhor_lines = f_alias(self.list_hor_dlines, self.list_ver_dlines,
+                             scale="median")[0]
+        num_hpoint3 = np.sum(np.asarray([len(line) for line in uhor_lines]))
+        uhor_lines = f_alias(self.list_hor_dlines, self.list_ver_dlines,
+                             scale=1.0)[0]
+        num_hpoint4 = np.sum(np.asarray([len(line) for line in uhor_lines]))
+
+        self.assertTrue(num_hpoint1 == num_hpoint2
+                        and num_hpoint1 == num_hpoint3
+                        and num_hpoint1 == num_hpoint4)
 
     def test_generate_source_target_perspective_points(self):
         num_points = np.sum(
@@ -164,19 +193,37 @@ class ProcessingMethods(unittest.TestCase):
                         num_points == len(t_points))
 
     def test_generate_4_source_target_perspective_points(self):
+        f_alias = proc.generate_4_source_target_perspective_points
         points = [[5, 5], [6, 50], [40, 7], [45, 57]]
         t_points0 = [[3.58143506, 2.58661269], [7.83739762, 50.02633148],
                      [40.77223206, -0.74988769], [45.02819462, 46.6898311]]
-        s_points, t_points = proc.generate_4_source_target_perspective_points(
-            points, scale="mean", equal_dist=False)
+
+        s_points, t_points = f_alias(points, scale="mean", equal_dist=False)
         num2 = np.mean(np.abs(
             np.float32(t_points) - np.asarray(t_points0, dtype=np.float32)))
         self.assertTrue(num2 <= 1.0e-6)
 
+        s_points, t_points = f_alias(points, scale="max", equal_dist=True)
+        self.assertTrue(len(s_points) == 4 and len(t_points) == 4)
+
+        s_points, t_points = f_alias(points, scale="min", equal_dist=True)
+        self.assertTrue(len(s_points) == 4 and len(t_points) == 4)
+
+        s_points, t_points = f_alias(points, scale="median", equal_dist=True)
+        self.assertTrue(len(s_points) == 4 and len(t_points) == 4)
+
+        s_points, t_points = f_alias(points, scale=1.0, equal_dist=True)
+        self.assertTrue(len(s_points) == 4 and len(t_points) == 4)
+
+        s_points2, _ = f_alias(points, scale=1.0, equal_dist=True,
+                               input_order="xy")
+        self.assertTrue(
+            np.mean(np.abs(s_points[:, 0] - s_points2[:, 0])) > 1e-6)
+
     def test_calc_perspective_coefficients(self):
         s_points = [[5, 5], [6, 50], [40, 7], [45, 57]]
         t_points = [[3.58143506, 2.58661269], [7.83739762, 50.02633148],
-                     [40.77223206, -0.74988769], [45.02819462, 46.6898311]]
+                    [40.77223206, -0.74988769], [45.02819462, 46.6898311]]
         backward_coef = proc.calc_perspective_coefficients(s_points, t_points,
                                                            mapping="backward")
         b_coef0 = [8.31034232e-01, 1.11425384e-01, 2.38551326e+00,
@@ -184,7 +231,7 @@ class ProcessingMethods(unittest.TestCase):
                    -1.67982946e-03, -2.46465092e-03]
 
         forward_coef = proc.calc_perspective_coefficients(s_points, t_points,
-                                                           mapping="forward")
+                                                          mapping="forward")
         f_coef0 = [1.19832778e+00, -1.68236843e-01, -2.50047647e+00,
                    8.82260677e-02, 1.19760396e+00, -2.75997890e+00,
                    2.23043277e-03, 2.66906651e-03]

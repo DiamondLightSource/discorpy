@@ -3,7 +3,7 @@ Correct both radial distortion and perspective distortion
 
 The following workflow shows how to use Discorpy to correct both radial distortion
 and perspective distortion from a dot-pattern image (:numref:`fig_56` (a)) shared on
-`Jerome Kieffer's github page <https://github.com/kif/imagizer/tree/master/grid-RPI-5M>`_.
+`Jerome Kieffer's github page <https://github.com/kif/imagizer/tree/master/grid-RPI-5M>`__.
 The image suffers both types of distortions.
 
 - Load the image, segment the dots (:numref:`fig_56` (b)), group them into lines

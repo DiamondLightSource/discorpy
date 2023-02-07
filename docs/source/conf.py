@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath('../..'))
 
 # -- Project information -----------------------------------------------------
 
-Affiliation = 'Diamond Light Source, UK'
+Affiliation = 'NSLS-II, Brookhaven National Laboratory, US; Diamond Light Source, UK'
 project = 'Discorpy'
 copyright = '2021, Nghia T. Vo, ' + Affiliation
 author = 'Nghia T. Vo'

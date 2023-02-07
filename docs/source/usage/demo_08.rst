@@ -5,9 +5,9 @@ In the previous demos, distortion coefficients are determined by using a calibra
 target. In practice, we may have to correct radial distortion of an image but don't
 have the calibration image taken from the same camera. The following workflow shows
 how to do that on images acquired by the front-right hazard-camera of the
-`Percy Rover <https://mars.nasa.gov/mars2020/multimedia/raw-images/>`_
+`Percy Rover <https://mars.nasa.gov/mars2020/multimedia/raw-images/>`__
 
-- Load `the image <https://github.com/DiamondLightSource/discorpy/tree/master/data/percy_cam>`_,
+- Load `the image <https://github.com/DiamondLightSource/discorpy/tree/master/data/percy_cam>`__,
   create a line-pattern for visual inspection (:numref:`fig_75`). The idea is that we apply
   an estimated forward model to the line-pattern and overlay the result on top
   of the image.
@@ -168,7 +168,7 @@ how to do that on images acquired by the front-right hazard-camera of the
 
         . (a) Overlay between the warped line-pattern and the Percy's image. (b) Unwarped image of :numref:`fig_75` (a).
 
-- From the determined coefficients, we can correct `other images <https://github.com/DiamondLightSource/discorpy/tree/master/data/percy_cam>`_
+- From the determined coefficients, we can correct `other images <https://github.com/DiamondLightSource/discorpy/tree/master/data/percy_cam>`__
   of the same camera (:numref:`fig_77`, :numref:`fig_78`).
 
     .. code-block:: python

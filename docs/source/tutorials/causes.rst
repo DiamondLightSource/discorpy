@@ -9,7 +9,7 @@ distortion (:numref:`fig_1`).
 
 .. figure:: figs/causes/fig1.jpg
     :name: fig_1
-    :figwidth: 90 %
+    :figwidth: 98 %
     :align: center
     :figclass: align-center
 
@@ -21,7 +21,7 @@ lens with respect to the radius from the optical axis as shown in :numref:`fig_2
 
 .. figure:: figs/causes/fig2.jpg
     :name: fig_2
-    :figwidth: 80 %
+    :figwidth: 70 %
     :align: center
     :figclass: align-center
 
@@ -33,7 +33,7 @@ object-plane is not parallel to a camera-sensor plane (:numref:`fig_4`).
 
 .. figure:: figs/causes/fig3.jpg
     :name: fig_3
-    :figwidth: 80 %
+    :figwidth: 70 %
     :align: center
     :figclass: align-center
 
@@ -41,7 +41,7 @@ object-plane is not parallel to a camera-sensor plane (:numref:`fig_4`).
 
 .. figure:: figs/causes/fig4.jpg
     :name: fig_4
-    :figwidth: 80 %
+    :figwidth: 70 %
     :align: center
     :figclass: align-center
 

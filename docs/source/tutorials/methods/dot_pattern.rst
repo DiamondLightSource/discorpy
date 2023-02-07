@@ -16,7 +16,7 @@ center-of-mass of each segmented dot is calculated and used as a reference-point
 
 **Normalizing background**
 
-The binarization uses a global thresholding `method <https://en.wikipedia.org/wiki/Otsu's_Method>`_.
+The binarization uses a global thresholding `method <https://en.wikipedia.org/wiki/Otsu's_Method>`__.
 In some cases, the background of an image is non-uniform which affects the
 performance of the thresholding method. *Discorpy* provides two ways of normalizing
 the background of an image: using a strong low-pass filter (:numref:`fig_8`) or using a

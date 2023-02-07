@@ -165,3 +165,13 @@ class PreprocessingMethods(unittest.TestCase):
         list_lines2 = prep.remove_residual_dots_ver(list_lines, 0.0, 1.5)
         num2 = np.sum(np.asarray([len(line) for line in list_lines2]))
         self.assertTrue(num1 == num2 + 1)
+
+    def test_calculate_threshold(self):
+        mat = 0.2 * np.ones((64, 64))
+        mat[16:30, 30: 40] = 1.0
+        mat = mat + 0.2 * np.random.rand(64,64)
+        threshold = prep.calculate_threshold(mat, bgr="dark")
+        self.assertTrue(threshold > 0.5)
+        mat = np.max(mat) - mat
+        threshold = prep.calculate_threshold(mat, bgr="bright")
+        self.assertTrue(threshold > 0.5)

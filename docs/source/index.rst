@@ -21,7 +21,7 @@ detectors of tomography systems but it also can be used for commercial cameras.
 
 **Source code:** https://github.com/DiamondLightSource/discorpy
 
-**Author:** Nghia T. Vo - Diamond Light Source, UK.
+**Author:** Nghia T. Vo - NSLS-II, Brookhaven National Laboratory, US; Diamond Light Source, UK.
 
 **Keywords:** Camera calibration, radial lens distortion, perspective distortion,
 distortion correction, tomography.

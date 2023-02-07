@@ -93,8 +93,11 @@ def get_local_extrema_points(list_data, option="min", radius=7, sensitive=0.1,
         1D array. Positions of local extremum points.
 
     """
+    list_data = np.copy(list_data)
     if denoise is True:
         list_data = ndi.gaussian_filter(list_data, 3)
+    if option == "max":
+        list_data = np.max(list_data) - list_data
     num_point = len(list_data)
     radius = np.clip(radius, 1, num_point // 4)
     if norm is True:
@@ -104,7 +107,7 @@ def get_local_extrema_points(list_data, option="min", radius=7, sensitive=0.1,
         list_sort = mat_sort[1]
         ndrop = int(0.25 * num_point)
         (a1, a0) = np.polyfit(xlist[ndrop:-ndrop - 1],
-                              list_sort[ndrop:-ndrop - 1], 1)
+                              list_sort[ndrop:-ndrop - 1], 1)[:2]
         list_fit = a1 * xlist + a0
         l_thres, u_thres = a0, a1 * xlist[-1] + a0
         list_sort[(list_fit >= l_thres) & (list_fit <= u_thres)] = list_fit[
@@ -118,26 +121,15 @@ def get_local_extrema_points(list_data, option="min", radius=7, sensitive=0.1,
     points = []
     for i in range(radius, num_point - radius - 1, 1):
         val, pos = list_data[i], i
-        if option == "max":
-            list_sort = np.sort(list_data[i - radius:i + radius + 1])
-            num1 = list_sort[-1] - val
-            nmean = np.mean(list_sort[:radius + 1])
-            num2 = np.abs((val - nmean) / nmean) if nmean != 0 else 0.0
-            if (num1 == 0.0) and (num2 > sensitive):
-                if subpixel is True:
-                    pos = i - 1 + locate_subpixel_point(list_data[i - 1:i + 2],
-                                                        option=option)
-                points.append(pos)
-        else:
-            list_sort = np.sort(list_data[i - radius:i + radius + 1])
-            num1 = list_sort[0] - val
-            nmean = np.mean(list_sort[-radius:])
-            num2 = np.abs((val - nmean) / nmean) if nmean != 0 else 0.0
-            if (num1 == 0.0) and (num2 > sensitive):
-                if subpixel is True:
-                    pos = i - 1 + locate_subpixel_point(list_data[i - 1:i + 2],
-                                                        option=option)
-                points.append(pos)
+        list_sort = np.sort(list_data[i - radius:i + radius + 1])
+        num1 = list_sort[0] - val
+        nmean = np.mean(list_sort[-radius:])
+        num2 = np.abs((val - nmean) / nmean) if nmean != 0 else 0.0
+        if num1 == 0.0 and num2 > sensitive:
+            if subpixel is True:
+                pos = i - 1 + locate_subpixel_point(list_data[i - 1:i + 2],
+                                                    option="min")
+            points.append(pos)
     return np.asarray(points)
 
 

@@ -75,3 +75,7 @@ __pycache__
 *.cls
 *.layout
 *.bst
+
+# Coverage report
+.coverage
+htmlcov

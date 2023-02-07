@@ -2,7 +2,7 @@ Process an X-ray target image having perspective effect
 =======================================================
 
 The following workflow shows how to use Discorpy to process an X-ray target
-`image <https://github.com/DiamondLightSource/discorpy/blob/master/data/dot_pattern_02.jpg>`_,
+`image <https://github.com/DiamondLightSource/discorpy/blob/master/data/dot_pattern_02.jpg>`__,
 acquired at Beamline I13 Diamond Light Source, which has a small perspective effect.
 
 - The following codes load the image, extract reference-points, and group
@@ -59,21 +59,21 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
         #>> Horizontal slope: -0.03194770332102831. Vertical slope: 0.03625649318792672
 
     .. figure:: figs/demo_02/fig1.jpg
-      :name: fig_31
-      :figwidth: 100 %
-      :align: center
-      :figclass: align-center
+        :name: fig_31
+        :figwidth: 100 %
+        :align: center
+        :figclass: align-center
 
-      . (a) X-ray target image. (b) Segmented image.
+        . (a) X-ray target image. (b) Segmented image.
 
 
     .. figure:: figs/demo_02/fig2.png
-      :name: fig_32
-      :figwidth: 100 %
-      :align: center
-      :figclass: align-center
+        :name: fig_32
+        :figwidth: 100 %
+        :align: center
+        :figclass: align-center
 
-      . (a) Horizontal lines. (b) Vertical lines.
+        . (a) Horizontal lines. (b) Vertical lines.
 
 - As can be seen from the highlighted output above, the slopes of horizontal lines and
   vertical lines are quite different, compared to the results in :ref:`demo 1 <demo_01>`.
@@ -104,13 +104,13 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
         plt.show()
 
     .. figure:: figs/demo_02/fig3.png
-      :name: fig_33
-      :figwidth: 100 %
-      :align: center
-      :figclass: align-center
+        :name: fig_33
+        :figwidth: 100 %
+        :align: center
+        :figclass: align-center
 
-      . (a) Plot of a-coefficients vs c-coefficients of parabolic fits. (b) Plot
-      of b-coefficients vs c-coefficients.
+        . (a) Plot of a-coefficients vs c-coefficients of parabolic fits. (b) Plot
+        of b-coefficients vs c-coefficients.
 
 - As can be seen in :numref:`fig_33` (b), the slopes are significantly different between
   two groups of lines. To correct this perspective effect, the coefficients of
@@ -147,23 +147,23 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
                            height, width)
 
     .. figure:: figs/demo_02/fig4.png
-      :name: fig_34
-      :figwidth: 100 %
-      :align: center
-      :figclass: align-center
+        :name: fig_34
+        :figwidth: 100 %
+        :align: center
+        :figclass: align-center
 
-      Parabola coefficients after correction. (a) Plot of a-coefficients
-      vs c-coefficients. (b) Plot of b-coefficients vs c-coefficients.
+        Parabola coefficients after correction. (a) Plot of a-coefficients
+        vs c-coefficients. (b) Plot of b-coefficients vs c-coefficients.
 
     .. figure:: figs/demo_02/fig5.png
-      :name: fig_35
-      :figwidth: 100 %
-      :align: center
-      :figclass: align-center
+        :name: fig_35
+        :figwidth: 100 %
+        :align: center
+        :figclass: align-center
 
-      Grid points regenerated using the updated parabola-coefficients.
-      Note that there are no missing points as compared to :numref:`fig_32`.
-      (a) Horizontal lines. (b) Vertical lines.
+        Grid points regenerated using the updated parabola-coefficients.
+        Note that there are no missing points as compared to :numref:`fig_32`.
+        (a) Horizontal lines. (b) Vertical lines.
 
 - The rest of the workflow is to calculate the center of distortion and coefficients
   of the backward model, then unwarp the image. As can be seen in :numref:`fig_37` and
@@ -198,40 +198,40 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
         io.save_image(output_base + "/difference.tif", corrected_mat - mat0)
 
     .. figure:: figs/demo_02/fig6.png
-      :name: fig_36
-      :figwidth: 100 %
-      :align: center
-      :figclass: align-center
+        :name: fig_36
+        :figwidth: 100 %
+        :align: center
+        :figclass: align-center
 
-      Residual of the distorted points. The origin of the coordinate
-      system is at the top-left of an image. (a) For horizontal lines.
-      (b) For vertical lines.
+        Residual of the distorted points. The origin of the coordinate
+        system is at the top-left of an image. (a) For horizontal lines.
+        (b) For vertical lines.
 
     .. figure:: figs/demo_02/fig7.png
-      :name: fig_37
-      :figwidth: 100 %
-      :align: center
-      :figclass: align-center
+        :name: fig_37
+        :figwidth: 100 %
+        :align: center
+        :figclass: align-center
 
-      Residual of the unwarpped points with perspective effect. The
-      origin of the coordinate system is at the center of distortion.
-      (a) For horizontal lines. (b) For vertical lines.
+        Residual of the unwarpped points with perspective effect. The
+        origin of the coordinate system is at the center of distortion.
+        (a) For horizontal lines. (b) For vertical lines.
 
     .. figure:: figs/demo_02/fig8.png
-      :name: fig_38
-      :figwidth: 100 %
-      :align: center
-      :figclass: align-center
+        :name: fig_38
+        :figwidth: 100 %
+        :align: center
+        :figclass: align-center
 
-      Residual of the unwarpped points after correcting the perspective
-      effect. (a) For horizontal lines. (b) For vertical lines.
+        Residual of the unwarpped points after correcting the perspective
+        effect. (a) For horizontal lines. (b) For vertical lines.
 
     .. figure:: figs/demo_02/fig9.jpg
-      :name: fig_39
-      :figwidth: 75 %
-      :align: center
-      :figclass: align-center
+        :name: fig_39
+        :figwidth: 75 %
+        :align: center
+        :figclass: align-center
 
-      Difference between images before and after distortion correction.
+        Difference between images before and after distortion correction.
 
 Click :download:`here <./codes/demo_02.py>` to download the Python codes.

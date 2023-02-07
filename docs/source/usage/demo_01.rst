@@ -4,7 +4,7 @@ Process a high-quality calibration image
 ========================================
 
 The following workflow shows how to use Discorpy to process a high-quality
-calibration `image <https://github.com/DiamondLightSource/discorpy/blob/master/data/dot_pattern_01.jpg>`_
+calibration `image <https://github.com/DiamondLightSource/discorpy/blob/master/data/dot_pattern_01.jpg>`__
 acquired at Beamline I12, Diamond Light Source.
 
 - Load the image:
@@ -203,20 +203,20 @@ acquired at Beamline I12, Diamond Light Source.
         io.save_image(output_base + "/difference.tif", corrected_mat - mat0)
 
     .. figure:: figs/demo_01/fig7.jpg
-      :name: fig_29
-      :figwidth: 75 %
-      :align: center
-      :figclass: align-center
+        :name: fig_29
+        :figwidth: 75 %
+        :align: center
+        :figclass: align-center
 
-      Corrected image.
+        Corrected image.
 
     .. figure:: figs/demo_01/fig8.jpg
-      :name: fig_30
-      :figwidth: 75 %
-      :align: center
-      :figclass: align-center
+        :name: fig_30
+        :figwidth: 75 %
+        :align: center
+        :figclass: align-center
 
-      Difference between images before (:numref:`fig_23`) and after (:numref:`fig_29`)
-      the correction.
+        Difference between images before (:numref:`fig_23`) and after (:numref:`fig_29`)
+        the correction.
 
 Click :download:`here <./codes/demo_01.py>` to download the Python codes.

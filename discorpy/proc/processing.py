@@ -401,7 +401,7 @@ def _calc_undistor_intercept(list_hor_lines, list_ver_lines, xcenter, ycenter,
 
 
 def calc_coef_backward(list_hor_lines, list_ver_lines, xcenter, ycenter,
-                       num_fact):
+                       num_fact, optimizing=False):
     """
     Calculate the distortion coefficients of a backward mode.
 
@@ -417,6 +417,8 @@ def calc_coef_backward(list_hor_lines, list_ver_lines, xcenter, ycenter,
         Center of distortion in y-direction.
     num_fact : int
         Number of the factors of polynomial.
+    optimizing : bool, optional
+        Apply optimization if True.
 
     Returns
     -------
@@ -425,7 +427,8 @@ def calc_coef_backward(list_hor_lines, list_ver_lines, xcenter, ycenter,
     """
     num_fact = np.int16(np.clip(num_fact, 1, None))
     (list_hor_uc, list_ver_uc) = _calc_undistor_intercept(
-        list_hor_lines, list_ver_lines, xcenter, ycenter)
+        list_hor_lines, list_ver_lines, xcenter, ycenter,
+        optimizing=optimizing)
     (list_coef_hor, list_hor_lines) = _para_fit_hor(
         list_hor_lines, xcenter, ycenter)
     (list_coef_ver, list_ver_lines) = _para_fit_ver(
@@ -460,7 +463,7 @@ def calc_coef_backward(list_hor_lines, list_ver_lines, xcenter, ycenter,
 
 
 def calc_coef_forward(list_hor_lines, list_ver_lines, xcenter, ycenter,
-                      num_fact):
+                      num_fact, optimizing=False):
     """
     Calculate the distortion coefficients of a forward mode.
 
@@ -476,6 +479,8 @@ def calc_coef_forward(list_hor_lines, list_ver_lines, xcenter, ycenter,
         Center of distortion in y-direction.
     num_fact : int
         Number of the factors of polynomial.
+    optimizing : bool, optional
+        Apply optimization if True.
 
     Returns
     -------
@@ -484,7 +489,8 @@ def calc_coef_forward(list_hor_lines, list_ver_lines, xcenter, ycenter,
     """
     num_fact = np.int16(np.clip(num_fact, 1, None))
     (list_hor_uc, list_ver_uc) = _calc_undistor_intercept(
-        list_hor_lines, list_ver_lines, xcenter, ycenter)
+        list_hor_lines, list_ver_lines, xcenter, ycenter,
+        optimizing=optimizing)
     (list_coef_hor, list_hor_lines) = _para_fit_hor(
         list_hor_lines, xcenter, ycenter)
     (list_coef_ver, list_ver_lines) = _para_fit_ver(
@@ -523,7 +529,7 @@ def calc_coef_forward(list_hor_lines, list_ver_lines, xcenter, ycenter,
 
 
 def calc_coef_backward_from_forward(list_hor_lines, list_ver_lines, xcenter,
-                                    ycenter, num_fact):
+                                    ycenter, num_fact, optimizing=False):
     """
     Calculate the distortion coefficients of a backward mode from a forward
     model.
@@ -540,6 +546,8 @@ def calc_coef_backward_from_forward(list_hor_lines, list_ver_lines, xcenter,
         Center of distortion in y-direction.
     num_fact : int
         Number of the factors of polynomial.
+    optimizing : bool, optional
+        Apply optimization if True.
 
     Returns
     -------
@@ -551,7 +559,7 @@ def calc_coef_backward_from_forward(list_hor_lines, list_ver_lines, xcenter,
     num_fact = np.int16(np.clip(num_fact, 1, None))
     list_ffact = np.float64(
         calc_coef_forward(list_hor_lines, list_ver_lines, xcenter, ycenter,
-                          num_fact))
+                          num_fact, optimizing=optimizing))
     (_, list_hor_lines) = _para_fit_hor(list_hor_lines, xcenter, ycenter)
     (_, list_ver_lines) = _para_fit_ver(list_ver_lines, xcenter, ycenter)
     list_expo = np.arange(num_fact, dtype=np.int16)
@@ -909,7 +917,7 @@ def _calc_undistor_intercept_perspective(list_hor_lines, list_ver_lines,
         List of the (y,x)-coordinates of points on each vertical line.
     equal_dist : bool
         Use the condition that lines are equidistant if True.
-    scale : {'mean', 'median', 'min', 'max'}
+    scale : {'mean', 'median', 'min', 'max', float}
         Scale option for the undistorted grid.
     optimizing : bool
         Apply optimization for finding line-distance if True.
@@ -925,7 +933,8 @@ def _calc_undistor_intercept_perspective(list_hor_lines, list_ver_lines,
                                                          list_ver_lines)
     num_hline, num_vline = len(list_hor_lines), len(list_ver_lines)
     pos_hor, pos_ver = num_hline // 2, num_vline // 2
-    num_use = min(num_hline // 2 - 1, num_vline // 2 - 1)
+    num_use = min(np.clip(num_hline // 2 - 1, 1, None),
+                  np.clip(num_vline // 2 - 1, 1, None))
     (posh1, posh2) = (max(0, pos_hor - num_use),
                       min(num_hline, pos_hor + num_use + 1))
     (posv1, posv2) = (max(0, pos_ver - num_use),
@@ -942,6 +951,9 @@ def _calc_undistor_intercept_perspective(list_hor_lines, list_ver_lines,
     else:
         dist_hor = np.mean(np.abs(np.diff(list_coef_hor[posh1: posh2, 1])))
         dist_ver = np.mean(np.abs(np.diff(list_coef_ver[posv1: posv2, 1])))
+        if isinstance(scale, float):
+            dist_hor = scale * dist_hor
+            dist_ver = scale * dist_ver
     if optimizing is True:
         dist_hor = _optimize_intercept_perspective(dist_hor, pos_hor,
                                                    list_coef_hor[:, 1])
@@ -1014,7 +1026,7 @@ def generate_undistorted_perspective_lines(list_hor_lines, list_ver_lines,
         List of the (y,x)-coordinates of points on each vertical line.
     equal_dist : bool
         Use the condition that lines are equidistant if True.
-    scale : {'mean', 'median', 'min', 'max'}
+    scale : {'mean', 'median', 'min', 'max', float}
         Scale option for the undistorted grid.
     optimizing : bool
         Apply optimization for finding line-distance if True.
@@ -1070,7 +1082,7 @@ def generate_source_target_perspective_points(list_hor_lines, list_ver_lines,
         List of the (y,x)-coordinates of points on each vertical line.
     equal_dist : bool
         Use the condition that lines are equidistant if True.
-    scale : {'mean', 'median', 'min', 'max'}
+    scale : {'mean', 'median', 'min', 'max', float}
         Scale option for the undistorted grid.
     optimizing : bool
         Apply optimization for finding line-distance if True.
@@ -1090,11 +1102,8 @@ def generate_source_target_perspective_points(list_hor_lines, list_ver_lines,
     target_points = []
     for i in range(len(list_hor_slines)):
         for j in range(len(list_ver_slines)):
-            p1 = list_hor_slines[i, j]
-            p2 = list_hor_tlines[i, j]
-            if p1[0] > 0 and p1[1] > 0 and p2[0] > 0 and p2[1] > 0:
-                source_points.append(list_hor_slines[i, j])
-                target_points.append(list_hor_tlines[i, j])
+            source_points.append(list_hor_slines[i, j])
+            target_points.append(list_hor_tlines[i, j])
     return np.asarray(source_points), np.asarray(target_points)
 
 

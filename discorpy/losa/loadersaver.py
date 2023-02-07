@@ -37,7 +37,6 @@ import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
 from collections import OrderedDict
-import errno
 
 
 def load_image(file_path, average=True):
@@ -49,20 +48,18 @@ def load_image(file_path, average=True):
     file_path : str
         Path to a file.
     average : bool, optional
-        Average a multi-channel image if True.
+        Average a multichannel image if True.
 
     Returns
     -------
     array_like
     """
     if "\\" in file_path:
-        raise ValueError(
-            "Please use a file path following the Unix convention")
+        raise ValueError("Please use the forward slash in the file path")
     try:
         mat = np.asarray(Image.open(file_path), dtype=np.float32)
     except IOError:
-        print("No such file or directory: {}".format(file_path))
-        raise
+        raise ValueError("No such file or directory: {}".format(file_path))
     if len(mat.shape) > 2 and average is True:
         axis_m = np.argmin(mat.shape)
         mat = np.mean(mat, axis=axis_m)
@@ -101,6 +98,8 @@ def get_hdf_information(file_path):
     list_type : str
         Types of the datasets.
     """
+    if "\\" in file_path:
+        raise ValueError("Please use the forward slash in the file path")
     ifile = h5py.File(file_path, 'r')
     keys = []
     ifile.visit(keys.append)
@@ -118,17 +117,12 @@ def get_hdf_information(file_path):
         data = ifile[list_key[i]]
         try:
             shape = data.shape
-        except AttributeError:
-            shape = "None"
+        except Exception:
+            shape = None
         try:
             dtype = data.dtype
-        except AttributeError:
-            dtype = "None"
-        if isinstance(data, list):
-            if len(data) == 1:
-                if not isinstance(data, np.ndarray):
-                    dtype = str(list(data)[0])
-                    dtype = dtype.replace("b'", "'")
+        except Exception:
+            dtype = None
         list_shape.append(shape)
         list_type.append(dtype)
     ifile.close()
@@ -155,6 +149,8 @@ def find_hdf_key(file_path, pattern):
     list_type : str
         Types of the datasets.
     """
+    if "\\" in file_path:
+        raise ValueError("Please use the forward slash in the file path")
     ifile = h5py.File(file_path, 'r')
     list_key = []
     keys = []
@@ -175,18 +171,14 @@ def find_hdf_key(file_path, pattern):
             data = ifile[key]
             try:
                 shape = data.shape
-            except AttributeError:
-                shape = "None"
+            except Exception:
+                shape = None
             list_dshape.append(shape)
             try:
                 dtype = data.dtype
-            except AttributeError:
-                dtype = "None"
+            except Exception:
+                dtype = None
             list_dtype.append(dtype)
-            if isinstance(data, list):
-                if len(data) == 1:
-                    dtype = str(list(data)[0])
-                    dtype = dtype.replace("b'", "'")
     ifile.close()
     return list_dkey, list_dshape, list_dtype
 
@@ -212,23 +204,21 @@ def load_hdf_file(file_path, key_path=None, index=None, axis=0):
     array_like
         2D array or 3D array.
     """
-    mat = None
     if "\\" in file_path:
-        raise ValueError(
-            "Please use a file path following the Unix convention")
+        raise ValueError("Please use the forward slash in the file path")
+    mat = None
     try:
         ifile = h5py.File(file_path, 'r')
     except IOError:
-        print("Couldn't open file: {}".format(file_path))
-        raise
+        raise ValueError("Couldn't open file: {}".format(file_path))
     if key_path is None:
         key_path = ifile.visititems(_get_key)  # Find the key automatically
         if key_path is None:
             raise ValueError("Please provide the key path to the dataset!")
     check = key_path in ifile
     if not check:
-        print("Couldn't open object with the key path: {}".format(key_path))
-        raise ValueError("!!! Wrong key !!!")
+        raise ValueError("Couldn't open object with the key path: "
+                         "{}".format(key_path))
     idata = ifile[key_path]
     shape = idata.shape
     if len(shape) < 2 or len(shape) > 3:
@@ -236,7 +226,7 @@ def load_hdf_file(file_path, key_path=None, index=None, axis=0):
     if len(shape) == 2:
         mat = np.asarray(idata)
     if len(shape) == 3:
-        axis = np.clip(axis, 0, 3)
+        axis = np.clip(axis, 0, 2)
         if index is None:
             mat = np.float32(idata[:, :, :])
         else:
@@ -248,8 +238,9 @@ def load_hdf_file(file_path, key_path=None, index=None, axis=0):
                         mat = np.float32(idata[:, index, :])
                     else:
                         mat = np.float32(idata[:, :, index])
-                except ValueError:
-                    print("Index out of range!")
+                    axis = np.clip(axis, 0, 1)
+                except IndexError:
+                    raise
             if isinstance(index, tuple) or isinstance(index, list):
                 if len(index) == 3:
                     starti = index[0]
@@ -269,8 +260,8 @@ def load_hdf_file(file_path, key_path=None, index=None, axis=0):
                         mat = np.float32(idata[:, list_index, :])
                     else:
                         mat = np.float32(idata[:, :, list_index])
-                except ValueError:
-                    print("Index out of range!")
+                except IndexError:
+                    raise
             if mat.shape[axis] == 1:
                 mat = np.swapaxes(mat, axis, 0)[0]
             if mat.shape[axis] == 0:
@@ -294,15 +285,16 @@ def load_hdf_object(file_path, key_path):
     object
         hdf/nxs object.
     """
+    if "\\" in file_path:
+        raise ValueError("Please use the forward slash in the file path")
     try:
         ifile = h5py.File(file_path, 'r')
     except IOError:
-        print("Couldn't open file: {}".format(file_path))
-        raise
+        raise ValueError("Couldn't open file: {}".format(file_path))
     check = key_path in ifile
     if not check:
-        print("Couldn't open object with the key path: {}".format(key_path))
-        raise ValueError("!!! Wrong key !!!")
+        raise ValueError("Couldn't open object with the key path: "
+                         "{}".format(key_path))
     return ifile[key_path]
 
 
@@ -319,9 +311,8 @@ def _create_folder(file_path):
     if not os.path.exists(file_base):
         try:
             os.makedirs(file_base)
-        except OSError as e:
-            if e.errno != errno.EEXIST:
-                raise
+        except OSError:
+            raise ValueError("Can't create the folder: {}".format(file_path))
 
 
 def _create_file_name(file_path):
@@ -371,12 +362,20 @@ def save_image(file_path, mat, overwrite=True):
         Updated file path.
     """
     if "\\" in file_path:
-        raise ValueError(
-            "Please use a file path following the Unix convention")
+        raise ValueError("Please use the forward slash in the file path")
     file_base, file_ext = os.path.splitext(file_path)
-    if not ((file_ext == ".tif") or (file_ext == ".tiff")):
-        mat = np.uint8(255 * (mat - np.min(mat)) / (np.max(mat) - np.min(mat)))
+    if not (file_ext == ".tif" or file_ext == ".tiff"):
+        nmin, nmax = np.min(mat), np.max(mat)
+        if nmax > nmin:
+            mat = np.uint8(255 * (mat - nmin) / (nmax - nmin))
+        else:
+            mat = np.uint8(255 * np.ones_like(mat))
     else:
+        data_type = str(mat.dtype)
+        if not (data_type == "uint8" or data_type == "uint16"
+                or data_type == "float32"):
+            raise ValueError("Can't save to tiff with this "
+                             "format: {}".format(data_type))
         if len(mat.shape) > 2:
             axis_m = np.argmin(mat.shape)
             mat = np.mean(mat, axis=axis_m)
@@ -387,8 +386,7 @@ def save_image(file_path, mat, overwrite=True):
     try:
         image.save(file_path)
     except IOError:
-        print("Couldn't write to file {}".format(file_path))
-        raise
+        raise ValueError("Couldn't write to file {}".format(file_path))
     return file_path
 
 
@@ -419,8 +417,7 @@ def save_plot_image(file_path, list_lines, height, width, overwrite=True,
         Updated file path.
     """
     if "\\" in file_path:
-        raise ValueError(
-            "Please use a file path following the Unix convention")
+        raise ValueError("Please use the forward slash in the file path")
     _create_folder(file_path)
     if not overwrite:
         file_path = _create_file_name(file_path)
@@ -436,8 +433,7 @@ def save_plot_image(file_path, list_lines, height, width, overwrite=True,
     try:
         plt.savefig(file_path, dpi=dpi)
     except IOError:
-        print("Couldn't write to file {}".format(file_path))
-        raise
+        raise ValueError("Couldn't write to file {}".format(file_path))
     plt.close()
     return file_path
 
@@ -469,8 +465,7 @@ def save_residual_plot(file_path, list_data, height, width, overwrite=True,
         Updated file path.
     """
     if "\\" in file_path:
-        raise ValueError(
-            "Please use a file path following the Unix convention")
+        raise ValueError("Please use the forward slash in the file path")
     _create_folder(file_path)
     if not overwrite:
         file_path = _create_file_name(file_path)
@@ -486,8 +481,7 @@ def save_residual_plot(file_path, list_data, height, width, overwrite=True,
     try:
         plt.savefig(file_path, dpi=dpi, bbox_inches='tight')
     except IOError:
-        print("Couldn't write to file {}".format(file_path))
-        raise
+        raise ValueError("Couldn't write to file {}".format(file_path))
     plt.close()
     plt.rcParams.update(plt.rcParamsDefault)
     return file_path
@@ -514,8 +508,7 @@ def save_hdf_file(file_path, idata, key_path='entry', overwrite=True):
         Updated file path.
     """
     if "\\" in file_path:
-        raise ValueError(
-            "Please use a file path following the Unix convention")
+        raise ValueError("Please use the forward slash in the file path")
     file_base, file_ext = os.path.splitext(file_path)
     if not ((file_ext == '.hdf') or (file_ext == '.h5')):
         file_ext = '.hdf'
@@ -526,8 +519,7 @@ def save_hdf_file(file_path, idata, key_path='entry', overwrite=True):
     try:
         ofile = h5py.File(file_path, 'w')
     except IOError:
-        print("Couldn't write file: {}".format(file_path))
-        raise
+        raise ValueError("Couldn't write to file {}".format(file_path))
     grp = ofile.create_group(key_path)
     grp.create_dataset("data", data=idata)
     ofile.close()
@@ -552,13 +544,16 @@ def open_hdf_stream(file_path, data_shape, key_path='entry/data',
     overwrite : bool
         Overwrite the existing file if True.
     options : dict, optional
-        Add metadata. E.g. options={"entry/angles": angles, "entry/energy": 53}.
+        Add metadata. Example:
+        options={"entry/angles": angles, "entry/energy": 53}.
 
     Returns
     -------
     object
         hdf object.
     """
+    if "\\" in file_path:
+        raise ValueError("Please use the forward slash in the file path")
     file_base, file_ext = os.path.splitext(file_path)
     if not (file_ext == '.hdf' or file_ext == '.h5' or file_ext == ".nxs"):
         file_ext = '.hdf'
@@ -569,16 +564,16 @@ def open_hdf_stream(file_path, data_shape, key_path='entry/data',
     try:
         ofile = h5py.File(file_path, 'w')
     except IOError:
-        print("Couldn't write to file: {}".format(file_path))
-        raise
+        raise ValueError("Couldn't write to file: {}".format(file_path))
     if len(options) != 0:
         for opt_name in options:
             opts = options[opt_name]
             for key in opts:
                 if key_path in key:
-                    msg = "!!! Selected key path, '{0}', can not be a child" \
-                          " key-path of '{1}' !!!\n!!! Change to make sure " \
-                          "they are at the same level !!!".format(key, key_path)
+                    msg = "!!! Selected key path, '{0}', can not be a " \
+                          "child key-path of '{1}' !!!\n!!! Change to make " \
+                          "sure they are at the same level " \
+                          "!!!".format(key, key_path)
                     raise ValueError(msg)
                 ofile.create_dataset(key, data=opts[key])
     data_out = ofile.create_dataset(key_path, data_shape, dtype=data_type)
@@ -607,6 +602,8 @@ def save_metadata_txt(file_path, xcenter, ycenter, list_fact, overwrite=True):
     str
         Updated file path.
     """
+    if "\\" in file_path:
+        raise ValueError("Please use the forward slash in the file path")
     file_base, file_ext = os.path.splitext(file_path)
     if not ((file_ext == '.txt') or (file_ext == '.dat')):
         file_ext = '.txt'
@@ -641,9 +638,8 @@ def load_metadata_txt(file_path):
     tuple of floats and list
         Tuple of (xcenter, ycenter, list_fact).
     """
-    if ("\\" in file_path):
-        raise ValueError(
-            "Please use a file path following the Unix convention")
+    if "\\" in file_path:
+        raise ValueError("Please use the forward slash in the file path")
     with open(file_path, 'r') as f:
         x = f.read().splitlines()
         list_data = []
@@ -656,7 +652,7 @@ def load_metadata_txt(file_path):
 
 
 def save_plot_points(file_path, list_points, height, width, overwrite=True,
-                    dpi=100, marker="o", color="blue"):
+                     dpi=100, marker="o", color="blue"):
     """
     Save the plot of dot-centroids to an image. Useful to check if the dots
     are arranged properly where dots on the same line having the same color.
@@ -688,8 +684,7 @@ def save_plot_points(file_path, list_points, height, width, overwrite=True,
         Updated file path.
     """
     if "\\" in file_path:
-        raise ValueError(
-            "Please use a file path following the Unix convention")
+        raise ValueError("Please use the forward slash in the file path")
     _create_folder(file_path)
     if not overwrite:
         file_path = _create_file_name(file_path)
@@ -706,7 +701,6 @@ def save_plot_points(file_path, list_points, height, width, overwrite=True,
     try:
         plt.savefig(file_path, dpi=dpi)
     except IOError:
-        print("Couldn't write to file {}".format(file_path))
-        raise
+        raise ValueError("Couldn't write to file {}".format(file_path))
     plt.close()
     return file_path

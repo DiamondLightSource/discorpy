@@ -3,12 +3,12 @@ Calibrate a camera using a chessboard image
 
 The following workflow shows how to calibrate a commercial camera using a chessboard
 image. First of all, the chessboard pattern was created using this
-`website <https://markhedleyjones.com/projects/calibration-checkerboard-collection>`_.
+`website <https://markhedleyjones.com/projects/calibration-checkerboard-collection>`__.
 The generated pattern was printed and stuck to a flat wall (:numref:`fig_65`).
 Then, its image was taken using the front-facing camera of a Microsoft Surface Pro
 Laptop. The pincushion distortion is visible in the image.
 
-- Load the `chessboard image <https://github.com/DiamondLightSource/discorpy/tree/master/data/laptop_camera>`_,
+- Load the `chessboard image <https://github.com/DiamondLightSource/discorpy/tree/master/data/laptop_camera>`__,
   convert to a line-pattern image.
 
     .. code-block:: python
@@ -46,7 +46,7 @@ Laptop. The pincushion distortion is visible in the image.
         . (a) Chessboard image. (b) Line-pattern image generated from image (a).
 
 - Extract reference-points (adjust parameters: *radius* and/or *sensitive* if need to).
-  Note that users can use other methods available in `Scikit-image <https://scikit-image.org/docs/dev/auto_examples/features_detection/plot_corner.html>`_
+  Note that users can use other methods available in `Scikit-image <https://scikit-image.org/docs/dev/auto_examples/features_detection/plot_corner.html>`__
   to perform this step directly on the chessboard image. There are many unwanted points
   (:numref:`fig_66`) but they can be removed by the grouping method (:numref:`fig_67`)
   in Discorpy.
@@ -171,7 +171,7 @@ Laptop. The pincushion distortion is visible in the image.
         before and after unwarping.
 
 - Calculated coefficients of the correction model can be used to unwarp
-  `another image <https://github.com/DiamondLightSource/discorpy/tree/master/data/laptop_camera>`_
+  `another image <https://github.com/DiamondLightSource/discorpy/tree/master/data/laptop_camera>`__
   taken by the same camera as demonstrated in :numref:`fig_71`. For a color image, we have
   to correct each channel of the image.
 

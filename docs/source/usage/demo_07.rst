@@ -5,9 +5,9 @@ Discorpy can be used to correct perspective distortion of an image, *e.g.* to re
 information from the image or to make a document captured by a camera
 look like a scanned one.
 
-- Firstly, we need to locate 4 points from `the image <https://github.com/DiamondLightSource/discorpy/tree/master/data/demo>`_
+- Firstly, we need to locate 4 points from `the image <https://github.com/DiamondLightSource/discorpy/tree/master/data/demo>`__
   knowing that they should be at 4 corners of a rectangular shape. This can be done
-  using `ImageJ software <https://imagej.nih.gov/ij/download.html>`_ as shown in
+  using `ImageJ software <https://imagej.nih.gov/ij/download.html>`__ as shown in
   :numref:`fig_72` below. Or, it can be done in a more fancy way using line-detection
   methods and finding cross-points between these lines using Scikit-image and
   Discorpy's API.

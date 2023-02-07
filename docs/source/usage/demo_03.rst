@@ -5,7 +5,7 @@ Extracting reference-points from an image and grouping them into lines are the
 most challenging steps in the processing workflow. Calculating coefficients of
 distortion-correction models is straightforward using Discorpy's API. The
 following demo shows how to tweak parameters of pre-processing methods to process
-a challenging `calibration-image <https://github.com/DiamondLightSource/discorpy/blob/master/data/dot_pattern_04.jpg>`_
+a challenging `calibration-image <https://github.com/DiamondLightSource/discorpy/blob/master/data/dot_pattern_04.jpg>`__
 which was acquired at Beamline I13, Diamond Light Source.
 
 - First of all, the background of the image is corrected to support the step of
@@ -39,7 +39,7 @@ which was acquired at Beamline I13, Diamond Light Source.
 
         . (a) X-ray target image. (b) Normalized image.
 
-- The binarization method uses the `Otsu's method <https://scikit-image.org/docs/0.13.x/api/skimage.filters.html#skimage.filters.threshold_otsu>`_
+- The binarization method uses the `Otsu's method <https://scikit-image.org/docs/0.13.x/api/skimage.filters.html#skimage.filters.threshold_otsu>`__
   for calculating the threshold by default. In a case that the calculated value
   may not work, users can pass a threshold value manually or calculate it by
   another method.

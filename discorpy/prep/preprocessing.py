@@ -289,7 +289,7 @@ def calc_size_distance(mat, ratio=0.3):
     mat = np.int16(clear_border(mat))
     mat_label, num_dots = ndi.label(mat)
     list_index = np.arange(1, num_dots + 1)
-    list_sum = ndi.measurements.sum(mat, labels=mat_label, index=list_index)
+    list_sum = ndi.sum(mat, labels=mat_label, index=list_index)
     dot_size = np.median(list_sum)
     list_cent = np.asarray(
         center_of_mass(mat, labels=mat_label, index=list_index))

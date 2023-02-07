@@ -28,6 +28,7 @@ import unittest
 import numpy as np
 import scipy.ndimage as ndi
 import discorpy.post.postprocessing as post
+import discorpy.proc.processing as proc
 
 
 class PostprocessingMethods(unittest.TestCase):
@@ -106,7 +107,7 @@ class PostprocessingMethods(unittest.TestCase):
         error = np.max(mat3d[:, y0, :] - slice_warp)
         self.assertTrue(error > 0.1)
 
-    def test_unwarp_slice_backward(self):
+    def test_unwarp_chunk_slice_backward(self):
         x0, y0 = (self.wid // 2, self.hei // 2)
         list_fact = [1.0, 3.0 * 10 ** (-3)]
         mat = np.zeros((self.hei, self.wid), dtype=np.float32)
@@ -114,8 +115,9 @@ class PostprocessingMethods(unittest.TestCase):
         mat = np.float32(ndi.binary_dilation(np.int16(mat), iterations=1))
         mat3d = np.zeros((10, self.hei, self.wid), dtype=np.float32)
         mat3d[:] = mat
-        chunk_warp = post.unwarp_chunk_slices_backward(mat3d, x0, y0, list_fact,
-                                                       y0 - 5, y0 + 5)
+        chunk_warp = post.unwarp_chunk_slices_backward(mat3d, x0, y0,
+                                                       list_fact, y0 - 5,
+                                                       y0 + 5)
         error1 = np.max(mat3d[:, y0 - 5, :] - chunk_warp[:, 0, :])
         error2 = np.max(mat3d[:, y0 + 5, :] - chunk_warp[:, -1, :])
         self.assertTrue(error1 > 0.1 and error2 > 0.1)
@@ -124,12 +126,13 @@ class PostprocessingMethods(unittest.TestCase):
         list_clines = post.unwarp_line_forward(self.list_dlines, self.x0,
                                                self.y0, self.list_ffact)
         list_res = post.calc_residual_hor(list_clines, self.x0, self.y0)
+        check = post.check_distortion(list_res)
         error = np.max(list_res[:, 1])
-        self.assertTrue(error < 0.5)
+        self.assertTrue(error < 0.5 and check is False)
 
     def test_calc_residual_ver(self):
         dot_dist = 2.0
-        list_fact = [1.0, -2.0 * 10 ** (-3)]
+        list_fact = [1.0, -2.0 * 10 ** (-2)]
         list_ver_lines = [
             [[self.hei - y, x] for y in np.arange(1, self.hei, dot_dist)] for x
             in np.arange(1, self.wid, dot_dist)]
@@ -149,5 +152,87 @@ class PostprocessingMethods(unittest.TestCase):
         list_ver_clines = post.unwarp_line_backward(list_ver_dlines, self.x0,
                                                     self.y0, list_fact)
         list_res = post.calc_residual_ver(list_ver_clines, self.x0, self.y0)
+        check = post.check_distortion(list_res)
         error = np.max(list_res[:, 1])
-        self.assertTrue(error < 0.5)
+        self.assertTrue(error > 1.0 and check is True)
+
+    def test_correct_perspective_line(self):
+        hor_line1 = np.asarray([[10.0 + 2 * i / 32, i] for i in range(32)])
+        hor_line2 = np.asarray([[26.0 - 5 * i / 32, i] for i in range(32)])
+        list_hor_lines = [hor_line1, hor_line2]
+        ver_line1 = np.asarray([[i, 0.0 + 3 * i / 32] for i in range(32)])
+        ver_line2 = np.asarray([[i, 20.0 - 3 * i / 32] for i in range(32)])
+        list_ver_lines = [ver_line1, ver_line2]
+
+        f_alias = proc.generate_source_target_perspective_points
+        source_points, target_points = f_alias(list_hor_lines, list_ver_lines,
+                                               equal_dist=False, scale="mean",
+                                               optimizing=False)
+
+        f_alias1 = proc.calc_perspective_coefficients
+        pers_fcoef = f_alias1(source_points, target_points, mapping="forward")
+        pers_bcoef = f_alias1(source_points, target_points, mapping="backward")
+
+        f_alias2 = post.correct_perspective_line
+        list_hor_clines = f_alias2(list_hor_lines, pers_fcoef)
+        list_ver_clines = f_alias2(list_ver_lines, pers_fcoef)
+        list_hor_dlines = f_alias2(list_hor_clines, pers_bcoef)
+        list_ver_dlines = f_alias2(list_ver_clines, pers_bcoef)
+
+        hor_dline1 = list_hor_dlines[0]
+        hor_dline2 = list_hor_dlines[1]
+        ver_dline1 = list_ver_dlines[0]
+        ver_dline2 = list_ver_dlines[1]
+
+        h_slope1a = np.polyfit(hor_line1[:, 1], hor_line1[:, 0], 1)[0]
+        h_slope1b = np.polyfit(hor_dline1[:, 1], hor_dline1[:, 0], 1)[0]
+        h_slope2a = np.polyfit(hor_line2[:, 1], hor_line2[:, 0], 1)[0]
+        h_slope2b = np.polyfit(hor_dline2[:, 1], hor_dline2[:, 0], 1)[0]
+
+        v_slope1a = np.polyfit(ver_line1[:, 0], ver_line1[:, 1], 1)[0]
+        v_slope1b = np.polyfit(ver_dline1[:, 0], ver_dline1[:, 1], 1)[0]
+        v_slope2a = np.polyfit(ver_line2[:, 0], ver_line2[:, 1], 1)[0]
+        v_slope2b = np.polyfit(ver_dline2[:, 0], ver_dline2[:, 1], 1)[0]
+
+        error1 = np.abs(h_slope1a - h_slope1b)
+        error2 = np.abs(h_slope2a - h_slope2b)
+        error3 = np.abs(v_slope1a - v_slope1b)
+        error4 = np.abs(v_slope2a - v_slope2b)
+        val = 1.0e-6
+        self.assertTrue(error1 < val and error2 < val and error3 < val
+                        and error4 < val)
+
+    def test_correct_perspective_image(self):
+        hor_line1 = np.asarray([[10.0 + 2 * i / 32, i] for i in range(64)])
+        hor_line2 = np.asarray([[60.0 - 5 * i / 32, i] for i in range(64)])
+        list_hor_lines = [hor_line1, hor_line2]
+        ver_line1 = np.asarray([[i, 5.0 + 3 * i / 32] for i in range(64)])
+        ver_line2 = np.asarray([[i, 60.0 - 3 * i / 32] for i in range(64)])
+        list_ver_lines = [ver_line1, ver_line2]
+
+        f_alias = proc.generate_source_target_perspective_points
+        source_points, target_points = f_alias(list_hor_lines, list_ver_lines,
+                                               equal_dist=False, scale="mean",
+                                               optimizing=False)
+
+        f_alias1 = proc.calc_perspective_coefficients
+        pers_fcoef = f_alias1(source_points, target_points, mapping="forward")
+        pers_bcoef = f_alias1(source_points, target_points, mapping="backward")
+
+        mat = np.zeros((64, 64), dtype=np.float32)
+        pos1, pos2 = 10, 45
+        mat[pos1:pos1 + 1] = np.float32(1.0)
+        mat[pos2:pos2 + 1] = np.float32(0.5)
+        list0 = np.mean(mat, axis=1)
+        num0 = len(list0[list0 > 0])
+        max_pos0 = np.argmax(list0)
+
+        mat_cor1 = post.correct_perspective_image(mat, pers_bcoef)
+        list1 = np.mean(mat_cor1, axis=1)
+        num1 = len(list1[list1 > 0])
+        self.assertTrue(num1 > num0)
+
+        mat_cor2 = post.correct_perspective_image(mat_cor1, pers_fcoef)
+        list2 = np.mean(mat_cor2, axis=1)
+        max_pos2 = np.argmax(list2)
+        self.assertTrue(max_pos0 == max_pos2)
