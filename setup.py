@@ -19,6 +19,7 @@ else:
     dependencies = [
         "scikit-image",
         "scipy",
+        "scipy",
         "h5py",
         "pillow",
         "matplotlib",
