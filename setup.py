@@ -18,8 +18,7 @@ if python_version <= "3.7":
 else:
     dependencies = [
         "scikit-image",
-        "scipy",
-        "scipy",
+        "scipy<1.9.2",
         "h5py",
         "pillow",
         "matplotlib",
