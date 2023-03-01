@@ -6,8 +6,8 @@ import discorpy.proc.processing as proc
 import discorpy.post.postprocessing as post
 
 # Initial parameters
-file_path = "C:/data/dot_pattern_02.jpg"
-output_base = "./output_demo_02/"
+file_path = "../../data/dot_pattern_02.jpg"
+output_base = "E:/output_demo_02/"
 num_coef = 5  # Number of polynomial coefficients
 mat0 = io.load_image(file_path)  # Load image
 (height, width) = mat0.shape

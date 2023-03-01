@@ -22,8 +22,8 @@ acquired at Beamline I13 Diamond Light Source, which has a small perspective eff
         import discorpy.post.postprocessing as post
 
         # Initial parameters
-        file_path = "../data/dot_pattern_02.jpg"
-        output_base = "E:/correction/"
+        file_path = "../../data/dot_pattern_02.jpg"
+        output_base = "E:/output_demo_02/"
         num_coef = 5  # Number of polynomial coefficients
         mat0 = io.load_image(file_path) # Load image
         (height, width) = mat0.shape

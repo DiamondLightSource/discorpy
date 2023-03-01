@@ -19,8 +19,8 @@ collected at Beamline I13 Diamond Light Source.
 
 
         # Initial parameters
-        file_path = "C:/data/line_pattern_01.jpg"
-        output_base = "./for_demo_04/"
+        file_path = "../../data/line_pattern_01.jpg"
+        output_base = "E:/output_demo_04/"
         num_coef = 5  # Number of polynomial coefficients
 
         print("1-> Load image: {}".format(file_path))

@@ -15,7 +15,7 @@
 # limitations under the License.
 # ============================================================================
 # Author: Nghia T. Vo
-# E-mail: nghia.vo@diamond.ac.uk
+# E-mail: 
 # Publication date: 10th July 2018
 # ============================================================================
 # Contributors:
@@ -371,11 +371,6 @@ def save_image(file_path, mat, overwrite=True):
         else:
             mat = np.uint8(255 * np.ones_like(mat))
     else:
-        data_type = str(mat.dtype)
-        if not (data_type == "uint8" or data_type == "uint16"
-                or data_type == "float32"):
-            raise ValueError("Can't save to tiff with this "
-                             "format: {}".format(data_type))
         if len(mat.shape) > 2:
             axis_m = np.argmin(mat.shape)
             mat = np.mean(mat, axis=axis_m)

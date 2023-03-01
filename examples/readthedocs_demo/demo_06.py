@@ -6,8 +6,8 @@ import discorpy.proc.processing as proc
 import discorpy.post.postprocessing as post
 
 # Initial parameters
-file_path = "C:/data/laptop_camera/chessboard.jpg"
-output_base = "./for_demo_06/"
+file_path = "../../data/laptop_camera/chessboard.jpg"
+output_base = "E:/output_demo_06/"
 num_coef = 5  # Number of polynomial coefficients
 mat0 = io.load_image(file_path) # Load image
 (height, width) = mat0.shape
@@ -26,13 +26,15 @@ print("Vertical slope: ", slope_ver, " Distance: ", dist_ver)
 list_points_hor_lines = lprep.get_cross_points_hor_lines(mat1, slope_ver, dist_ver,
                                                          ratio=0.3, norm=True, offset=450,
                                                          bgr="bright", radius=15,
-                                                         sensitive=1.0, denoise=True,
+                                                         sensitive=0.5, denoise=True,
                                                          subpixel=True)
 list_points_ver_lines = lprep.get_cross_points_ver_lines(mat1, slope_hor, dist_hor,
                                                          ratio=0.3, norm=True, offset=150,
                                                          bgr="bright", radius=15,
-                                                         sensitive=1.0, denoise=True,
+                                                         sensitive=0.5, denoise=True,
                                                          subpixel=True)
+if len(list_points_hor_lines) == 0 or len(list_points_ver_lines) == 0:
+    raise ValueError("No reference-points detected !!! Please adjust parameters !!!")
 io.save_plot_points(output_base + "/ref_points_horizontal.png", list_points_hor_lines,
                     height, width, color="red")
 io.save_plot_points(output_base + "/ref_points_vertical.png", list_points_ver_lines,
@@ -113,7 +115,7 @@ for i in range(img.shape[-1]):
 io.save_image(output_base + "/corrected_image_color.jpg", img_corrected)
 
 # Load a test image and correct it.
-img = io.load_image("../../../data/laptop_camera/test_image.jpg", average=False)
+img = io.load_image("../../data/laptop_camera/test_image.jpg", average=False)
 img_corrected = np.copy(img)
 for i in range(img.shape[-1]):
     img_corrected[:, :, i] = post.unwarp_image_backward(img[:, :, i], xcenter,

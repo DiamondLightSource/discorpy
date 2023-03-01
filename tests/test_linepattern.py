@@ -15,7 +15,7 @@
 # limitations under the License.
 # ============================================================================
 # Author: Nghia T. Vo
-# E-mail: nghia.vo@diamond.ac.uk
+# E-mail: 
 # ============================================================================
 # Contributors:
 # ============================================================================
@@ -197,4 +197,3 @@ class LinepatternMethods(unittest.TestCase):
                                                 sensitive=0.2, denoise=True)
         num1, num2 = len(points1), len(points2)
         self.assertTrue(num1 == 3 and num2 == 2)
-

@@ -20,8 +20,8 @@ look like a scanned one.
         import discorpy.post.postprocessing as post
 
         # Load image
-        file_path = "C:/data/demo/perspective_demo.jpg"
-        output_base = "./for_demo_07/"
+        file_path = "../../data/demo/perspective_demo.jpg"
+        output_base = "./output_demo_07/"
         mat = io.load_image(file_path, average=False)
 
         # Provide the coordinates of 4-points. They can be in xy-order or yx-order, this info

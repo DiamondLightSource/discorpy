@@ -14,11 +14,8 @@
 # limitations under the License.
 # ============================================================================
 # Author: Nghia T. Vo
-# E-mail: nghia.vo@diamond.ac.uk
-# Description: Python implementation of the author's methods of
-# distortion correction, Nghia T. Vo et al "Radial lens distortion
-# correction with sub-pixel accuracy for X-ray micro-tomography"
-# Optics Express 23, 32859-32868 (2015), https://doi.org/10.1364/OE.23.032859
+# E-mail: 
+# Description: Usage demonstration
 # Publication date: 10th July 2018
 # ============================================================================
 # Contributors:
@@ -77,7 +74,7 @@ perspective = False # Correct perspective distortion if True
 print("Load image")
 mat0 = io.load_image(file_path)
 # Calculation of distortion coefficients
-print("Calculate distotion coefficients of a backward model...")
+print("Calculate distortion coefficients of a backward model...")
 (xcenter, ycenter, list_fact) = calc_distor_coef(mat0, num_coef,
                                                  perspective=perspective)
 # Output

@@ -14,11 +14,8 @@
 # limitations under the License.
 #============================================================================
 # Author: Nghia T. Vo
-# E-mail: nghia.vo@diamond.ac.uk
-# Description: Python implementation of the author's methods of
-# distortion correction, Nghia T. Vo et al "Radial lens distortion
-# correction with sub-pixel accuracy for X-ray micro-tomography"
-# Optics Express 23, 32859-32868 (2015), https://doi.org/10.1364/OE.23.032859
+# E-mail:
+# Description: Usage demonstration
 # Publication date: 10th July 2018
 # ============================================================================
 # Contributors:
@@ -44,7 +41,7 @@ time_start = timeit.default_timer()
 file_path = "../data/dot_pattern_04.jpg"
 output_base = "E:/correction/"
 num_coef = 5  # Number of polynomial coefficients
-perspective = False # Correct perspective distortion if True
+perspective = True # Correct perspective distortion if True
 # -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------
 
@@ -120,8 +117,12 @@ if perspective is True:
         list_hor_lines, list_ver_lines = proc.regenerate_grid_points_parabola(
             list_hor_lines, list_ver_lines, perspective=perspective)
     except AttributeError:
-        raise ValueError("Perspective correction only available "
-                         "from Discorpy 1.4!!!")
+        print("Perspective correction only available from Discorpy 1.4!!!")
+        list_hor_lines, list_ver_lines = proc.regenerate_grid_points_parabola(
+            list_hor_lines, list_ver_lines)
+else:
+    list_hor_lines, list_ver_lines = proc.regenerate_grid_points_parabola(
+        list_hor_lines, list_ver_lines)
 
 # Calculate the center of distortion. xcenter is the center from the left
 # of the image. ycenter is the center from the top of the image.

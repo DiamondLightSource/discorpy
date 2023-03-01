@@ -14,7 +14,7 @@
 # limitations under the License.
 # ============================================================================
 # Author: Nghia T. Vo
-# E-mail: nghia.vo@diamond.ac.uk
+# E-mail: 
 # Publication date: 10th July 2018
 # ============================================================================
 # Contributors:

@@ -1,4 +1,3 @@
-#python
 numpy
 scipy
 scikit-image
