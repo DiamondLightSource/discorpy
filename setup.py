@@ -2,7 +2,7 @@ import pathlib
 import setuptools
 import sys
 
-if sys.version_info <= (3, 7):
+if sys.version_info[:2] <= (3, 7):
     dependencies = [
         "numpy<1.22",
         "scipy<=1.7",        
