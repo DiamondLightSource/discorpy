@@ -5,8 +5,8 @@ import discorpy.post.postprocessing as post
 import scipy.ndimage as ndi
 
 
-file_path = "C:/data/percy_cam/F_R_hazcam.png"
-output_base = "./for_demo_08/"
+file_path = "../../data/percy_cam/F_R_hazcam.png"
+output_base = "E:/output_demo_08/"
 mat0 = io.load_image(file_path, average=True)
 mat0 = mat0 / np.max(mat0)
 (height, width) = mat0.shape
