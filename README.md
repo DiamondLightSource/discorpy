@@ -1,7 +1,7 @@
 # Discorpy
 (**Dis**)tortion (**Cor**)rection (**Py**)thon-package
 
-*Distortion calibration and correction software for lens-based detector systems*
+*Camera calibration and distortion correction software for lens-based detector systems*
 
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/DiamondLightSource/discorpy/discorpy_ga.yml) 
 [![Downloads](https://static.pepy.tech/personalized-badge/discorpy?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Pypi-downloads)](https://pepy.tech/project/discorpy) 
@@ -11,20 +11,20 @@
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/discorpy/badges/platforms.svg)](https://anaconda.org/conda-forge/discorpy) 
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/DiamondLightSource/discorpy) 
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/discorpy/badges/license.svg)](https://anaconda.org/conda-forge/discorpy)
-![Coverage](https://github.com/DiamondLightSource/discorpy/blob/master/docs/coverage_report/coverage.svg)
+![Coverage](https://github.com/DiamondLightSource/discorpy/raw/master/docs/coverage_report/coverage.svg)
 
 
-**Discorpy** is an open-source Python package for distortion correction 
-with sub-pixel accuracy as required by tomography detector systems. 
-It calculates parameters of correction models using a grid pattern image.
-The package mainly implements methods published in Optics Express: https://doi.org/10.1364/OE.23.032859. 
-It also provides methods in a full pipeline of data processing. From version 1.4, 
-perspective distortion correction was added to the package.
+**Discorpy** is an open-source Python package for camera calibration and distortion 
+correction with sub-pixel accuracy. It calculates parameters of correction models 
+using a grid pattern image. The package mainly implements methods published in 
+[Optics Express](https://doi.org/10.1364/OE.23.032859). It provides methods in 
+a full pipeline of data processing. From version 1.4, perspective distortion 
+correction was added to the package.
 
 **Author and maintainer:** Nghia Vo, *NSLS-II, Brookhaven National Laboratory, US; Diamond Light Source, UK*
 
-Update notes
-============
+Major updates
+=============
 - 25/02/2021: the package name was changed from Vounwarp to Discorpy. The old-name 
 package is still available at https://github.com/nghia-vo/vounwarp 
 and installable using conda-forge channel: https://anaconda.org/conda-forge/vounwarp
@@ -41,7 +41,7 @@ perspective distortion.
 - Post-processing methods for: unwarping lines of points, images, or slices of 
 a 3D dataset; and evaluating the accuracy of the correction results.
 - Some methods may be useful for other applications:
-  * Correct non-uniform background using a FFT-based filter and a median filter.
+  * Correct non-uniform background of an image.
   * Select binary objects in a certain range of values.
   * Unwarp slices of a 3D dataset.
 
@@ -89,6 +89,6 @@ Diamond Light Source, UK:
 
 - Apply to a hazard camera of the [Mars Perseverance Rover](https://mars.nasa.gov/mars2020/multimedia/raw-images/).
 Details of how to estimate distortion coefficients of that camera without using
-a calibration target are shown [here](https://github.com/DiamondLightSource/discorpy/blob/master/examples/Perseverance_distortion_correction/Distortion_correction_for_Perseverance_camera.md)  
+a calibration target are shown [here](https://github.com/DiamondLightSource/discorpy/blob/master/examples/Perseverance_distortion_correction/Distortion_correction_for_Perseverance_camera.md).  
 
     ![Mars_rover](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/Mars_Rover_camera.jpg)
