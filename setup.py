@@ -2,10 +2,7 @@ import pathlib
 import setuptools
 import sys
 
-py_ver = sys.version.split(".")[:2]
-python_version = py_ver[0] + "." + py_ver[1]
-
-if python_version <= "3.7":
+if sys.version_info <= (3, 7):
     dependencies = [
         "numpy<1.22",
         "scipy<=1.7",        
