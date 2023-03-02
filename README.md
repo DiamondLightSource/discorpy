@@ -44,6 +44,13 @@ a 3D dataset; and evaluating the accuracy of the correction results.
   * Correct non-uniform background of an image.
   * Select binary objects in a certain range of values.
   * Unwarp slices of a 3D dataset.
+- Summarized by an AI chatbot: "It is a Python library for camera distortion 
+  correction that is designed to be easy to use and accessible to both computer 
+  vision experts and novice users. The library provides a simple API for 
+  correcting lens distortion in images, and it is based on the popular NumPy 
+  library for numerical computing. Discorpy also has good documentation and 
+  examples to help users get started with the library".
+
 
 Documentation
 =============
