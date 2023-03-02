@@ -30,7 +30,7 @@ README = (HERE / "README.md").read_text()
 
 setuptools.setup(
     name="discorpy",
-    version="1.4",
+    version="1.5",
     author="Nghia Vo",
     author_email="nghia.vo@diamond.ac.uk",
     description='Correction for radial distortion and perspective distortion '
@@ -54,6 +54,6 @@ setuptools.setup(
         "Natural Language :: English",
         "Topic :: Scientific/Engineering :: Image Processing"
     ],
-    install_requires= dependencies,
+    install_requires=dependencies,
     python_requires='>=3.7',
 )
