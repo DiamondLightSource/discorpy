@@ -39,25 +39,25 @@ import discorpy.post.postprocessing as post
 Standalone script for calculating distortion coefficients from a dot pattern.
 Acceptable file formats: tif, jpg, png, hdf, or nxs.
 Example of use:
-python discorpy.py -i home/user/data/dot_pattern_01.tif -o home/user/correction -n 5
+python unwarp.py -i home/user/data/dot_pattern_01.tif -o home/user/correction -n 5
 """
 
 parser = argparse.ArgumentParser(
     description="Load an image of a dot pattern (tif, jpg, png, hdf, or nxs)"
                 " and calculate distortion coefficients")
 parser.add_argument("-i", dest="input", help="Path to the file", required=True)
-parser.add_argument("-k", dest="key", help="Key path to the data",
+parser.add_argument("-k", dest="key", help="Key path to the dataset if input is a hdf/nxs/h5 file",
                     required=False, default=None)
 parser.add_argument("-o", dest="output", help="Output folder", required=True)
 parser.add_argument("-f", dest="flat",
-                    help="Path to a flat-field 'norm' for self-normalization",
+                    help="Path to a flat-field, or use 'norm' for self-normalization",
                     required=False, default="none")
 parser.add_argument("-n", dest="order",
                     help="Number of polynomial coefficients", type=int,
                     required=False, default=5)
 parser.add_argument("-p", dest="perspective",
                     help="Enable perspective correction", required=False,
-                    defaul=False)
+                    default=False)
 print("******************************************************************\n")
 print("                    Start the script!!!\n                            ")
 print("******************************************************************\n")

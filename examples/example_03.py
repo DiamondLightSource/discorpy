@@ -117,12 +117,8 @@ if perspective is True:
         list_hor_lines, list_ver_lines = proc.regenerate_grid_points_parabola(
             list_hor_lines, list_ver_lines, perspective=perspective)
     except AttributeError:
-        print("Perspective correction only available from Discorpy 1.4!!!")
-        list_hor_lines, list_ver_lines = proc.regenerate_grid_points_parabola(
-            list_hor_lines, list_ver_lines)
-else:
-    list_hor_lines, list_ver_lines = proc.regenerate_grid_points_parabola(
-        list_hor_lines, list_ver_lines)
+        raise ValueError("Perspective correction only available "
+                         "from Discorpy 1.4!!!")
 
 # Calculate the center of distortion. xcenter is the center from the left
 # of the image. ycenter is the center from the top of the image.
