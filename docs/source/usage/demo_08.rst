@@ -14,6 +14,7 @@ how to do that on images acquired by the front-right hazard-camera of the
 
     .. code-block:: python
 
+        import os
         import numpy as np
         import discorpy.losa.loadersaver as io
         import discorpy.proc.processing as proc
@@ -63,8 +64,12 @@ how to do that on images acquired by the front-right hazard-camera of the
     .. code-block:: python
 
         # Define scanning routines
-        def scan_coef(idx, start, stop, step, list_coef, list_power, output_base, mat0,
-                      mat_pad, pad, ntime=1):
+        def scan_coef(idx, start, stop, step, list_coef, list_power, output_base0, mat0,
+                      mat_pad, pad, ntime=1, backward=True):
+            output_base = output_base0 + "/coef_" + str(idx) + "_ntime_" + str(ntime)
+            while os.path.isdir(output_base):
+                ntime = ntime + 1
+                output_base = output_base0 + "/coef_" + str(idx) + "_ntime_" + str(ntime)
             (height, width) = mat0.shape
             for num in np.arange(start, stop + step, step):
                 list_coef_est = np.copy(list_coef)
@@ -73,12 +78,23 @@ how to do that on images acquired by the front-right hazard-camera of the
                 line_img_warped = post.unwarp_image_backward(mat_pad, xcenter + pad,
                                                              ycenter + pad, list_ffact)
                 line_img_warped = line_img_warped[pad:pad + height, pad:pad + width]
-                name = ("0000" + str(list_coef_est[idx]))[-5:]
-                io.save_image(output_base + "/coef_" + str(idx) + "_ntime_" + str(
-                    ntime) + "/img_" + name + ".jpg", mat0 + 0.5 * line_img_warped)
+                name = "coef_{0}_val_{1:4.2f}".format(idx, list_coef_est[idx])
+                io.save_image(output_base + "/forward/img_" + name + ".jpg", mat0 + 0.5 * line_img_warped)
+                if backward is True:
+                    # Transform to the backward model for correction
+                    hlines = np.int16(np.linspace(0, height, 40))
+                    vlines = np.int16(np.linspace(0, width, 50))
+                    ref_points = [[i - ycenter, j - xcenter] for i in hlines for j in vlines]
+                    list_bfact = proc.transform_coef_backward_and_forward(list_ffact, ref_points=ref_points)
+                    img_unwarped = post.unwarp_image_backward(mat0, xcenter, ycenter, list_bfact)
+                    io.save_image(output_base + "/backward/img_" + name + ".jpg", img_unwarped)
 
         def scan_center(xcenter, ycenter, start, stop, step, list_coef, list_power,
-                        output_base, mat0, mat_pad, pad, axis="x", ntime=1):
+                        output_base0, mat0, mat_pad, pad, axis="x", ntime=1, backward=True):
+            output_base = output_base0 + "/" + axis + "_center" + "_ntime_" + str(ntime)
+            while os.path.isdir(output_base):
+                ntime = ntime + 1
+                output_base = output_base0 + "/" + axis + "_center" + "_ntime_" + str(ntime)
             (height, width) = mat0.shape
             list_ffact = list_power * list_coef
             if axis == "x":
@@ -88,18 +104,32 @@ how to do that on images acquired by the front-right hazard-camera of the
                                                                  ycenter + pad,
                                                                  list_ffact)
                     line_img_warped = line_img_warped[pad:pad + height, pad:pad + width]
-                    name = ("0000" + str(xcenter + num))[-7:]
-                    io.save_image(output_base + "/xcenter_ntime_" + str(
-                        ntime) + "/img_" + name + ".jpg", mat0 + 0.5 * line_img_warped)
+                    name = "xcenter_{0:7.2f}".format(xcenter + num)
+                    io.save_image(output_base + "/forward/img_" + name + ".jpg", mat0 + 0.5 * line_img_warped)
+                    if backward is True:
+                        # Transform to the backward model for correction
+                        hlines = np.int16(np.linspace(0, height, 40))
+                        vlines = np.int16(np.linspace(0, width, 50))
+                        ref_points = [[i - ycenter, j - xcenter] for i in hlines for j in vlines]
+                        list_bfact = proc.transform_coef_backward_and_forward(list_ffact, ref_points=ref_points)
+                        img_unwarped = post.unwarp_image_backward(mat0, xcenter+num, ycenter, list_bfact)
+                        io.save_image(output_base + "/backward/img_" + name + ".jpg",  img_unwarped)
             else:
-                for num in range(start, stop + step, step):
+                for num in np.arange(start, stop + step, step):
                     line_img_warped = post.unwarp_image_backward(mat_pad, xcenter + pad,
                                                                  ycenter + num + pad,
                                                                  list_ffact)
                     line_img_warped = line_img_warped[pad:pad + height, pad:pad + width]
-                    name = ("0000" + str(ycenter + num))[-7:]
-                    io.save_image(output_base + "/ycenter_ntime_" + str(
-                        ntime) + "/img_" + name + ".jpg", mat0 + 0.5 * line_img_warped)
+                    name = "ycenter_{0:7.2f}".format(ycenter + num)
+                    io.save_image(output_base + "/forward/img_" + name + ".jpg", mat0 + 0.5 * line_img_warped)
+                    if backward is True:
+                        # Transform to the backward model for correction
+                        hlines = np.int16(np.linspace(0, height, 40))
+                        vlines = np.int16(np.linspace(0, width, 50))
+                        ref_points = [[i - ycenter, j - xcenter] for i in hlines for j in vlines]
+                        list_bfact = proc.transform_coef_backward_and_forward(list_ffact, ref_points=ref_points)
+                        img_unwarped = post.unwarp_image_backward(mat0, xcenter, ycenter+num, list_bfact)
+                        io.save_image(output_base + "/backward/img_" + name + ".jpg",  img_unwarped)
 
 
         ## Scan the 4th coefficient
@@ -174,13 +204,13 @@ how to do that on images acquired by the front-right hazard-camera of the
     .. code-block:: python
 
         # Correct other images from the same camera:
-        img = io.load_image("C:/data/percy_cam/rock_core1.png", average=False)
+        img = io.load_image("../../data/percy_cam/rock_core1.png", average=False)
         for i in range(img.shape[-1]):
             img_corrected[:, :, i] = post.unwarp_image_backward(img[:, :, i], xcenter,
                                                                 ycenter, list_bfact)
         io.save_image(output_base + "/rock_core1_unwarped.png", img_corrected)
 
-        img = io.load_image("C:/data/percy_cam/rock_core2.png", average=False)
+        img = io.load_image("../../data/percy_cam/rock_core2.png", average=False)
         for i in range(img.shape[-1]):
             img_corrected[:, :, i] = post.unwarp_image_backward(img[:, :, i], xcenter,
                                                                 ycenter, list_bfact)
