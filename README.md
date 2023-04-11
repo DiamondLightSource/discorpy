@@ -98,4 +98,6 @@ Diamond Light Source, UK:
 Details of how to estimate distortion coefficients of that camera without using
 a calibration target are shown [here](https://discorpy.readthedocs.io/en/latest/usage/demo_08.html).  
 
-    ![Mars_rover](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/Mars_Rover_camera.jpg)
+    ![Percy_cam1](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/Percy_cam1.jpg)
+
+    ![Percy_cam2](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/Percy_cam2.jpg)
