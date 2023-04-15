@@ -97,3 +97,4 @@ Demonstrations
     usage/demo_06
     usage/demo_07
     usage/demo_08
+    usage/tips
