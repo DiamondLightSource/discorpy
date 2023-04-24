@@ -29,7 +29,7 @@ setuptools.setup(
     name="discorpy",
     version="1.5",
     author="Nghia Vo",
-    author_email="nghia.vo@diamond.ac.uk",
+    author_email="nvo@bnl.gov",
     description='Correction for radial distortion and perspective distortion '
                 'in Python',
     long_description=README,
