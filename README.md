@@ -41,8 +41,8 @@ Features
   can be independently determined and corrected using a single calibration image.
 - The software provides a full pipeline of data processing including:
   + [Pre-processing methods](https://discorpy.readthedocs.io/en/latest/api.html#pre-processing) 
-    for: extracting reference-points from a dot-pattern image, line-pattern image, and chessboard 
-    (checkerboard) image; grouping these points line-by-line.
+    for: extracting reference-points from a dot-pattern image, line-pattern image, 
+    and chessboard (checkerboard) image; grouping these points line-by-line.
   + [Processing methods](https://discorpy.readthedocs.io/en/latest/api.html#processing) for calculating 
     the optical center, coefficients of polynomial models for correcting radial distortion, and parameters 
     of a model for correcting perspective distortion.
@@ -59,7 +59,6 @@ Features
   library for numerical computing. Discorpy also has good documentation and 
   examples to help users get started with the library".
 
-
 Documentation
 =============
 
@@ -67,10 +66,17 @@ Documentation
 
 Installation
 ============
+
 - https://discorpy.readthedocs.io/en/latest/install.html
 
 How to use
 ==========
+
+- To achieve high-accuracy results, the quality of the calibration image is crucial. 
+  An ideal calibration image should contain [numerous reference points](https://discorpy.readthedocs.io/en/latest/tutorials/methods.html#extracting-reference-points-from-a-calibration-image) 
+  extracted from [dot-patterns, line-patterns](https://github.com/DiamondLightSource/discorpy/tree/master/data), 
+  or [checkerboard images](https://github.com/DiamondLightSource/discorpy/tree/master/data/laptop_camera), covering most of 
+  the camera's field of view and minimizing perspective distortion.
 - https://discorpy.readthedocs.io/en/latest/usage.html
 
 Demonstrations
