@@ -33,17 +33,25 @@ correction, pre-processing methods for line-pattern images and chessboard images
 
 Features
 ========
-- Pre-processing methods for: extracting reference-points from a dot-pattern image,
-line-pattern image, and chessboard (checkerboard) image; grouping these points line-by-line. 
-- Processing methods for calculating the optical center, coefficients of polynomial 
-models for correcting radial distortion, and parameters of a model for correcting 
-perspective distortion.
-- Post-processing methods for: unwarping lines of points, images, or slices of 
-a 3D dataset; and evaluating the accuracy of the correction results.
-- Some methods may be useful for other applications:
-  * Correct non-uniform background of an image.
-  * Select binary objects in a certain range of values.
-  * Unwarp slices of a 3D dataset.
+- The [polynomial model](https://discorpy.readthedocs.io/en/latest/tutorials/methods.html#calculating-coefficients-of-a-polynomial-model-for-radial-distortion-correction) 
+  used by the package is versatile enough to calibrate images with varying levels of 
+  radial distortion. This practical feature eliminates the need for users to switch 
+  between different models based on the degree of distortion in the images.
+- Discorpy offers a unique feature where [radial distortion, the center of distortion, and perspective distortion](https://discorpy.readthedocs.io/en/latest/tutorials/methods.html)
+  can be independently determined and corrected using a single calibration image.
+- The software provides a full pipeline of data processing including:
+  + [Pre-processing methods](https://discorpy.readthedocs.io/en/latest/api.html#pre-processing) 
+    for: extracting reference-points from a dot-pattern image, line-pattern image, and chessboard 
+    (checkerboard) image; grouping these points line-by-line.
+  + [Processing methods](https://discorpy.readthedocs.io/en/latest/api.html#processing) for calculating 
+    the optical center, coefficients of polynomial models for correcting radial distortion, and parameters 
+    of a model for correcting perspective distortion.
+  + [Post-processing methods](https://discorpy.readthedocs.io/en/latest/api.html#post-processing) for: 
+    unwarping lines of points, images, or slices of a 3D dataset; and evaluating the accuracy of the correction results.
+  + Some methods may be useful for other applications:
+    * [Correct non-uniform background](https://discorpy.readthedocs.io/en/latest/api/discorpy.prep.preprocessing.html#discorpy.prep.preprocessing.normalization_fft) of an image.
+    * Select [binary objects](https://discorpy.readthedocs.io/en/latest/api/discorpy.prep.preprocessing.html#discorpy.prep.preprocessing.select_dots_based_distance) in a certain range of values.
+    * Unwarp slices of a [3D dataset](https://discorpy.readthedocs.io/en/latest/api/discorpy.post.postprocessing.html#discorpy.post.postprocessing.unwarp_slice_backward).
 - Summarized by an AI chatbot: "It is a Python library for camera distortion 
   correction that is designed to be easy to use and accessible to both computer 
   vision experts and novice users. The library provides a simple API for 
@@ -68,17 +76,18 @@ How to use
 Demonstrations
 ==============
 
-- https://discorpy.readthedocs.io/en/latest/usage.html#demonstrations 
+- Detailed step-by-step demonstrations featuring codes and explanations of how to use Discorpy for various types of calibration images
+  are shown [here](https://discorpy.readthedocs.io/en/latest/usage.html#demonstrations). 
 
 - Apply to a visible dot-target collected at [Beamline I12](https://www.diamond.ac.uk/Instruments/Imaging-and-Microscopy/I12/Detectors-at-I12.html),
-Diamond Light Source, UK:
+  Diamond Light Source, UK:
 
     ![I12_before_after1](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/i12_data_1.jpg)
 
     ![I12_before_after2](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/i12_data_2.jpg)
 
 - Apply to an X-ray dot-target collected at [Beamline I13](https://www.diamond.ac.uk/Instruments/Imaging-and-Microscopy/I13/Diamond-Manchester_Imaging_Branchline/Facilities_and_equipment_Imaging.html),
-Diamond Light Source, UK:
+  Diamond Light Source, UK:
 
     ![I13_before_after1](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/i13_data_1.jpg)
 
@@ -93,11 +102,25 @@ Diamond Light Source, UK:
     
     ![tomo_before](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/recon_after.jpg)
 
+- Calibrate a commercial camera with capabilities of correcting [radial distortion and perspective distortion](https://discorpy.readthedocs.io/en/latest/usage/demo_05.html)
+  independently.
+
+  ![show_case](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/showcase.png)
+
+- Calibrate a laptop [webcam](https://discorpy.readthedocs.io/en/latest/usage/demo_06.html) using a checkboard image.
+  
+  ![webcam_before](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/checkboard_before.jpg)
+
+  ![webcam_after](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/checkboard_after.jpg)
 
 - Apply to a hazard camera of the [Mars Perseverance Rover](https://mars.nasa.gov/mars2020/multimedia/raw-images/).
-Details of how to estimate distortion coefficients of that camera without using
-a calibration target are shown [here](https://discorpy.readthedocs.io/en/latest/usage/demo_08.html).  
+  Details of how to estimate distortion coefficients of that camera without using
+  a calibration target are shown [here](https://discorpy.readthedocs.io/en/latest/usage/demo_08.html).  
 
     ![Percy_cam1](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/Percy_cam1.jpg)
 
     ![Percy_cam2](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/Percy_cam2.jpg)
+
+- Correct perspective distortion:
+
+    ![perspective_correction](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/perspective_correction_demo.jpg)
