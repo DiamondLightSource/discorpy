@@ -5,24 +5,14 @@ import sys
 py_ver = sys.version.split(".")[:2]
 python_version = py_ver[0] + "." + py_ver[1]
 
-if python_version == "3.7":
+if python_version == "3.8":
     dependencies = [
-        "h5py<3.9",
-        "pillow<10.0",
-        "matplotlib<3.5",
-        "scikit-image<0.18",
-        "pywavelets<1.4",
-        "scipy<=1.7",
-        "numpy<1.20",
-    ]
-elif python_version == "3.8":
-    dependencies = [
+        "scipy<1.10",
+        "numpy<1.22",
         "h5py",
         "pillow",
         "matplotlib<3.6",
-        "scikit-image<0.19",
-        "scipy<1.10",
-        "numpy<1.22"
+        "scikit-image<0.19"
     ]
 else:
     dependencies = [
@@ -39,7 +29,7 @@ README = (HERE / "README.md").read_text()
 
 setuptools.setup(
     name="discorpy",
-    version="1.5",
+    version="1.6.0",
     author="Nghia Vo",
     author_email="nvo@bnl.gov",
     description='Correction for radial distortion and perspective distortion '
@@ -64,5 +54,5 @@ setuptools.setup(
         "Topic :: Scientific/Engineering :: Image Processing"
     ],
     install_requires=dependencies,
-    python_requires='>=3.7',
+    python_requires='>=3.8',
 )
