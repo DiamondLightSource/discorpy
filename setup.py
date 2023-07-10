@@ -5,24 +5,14 @@ import sys
 py_ver = sys.version.split(".")[:2]
 python_version = py_ver[0] + "." + py_ver[1]
 
-if python_version == "3.8":
-    dependencies = [
-        "scipy<1.10",
-        "h5py",
-        "pillow",
-        "matplotlib",
-        "scikit-image<0.19",
-        "numpy<1.22"
-    ]
-else:
-    dependencies = [
-        "scikit-image",
-        "scipy",
-        "h5py",
-        "pillow",
-        "matplotlib",
-        "numpy"
-    ]
+dependencies = [
+    "scikit-image",
+    "scipy",
+    "h5py",
+    "pillow",
+    "matplotlib",
+    "numpy"
+]
 
 HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
