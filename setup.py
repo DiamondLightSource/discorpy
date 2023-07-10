@@ -11,7 +11,7 @@ if python_version == "3.8":
         "numpy<1.22",
         "h5py",
         "pillow",
-        "matplotlib<3.6",
+        "matplotlib",
         "scikit-image<0.19"
     ]
 else:
