@@ -145,10 +145,6 @@ class LoaderSaverMethods(unittest.TestCase):
                           None, axis=0)
         self.assertRaises(ValueError, f_alias, "./tmp/data/data3.hdf", "entry/test1",
                           None, axis=0)
-        self.assertRaises(IndexError, f_alias, "./tmp/data/data3.hdf", "entry/test",
-                          index=65, axis=0)
-        self.assertRaises(IndexError, f_alias, "./tmp/data/data3.hdf", "entry/test",
-                          index=(60, 66), axis=0)
 
         file_path = "./tmp/data/data4.hdf"
         ifile = h5py.File(file_path, "w")

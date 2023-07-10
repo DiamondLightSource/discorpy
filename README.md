@@ -25,9 +25,7 @@ correction was added to the package.
 
 Major updates
 =============
-- 25/02/2021: the package name was changed from Vounwarp to Discorpy. The old-name 
-package is still available at https://github.com/nghia-vo/vounwarp 
-and installable using conda-forge channel: https://anaconda.org/conda-forge/vounwarp
+- 25/02/2021: the package name was changed from Vounwarp to Discorpy.
 - 21/11/2021: Version 1.4 was released with new features: perspective distortion 
 correction, pre-processing methods for line-pattern images and chessboard images. 
 
@@ -52,12 +50,6 @@ Features
     * [Correct non-uniform background](https://discorpy.readthedocs.io/en/latest/api/discorpy.prep.preprocessing.html#discorpy.prep.preprocessing.normalization_fft) of an image.
     * Select [binary objects](https://discorpy.readthedocs.io/en/latest/api/discorpy.prep.preprocessing.html#discorpy.prep.preprocessing.select_dots_based_distance) in a certain range of values.
     * Unwarp slices of a [3D dataset](https://discorpy.readthedocs.io/en/latest/api/discorpy.post.postprocessing.html#discorpy.post.postprocessing.unwarp_slice_backward).
-- Summarized by an AI chatbot: "It is a Python library for camera distortion 
-  correction that is designed to be easy to use and accessible to both computer 
-  vision experts and novice users. The library provides a simple API for 
-  correcting lens distortion in images, and it is based on the popular NumPy 
-  library for numerical computing. Discorpy also has good documentation and 
-  examples to help users get started with the library".
 
 Documentation
 =============
@@ -127,6 +119,6 @@ Demonstrations
 
     ![Percy_cam2](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/Percy_cam2.jpg)
 
-- Correct perspective distortion:
+- Correct [perspective distortion](https://discorpy.readthedocs.io/en/latest/usage/demo_07.html):
 
     ![perspective_correction](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/perspective_correction_demo.jpg)

@@ -48,7 +48,7 @@ Useful tips
         # We need to find the forward transformation using the given backward model.
         (height, width) = img.shape
         ref_points = [[i - ycenter, j - xcenter] for i in np.linspace(0, height, 40) for j in
-                      np.linspace(0, height, 40)]
+                      np.linspace(0, width, 40)]
         list_ffact = proc.transform_coef_backward_and_forward(list_bfact, ref_points=ref_points)
 
         # Define the function to calculate corresponding points between distorted and undistorted space

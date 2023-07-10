@@ -365,11 +365,12 @@ def save_image(file_path, mat, overwrite=True):
         raise ValueError("Please use the forward slash in the file path")
     file_base, file_ext = os.path.splitext(file_path)
     if not (file_ext == ".tif" or file_ext == ".tiff"):
-        nmin, nmax = np.min(mat), np.max(mat)
-        if nmax > nmin:
-            mat = np.uint8(255 * (mat - nmin) / (nmax - nmin))
-        else:
-            mat = np.uint8(255 * np.ones_like(mat))
+        if mat.dtype != np.uint8:
+            nmin, nmax = np.min(mat), np.max(mat)
+            if nmax != nmin:
+                mat = np.uint8(255.0 * (mat - nmin) / (nmax - nmin))
+            else:
+                mat = np.uint8(mat)
     else:
         if len(mat.shape) > 2:
             axis_m = np.argmin(mat.shape)
