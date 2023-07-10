@@ -13,7 +13,7 @@ if python_version == "3.7":
         "scikit-image<0.18",
         "pywavelets<1.4",
         "scipy<=1.7",
-        "numpy<1.21",
+        "numpy<1.20",
     ]
 elif python_version == "3.8":
     dependencies = [
@@ -22,7 +22,7 @@ elif python_version == "3.8":
         "matplotlib<3.6",
         "scikit-image<0.19",
         "scipy<1.10",
-        "numpy<1.24"
+        "numpy<1.22"
     ]
 else:
     dependencies = [
