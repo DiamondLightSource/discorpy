@@ -16,8 +16,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.8.7","3.8.8","3.8.9","3.8.10"]
+        include:
+          - os: ubuntu-latest
+            python-version: ["3.8", "3.9", "3.10"]
+          - os: macos-latest
+            python-version: ["3.8.16", "3.9.13", "3.10"]
+          - os: windows-latest
+            python-version: ["3.8", "3.9", "3.10"]
 
     steps:
     - uses: actions/checkout@v3
