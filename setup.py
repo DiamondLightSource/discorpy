@@ -8,11 +8,11 @@ python_version = py_ver[0] + "." + py_ver[1]
 if python_version == "3.8":
     dependencies = [
         "scipy<1.10",
-        "numpy<1.22",
         "h5py",
         "pillow",
         "matplotlib",
-        "scikit-image<0.19"
+        "scikit-image<0.19",
+        "numpy<1.22"
     ]
 else:
     dependencies = [
