@@ -11,7 +11,7 @@ if python_version == "3.7":
         "scipy<=1.7",        
         "h5py<3.9",
         "pillow<10.0",
-        "matplotlib<3.5",
+        "matplotlib<3.3",
         "pywavelets<1.4",
         "scikit-image<=0.18"
     ]
@@ -21,7 +21,7 @@ elif python_version == "3.8":
         "scipy<1.10",
         "h5py",
         "pillow",
-        "matplotlib",
+        "matplotlib<3.3",
         "scikit-image<0.19"
     ]
 else:
