@@ -1,3 +1,5 @@
+.. _demo_06:
+
 Calibrate a camera using a chessboard image
 ===========================================
 

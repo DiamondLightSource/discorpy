@@ -1,3 +1,5 @@
+.. _chessboard:
+
 Pre-processing techniques for a chessboard image
 ================================================
 

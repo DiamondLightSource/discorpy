@@ -1,3 +1,5 @@
+.. _dot_pattern:
+
 Pre-processing techniques for a dot-pattern image
 =================================================
 

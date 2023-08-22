@@ -1,3 +1,5 @@
+.. _demo_04:
+
 Process a line-pattern image
 ============================
 

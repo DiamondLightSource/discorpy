@@ -1,3 +1,5 @@
+.. _demo_08:
+
 Correct radial distortion of an image without using a calibration target
 ========================================================================
 

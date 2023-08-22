@@ -92,7 +92,7 @@ which was acquired at Beamline I13, Diamond Light Source.
                                                    num_dot_miss=10, accepted_ratio=0.65)
         list_ver_lines = prep.group_dots_ver_lines(mat1, ver_slope, dot_dist, ratio=0.3,
                                                    num_dot_miss=10, accepted_ratio=0.65)
-        # Remove outliners
+        # Remove outliers
         list_hor_lines = prep.remove_residual_dots_hor(list_hor_lines, hor_slope,
                                                        residual=2.0)
         list_ver_lines = prep.remove_residual_dots_ver(list_ver_lines, ver_slope,

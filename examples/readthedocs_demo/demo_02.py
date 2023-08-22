@@ -28,7 +28,7 @@ list_hor_lines = prep.group_dots_hor_lines(mat1, hor_slope, dot_dist,
                                            accepted_ratio=0.8)
 list_ver_lines = prep.group_dots_ver_lines(mat1, ver_slope, dot_dist,
                                            accepted_ratio=0.8)
-# Optional: remove outliners
+# Optional: remove outliers
 list_hor_lines = prep.remove_residual_dots_hor(list_hor_lines, hor_slope)
 list_ver_lines = prep.remove_residual_dots_ver(list_ver_lines, ver_slope)
 # Save output for checking

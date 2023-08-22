@@ -27,4 +27,8 @@ Post-processing
 .. toctree::
    api/discorpy.post.postprocessing
 
+Utility methods
+---------------
 
+.. toctree::
+   api/discorpy.util.utility

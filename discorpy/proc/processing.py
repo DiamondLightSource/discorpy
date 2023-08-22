@@ -286,7 +286,7 @@ def find_cod_fine(list_hor_lines, list_ver_lines, xcenter, ycenter, dot_dist):
     return xcenter2, ycenter2
 
 
-def _check_missing_lines(list_coef_hor, list_coef_ver):
+def _check_missing_lines(list_coef_hor, list_coef_ver, threshold=0.3):
     """
     Check if there are missing lines
 
@@ -296,6 +296,8 @@ def _check_missing_lines(list_coef_hor, list_coef_ver):
         Coefficients of parabolic fits of horizontal lines.
     list_coef_ver : list of 1D arrays
         Coefficients of parabolic fits of vertical lines.
+    threshold : float
+        To determine if there are missing lines. Larger is less sensitive.
 
     Returns
     -------
@@ -314,7 +316,7 @@ def _check_missing_lines(list_coef_hor, list_coef_ver):
                    vfact[1] * list_vindex + vfact[2]
     herror = np.max(np.abs((list_dist_hor - list_fit_hor) / list_fit_hor))
     verror = np.max(np.abs((list_dist_ver - list_fit_ver) / list_fit_ver))
-    if (herror > 0.3) or (verror > 0.3):
+    if (herror > threshold) or (verror > threshold):
         check = True
     return check
 
@@ -340,7 +342,7 @@ def _optimize_intercept(dist_hv, pos_hv, list_inter):
 
 
 def _calc_undistor_intercept(list_hor_lines, list_ver_lines, xcenter, ycenter,
-                             optimizing=False):
+                             optimizing=False, threshold=0.3):
     """
     Calculate the intercepts of undistorted lines.
 
@@ -356,6 +358,8 @@ def _calc_undistor_intercept(list_hor_lines, list_ver_lines, xcenter, ycenter,
         Center of distortion in y-direction.
     optimizing : bool, optional
         Apply optimization if True.
+    threshold : float
+        To determine if there are missing lines. Larger is less sensitive.
 
     Returns
     -------
@@ -368,11 +372,13 @@ def _calc_undistor_intercept(list_hor_lines, list_ver_lines, xcenter, ycenter,
         list_hor_lines, xcenter, ycenter)
     (list_coef_ver, list_ver_lines) = _para_fit_ver(
         list_ver_lines, xcenter, ycenter)
-    check = _check_missing_lines(list_coef_hor, list_coef_ver)
+    check = _check_missing_lines(list_coef_hor, list_coef_ver,
+                                 threshold=threshold)
     if check:
-        print("!!! ERROR !!!")
-        print("Parameters of the methods of grouping dots need to be adjusted")
-        raise ValueError("There're missing lines, algorithm will not work!!!")
+        msg = "!!! Parameters of the methods of grouping dots need to be " \
+              "adjusted !!!\n!!! Check if there are missing lines or adjust " \
+              "the threshold value !!!"
+        raise ValueError(msg)
     pos_hor = np.argmin(np.abs(list_coef_hor[:, 2]))
     pos_ver = np.argmin(np.abs(list_coef_ver[:, 2]))
     num_hline = len(list_hor_lines)
@@ -401,7 +407,7 @@ def _calc_undistor_intercept(list_hor_lines, list_ver_lines, xcenter, ycenter,
 
 
 def calc_coef_backward(list_hor_lines, list_ver_lines, xcenter, ycenter,
-                       num_fact, optimizing=False):
+                       num_fact, optimizing=False, threshold=0.3):
     """
     Calculate the distortion coefficients of a backward mode.
 
@@ -419,6 +425,8 @@ def calc_coef_backward(list_hor_lines, list_ver_lines, xcenter, ycenter,
         Number of the factors of polynomial.
     optimizing : bool, optional
         Apply optimization if True.
+    threshold : float
+        To determine if there are missing lines. Larger is less sensitive.
 
     Returns
     -------
@@ -428,7 +436,7 @@ def calc_coef_backward(list_hor_lines, list_ver_lines, xcenter, ycenter,
     num_fact = np.int16(np.clip(num_fact, 1, None))
     (list_hor_uc, list_ver_uc) = _calc_undistor_intercept(
         list_hor_lines, list_ver_lines, xcenter, ycenter,
-        optimizing=optimizing)
+        optimizing=optimizing, threshold=threshold)
     (list_coef_hor, list_hor_lines) = _para_fit_hor(
         list_hor_lines, xcenter, ycenter)
     (list_coef_ver, list_ver_lines) = _para_fit_ver(
@@ -463,7 +471,7 @@ def calc_coef_backward(list_hor_lines, list_ver_lines, xcenter, ycenter,
 
 
 def calc_coef_forward(list_hor_lines, list_ver_lines, xcenter, ycenter,
-                      num_fact, optimizing=False):
+                      num_fact, optimizing=False, threshold=0.3):
     """
     Calculate the distortion coefficients of a forward mode.
 
@@ -481,6 +489,8 @@ def calc_coef_forward(list_hor_lines, list_ver_lines, xcenter, ycenter,
         Number of the factors of polynomial.
     optimizing : bool, optional
         Apply optimization if True.
+    threshold : float
+        To determine if there are missing lines. Larger is less sensitive.
 
     Returns
     -------
@@ -490,7 +500,7 @@ def calc_coef_forward(list_hor_lines, list_ver_lines, xcenter, ycenter,
     num_fact = np.int16(np.clip(num_fact, 1, None))
     (list_hor_uc, list_ver_uc) = _calc_undistor_intercept(
         list_hor_lines, list_ver_lines, xcenter, ycenter,
-        optimizing=optimizing)
+        optimizing=optimizing, threshold=threshold)
     (list_coef_hor, list_hor_lines) = _para_fit_hor(
         list_hor_lines, xcenter, ycenter)
     (list_coef_ver, list_ver_lines) = _para_fit_ver(
@@ -529,7 +539,8 @@ def calc_coef_forward(list_hor_lines, list_ver_lines, xcenter, ycenter,
 
 
 def calc_coef_backward_from_forward(list_hor_lines, list_ver_lines, xcenter,
-                                    ycenter, num_fact, optimizing=False):
+                                    ycenter, num_fact, optimizing=False,
+                                    threshold=0.3):
     """
     Calculate the distortion coefficients of a backward mode from a forward
     model.
@@ -548,6 +559,8 @@ def calc_coef_backward_from_forward(list_hor_lines, list_ver_lines, xcenter,
         Number of the factors of polynomial.
     optimizing : bool, optional
         Apply optimization if True.
+    threshold : float
+        To determine if there are missing lines. Larger is less sensitive.
 
     Returns
     -------
@@ -559,7 +572,8 @@ def calc_coef_backward_from_forward(list_hor_lines, list_ver_lines, xcenter,
     num_fact = np.int16(np.clip(num_fact, 1, None))
     list_ffact = np.float64(
         calc_coef_forward(list_hor_lines, list_ver_lines, xcenter, ycenter,
-                          num_fact, optimizing=optimizing))
+                          num_fact, optimizing=optimizing,
+                          threshold=threshold))
     (_, list_hor_lines) = _para_fit_hor(list_hor_lines, xcenter, ycenter)
     (_, list_ver_lines) = _para_fit_ver(list_ver_lines, xcenter, ycenter)
     list_expo = np.arange(num_fact, dtype=np.int16)
@@ -882,13 +896,13 @@ def _find_cross_point_between_lines(line_coef_hor, line_coef_ver):
     return x, y
 
 
-def _func_opt_pers(d0, c0, indexc0, *list_inter):
+def _func_opt_pers(d0, c0, index_c0, *list_inter):
     """
     Function for finding the optimum undistorted distance for
     perspective-distortion correction.
     """
     return np.sum(
-        np.asarray([((i - indexc0) * d0 + c0 - c) ** 2
+        np.asarray([((i - index_c0) * d0 + c0 - c) ** 2
                     for i, c in enumerate(list_inter)]))
 
 

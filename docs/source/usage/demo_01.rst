@@ -74,9 +74,9 @@ acquired at Beamline I12, Diamond Light Source.
         list_hor_lines = prep.group_dots_hor_lines(mat1, hor_slope, dot_dist)
         # Group points to vertical lines
         list_ver_lines = prep.group_dots_ver_lines(mat1, ver_slope, dot_dist)
-        # Optional: remove horizontal outliners
+        # Optional: remove horizontal outliers
         list_hor_lines = prep.remove_residual_dots_hor(list_hor_lines, hor_slope)
-        # Optional: remove vertical outliners
+        # Optional: remove vertical outliers
         list_ver_lines = prep.remove_residual_dots_ver(list_ver_lines, ver_slope)
         # Save output for checking
         io.save_plot_image(output_base + "/horizontal_lines.png", list_hor_lines, height, width)
