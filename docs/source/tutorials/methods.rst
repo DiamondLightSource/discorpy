@@ -233,7 +233,7 @@ Details of the method can be found `here <https://discorpy.readthedocs.io/en/lat
 Calculating coefficients of a polynomial model for radial-distortion correction
 -------------------------------------------------------------------------------
 
-For sub-pixel accuracy, the model chosen in :cite:`Vo:2015` is
+For sub-pixel accuracy, the models chosen in :cite:`Vo:2015` are as follows; for the forward mapping:
 
 .. math::
     :label: eq_3
@@ -242,7 +242,7 @@ For sub-pixel accuracy, the model chosen in :cite:`Vo:2015` is
     \frac{r_u}{r_d} = \frac{x_u}{x_d} = \frac{y_u}{y_d} = k_0^f + {k_1^f}{r_d} + {k_2^f}{r_d^2} + {k_3^f}{r_d^3} + .. + {k_n^f}{r_d^n} \equiv F({r_d})
     \end{align}
 
-for the forward mapping and
+for the backward mapping:
 
 .. math::
     :label: eq_4
@@ -251,13 +251,13 @@ for the forward mapping and
     \frac{r_d}{r_u} = \frac{x_d}{x_u} = \frac{y_d}{y_u} = k_0^b + {k_1^b}{r_u} + {k_2^b}{r_u^2} + {k_3^b}{r_u^3} + .. + {k_n^b}{r_u^n} \equiv B({r_u})
     \end{align}
 
-for the backward mapping. :math:`({x_u}, {y_u})` are the coordinate of a point
+:math:`({x_u}, {y_u})` are the coordinate of a point
 in the undistorted space and :math:`{r_u}` is its distance from the COD.
 :math:`({x_d}, {y_d}, {r_d})` are for a point in the distorted space. The subscript
 :math:`d` is used for clarification. It can be omitted as in Eq. :eq:`eq_1` and
 :eq:`eq_2`.
 
-To calculate coefficients of these two models, we need to determine
+To calculate coefficients of two models, we need to determine
 the coordinates of reference-points in both the distorted-space and in the
 undistorted-space, correspondingly; and solve a system of linear equations.
 In :cite:`Vo:2015` this task is simplified by finding the intercepts of
