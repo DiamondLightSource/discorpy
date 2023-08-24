@@ -91,14 +91,14 @@ Demonstrations
 
     ![I13_before_after2](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/i13_data_2.jpg)
 
-- Improvement of a tomographic reconstructed image after distortion correction.
-  + Before the correction:
+- Improvement of tomographic reconstructed images after distortion correction:
+  + For a detector with strong radial distortion:
     
-    ![tomo_before](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/recon_before.jpg)
+    ![tomo_strong](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/tomo_slice_strong_distortion.jpg)
     
-  + After the correction:
+  + For a detector with small radial distortion:
     
-    ![tomo_before](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/recon_after.jpg)
+    ![tomo_small](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/tomo_slice_small_distortion.jpg)
 
 - Calibrate a commercial camera with capabilities of correcting [radial distortion and perspective distortion](https://discorpy.readthedocs.io/en/latest/usage/demo_05.html)
   independently.
