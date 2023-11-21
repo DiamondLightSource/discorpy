@@ -14,20 +14,14 @@
 ![Coverage](https://github.com/DiamondLightSource/discorpy/raw/master/docs/coverage_report/coverage.svg)
 
 
-**Discorpy** is an open-source Python package for camera calibration and distortion 
+**Discorpy** is an open-source Python package designed for camera calibration and distortion 
 correction with sub-pixel accuracy. It calculates parameters of correction models 
-using a grid pattern image. The package mainly implements methods published in 
-[Optics Express](https://doi.org/10.1364/OE.23.032859). It provides methods in 
-a full pipeline of data processing. From version 1.4, perspective distortion 
-correction was added to the package.
+using a grid pattern image. Primarily, the package implements methods published in 
+[Optics Express](https://doi.org/10.1364/OE.23.032859) and offers a comprehensive 
+pipeline for data processing. Starting from version 1.4, the package also includes 
+perspective distortion correction capabilities. 
 
-**Author and maintainer:** Nghia Vo, *NSLS-II, Brookhaven National Laboratory, US; Diamond Light Source, UK*
-
-Major updates
-=============
-- 25/02/2021: the package name was changed from Vounwarp to Discorpy.
-- 21/11/2021: Version 1.4 was released with new features: perspective distortion 
-correction, pre-processing methods for line-pattern images and chessboard images. 
+**Author and maintainer:** Nghia Vo, *NSLS-II, Brookhaven National Laboratory, US; Diamond Light Source, UK.*
 
 Features
 ========
@@ -51,18 +45,18 @@ Features
     * Select [binary objects](https://discorpy.readthedocs.io/en/latest/api/discorpy.prep.preprocessing.html#discorpy.prep.preprocessing.select_dots_based_distance) in a certain range of values.
     * Unwarp slices of a [3D dataset](https://discorpy.readthedocs.io/en/latest/api/discorpy.post.postprocessing.html#discorpy.post.postprocessing.unwarp_slice_backward).
 
-Documentation
-=============
-
-- https://discorpy.readthedocs.io/en/latest/
-
 Installation
 ============
 
 - https://discorpy.readthedocs.io/en/latest/install.html
 
-How to use
-==========
+Documentation
+=============
+
+- https://discorpy.readthedocs.io/en/latest/
+
+Usage
+=====
 
 - To achieve high-accuracy results, the quality of the calibration image is crucial. 
   An ideal calibration image should contain [numerous reference points](https://discorpy.readthedocs.io/en/latest/tutorials/methods.html#extracting-reference-points-from-a-calibration-image) 
