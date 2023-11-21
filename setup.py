@@ -9,7 +9,8 @@ if python_version == "3.8":
     dependencies = [
         "scipy<1.10",
         "pywavelets<1.5",
-        "h5py",
+        "contourpy<1.2",
+        "h5py<3.10",
         "pillow",
         "matplotlib<3.8",
         "scikit-image<0.19",
