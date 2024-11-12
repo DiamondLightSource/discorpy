@@ -8,6 +8,15 @@ on:
     branches: [ master, dev ]
   pull_request:
     branches: [ master, dev ]
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+      tags:
+        description: 'Test tags'
+        required: false
 
 jobs:
   build:
@@ -17,27 +26,33 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.8", "3.8.16", "3.9.13", "3.10", "3.11"]
+        python-version: ["3.8", "3.8.10", "3.9", "3.9.13", "3.10", "3.11" ]
         exclude:
           - os: macos-latest
             python-version: "3.8"
+          - os: macos-latest
+            python-version: "3.9"
           - os: windows-latest
-            python-version: "3.8.16"
+            python-version: "3.8.10"
+          - os: windows-latest
+            python-version: "3.9"
           - os: ubuntu-latest
-            python-version: "3.8.16"
+            python-version: "3.8.10"
+          - os: ubuntu-latest
+            python-version: "3.9.13"
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-        check-latest: true
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install flake8    
-        python setup.py install
+        python -m pip install flake8 pytest
+        pip install .
+        #if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
