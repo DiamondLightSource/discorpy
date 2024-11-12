@@ -32,11 +32,49 @@ Module for I/O tasks:
 """
 
 import os
+import platform
+from pathlib import Path
 import h5py
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
 from collections import OrderedDict
+
+
+def __correct_path(file_path):
+    """
+    Correct escaped sequences in WinOS file path.
+    """
+    if isinstance(file_path, Path):
+        file_path = str(file_path)
+    escape_sequences = {
+        '\a': r'\a',
+        '\b': r'\b',
+        '\f': r'\f',
+        '\n': r'\n',
+        '\r': r'\r',
+        '\t': r'\t',
+        '\v': r'\v',
+    }
+    for char, escaped in escape_sequences.items():
+        if char in file_path:
+            file_path = file_path.replace(char, escaped)
+    file_path = file_path.replace('\\', '/')
+    return Path(file_path)
+
+
+def __get_path(file_path, check_exist=True):
+    """
+    Get/check a file path
+    """
+    if platform.system() == 'Windows':
+        file_path = __correct_path(file_path)
+    else:
+        file_path = Path(file_path)
+    if check_exist:
+        if not file_path.exists():
+            raise ValueError(f"No such file: {file_path}")
+    return file_path
 
 
 def load_image(file_path, average=True):
@@ -54,33 +92,17 @@ def load_image(file_path, average=True):
     -------
     array_like
     """
-    if "\\" in file_path:
-        raise ValueError("Please use the forward slash in the file path")
     try:
-        mat = np.asarray(Image.open(file_path), dtype=np.float32)
-    except IOError:
-        raise ValueError("No such file or directory: {}".format(file_path))
+        mat = np.array(Image.open(__get_path(file_path)), dtype=np.float32)
+    except Exception as error:
+        raise ValueError(error)
     if len(mat.shape) > 2 and average is True:
         axis_m = np.argmin(mat.shape)
         mat = np.mean(mat, axis=axis_m)
     return mat
 
 
-def _get_key(name, obj):
-    """
-    Find a key path having 'data' in a dataset. Use with Group.visititems()
-    method to walk through a hdf5 tree.
-    """
-    wanted_key = 'data'
-    if isinstance(obj, h5py.Group):
-        for key, val in list(obj.items()):
-            if key == wanted_key:
-                if isinstance(obj[key], h5py.Dataset):
-                    key_path = obj.name + "/" + key
-                    return key_path
-
-
-def get_hdf_information(file_path):
+def get_hdf_information(file_path, display=False):
     """
     Get information of datasets in a hdf/nxs file.
 
@@ -88,6 +110,8 @@ def get_hdf_information(file_path):
     ----------
     file_path : str
         Path to the file.
+    display : bool
+        Print the results onto the screen if True.
 
     Returns
     -------
@@ -98,40 +122,51 @@ def get_hdf_information(file_path):
     list_type : str
         Types of the datasets.
     """
-    if "\\" in file_path:
-        raise ValueError("Please use the forward slash in the file path")
-    ifile = h5py.File(file_path, 'r')
+    hdf_object = h5py.File(__get_path(file_path), 'r')
     keys = []
-    ifile.visit(keys.append)
-    list_key = []
-    list_shape = []
-    list_type = []
+    hdf_object.visit(keys.append)
+    list_key, list_shape, list_type = [], [], []
     for key in keys:
-        data = ifile[key]
-        if isinstance(data, h5py.Group):
-            for key2, _ in list(data.items()):
-                list_key.append(key + "/" + key2)
-        else:
-            list_key.append(data.name)
+        try:
+            data = hdf_object[key]
+            if isinstance(data, h5py.Group):
+                list_tmp = list(data.items())
+                if list_tmp:
+                    for key2, _ in list_tmp:
+                        list_key.append(key + "/" + key2)
+                else:
+                    list_key.append(key)
+            else:
+                list_key.append(data.name)
+        except KeyError:
+            list_key.append(key)
+            pass
     for i, key in enumerate(list_key):
-        data = ifile[list_key[i]]
+        shape, dtype = None, None
         try:
-            shape = data.shape
-        except Exception:
-            shape = None
-        try:
-            dtype = data.dtype
-        except Exception:
-            dtype = None
-        list_shape.append(shape)
-        list_type.append(dtype)
-    ifile.close()
+            data = hdf_object[list_key[i]]
+            if isinstance(data, h5py.Dataset):
+                shape, dtype = data.shape, data.dtype
+            list_shape.append(shape)
+            list_type.append(dtype)
+        except KeyError:
+            list_shape.append(shape)
+            list_type.append(dtype)
+            pass
+    hdf_object.close()
+    if display:
+        if list_key:
+            for i, key in enumerate(list_key):
+                print(key + " : " + str(list_shape[i]) + " : " + str(
+                    list_type[i]))
+        else:
+            print("Empty file !!!")
     return list_key, list_shape, list_type
 
 
-def find_hdf_key(file_path, pattern):
+def find_hdf_key(file_path, pattern, display=False):
     """
-    Find datasets matching the pattern in a hdf/nxs file.
+    Find datasets matching the name-pattern in a hdf/nxs file.
 
     Parameters
     ----------
@@ -139,6 +174,8 @@ def find_hdf_key(file_path, pattern):
         Path to the file.
     pattern : str
         Pattern to find the full names of the datasets.
+    display : bool
+        Print the results onto the screen if True.
 
     Returns
     -------
@@ -149,38 +186,59 @@ def find_hdf_key(file_path, pattern):
     list_type : str
         Types of the datasets.
     """
-    if "\\" in file_path:
-        raise ValueError("Please use the forward slash in the file path")
-    ifile = h5py.File(file_path, 'r')
-    list_key = []
-    keys = []
-    ifile.visit(keys.append)
+    hdf_object = h5py.File(__get_path(file_path), 'r')
+    list_key, keys = [], []
+    hdf_object.visit(keys.append)
     for key in keys:
-        data = ifile[key]
-        if isinstance(data, h5py.Group):
-            for key2, _ in list(data.items()):
-                list_key.append(data.name + "/" + key2)
-        else:
-            list_key.append(data.name)
-    list_dkey = []
-    list_dshape = []
-    list_dtype = []
+        try:
+            data = hdf_object[key]
+            if isinstance(data, h5py.Group):
+                list_tmp = list(data.items())
+                if list_tmp:
+                    for key2, _ in list_tmp:
+                        list_key.append(key + "/" + key2)
+                else:
+                    list_key.append(key)
+            else:
+                list_key.append(data.name)
+        except KeyError:
+            pass
+    list_dkey, list_dshape, list_dtype = [], [], []
     for _, key in enumerate(list_key):
         if pattern in key:
             list_dkey.append(key)
-            data = ifile[key]
+            shape, dtype = None, None
             try:
-                shape = data.shape
-            except Exception:
-                shape = None
-            list_dshape.append(shape)
-            try:
-                dtype = data.dtype
-            except Exception:
-                dtype = None
-            list_dtype.append(dtype)
-    ifile.close()
+                data = hdf_object[key]
+                if isinstance(data, h5py.Dataset):
+                    shape, dtype = data.shape, data.dtype
+                list_dtype.append(dtype)
+                list_dshape.append(shape)
+            except KeyError:
+                list_dtype.append(dtype)
+                list_dshape.append(shape)
+                pass
+    hdf_object.close()
+    if display:
+        if list_dkey:
+            for i, key in enumerate(list_dkey):
+                print(key + " : " + str(list_dshape[i]) + " : " + str(
+                    list_dtype[i]))
+        else:
+            print("Can't find datasets with keys matching the "
+                  "pattern: {}".format(pattern))
     return list_dkey, list_dshape, list_dtype
+
+
+def _get_key(name, obj):
+    """
+    Find a key path containing 'data' in a dataset. Use with Group.visititems()
+    method to walk through an HDF5 tree.
+    """
+    if isinstance(obj, h5py.Group):
+        for key, val in obj.items():
+            if key == "data" and isinstance(val, h5py.Dataset):
+                return f"{obj.name}/{key}"
 
 
 def load_hdf_file(file_path, key_path=None, index=None, axis=0):
@@ -204,13 +262,11 @@ def load_hdf_file(file_path, key_path=None, index=None, axis=0):
     array_like
         2D array or 3D array.
     """
-    if "\\" in file_path:
-        raise ValueError("Please use the forward slash in the file path")
     mat = None
     try:
-        ifile = h5py.File(file_path, 'r')
-    except IOError:
-        raise ValueError("Couldn't open file: {}".format(file_path))
+        ifile = h5py.File(__get_path(file_path), 'r')
+    except Exception as error:
+        raise ValueError(f"Error: {error}")
     if key_path is None:
         key_path = ifile.visititems(_get_key)  # Find the key automatically
         if key_path is None:
@@ -226,7 +282,7 @@ def load_hdf_file(file_path, key_path=None, index=None, axis=0):
     if len(shape) == 2:
         mat = np.asarray(idata)
     if len(shape) == 3:
-        axis = np.clip(axis, 0, 2)
+        axis = int(np.clip(axis, 0, 2))
         if index is None:
             mat = np.float32(idata[:, :, :])
         else:
@@ -243,14 +299,14 @@ def load_hdf_file(file_path, key_path=None, index=None, axis=0):
                     raise
             if isinstance(index, tuple) or isinstance(index, list):
                 if len(index) == 3:
-                    starti = index[0]
-                    stopi = index[1]
-                    stepi = index[2]
-                    list_index = list(range(starti, stopi, stepi))
+                    start = index[0]
+                    stop = index[1]
+                    step = index[2]
+                    list_index = list(range(start, stop, step))
                 elif len(index) == 2:
-                    starti = index[0]
-                    stopi = index[1]
-                    list_index = list(range(starti, stopi))
+                    start = index[0]
+                    stop = index[1]
+                    list_index = list(range(start, stop))
                 else:
                     list_index = list(index)
                 try:
@@ -285,16 +341,13 @@ def load_hdf_object(file_path, key_path):
     object
         hdf/nxs object.
     """
-    if "\\" in file_path:
-        raise ValueError("Please use the forward slash in the file path")
     try:
-        ifile = h5py.File(file_path, 'r')
-    except IOError:
-        raise ValueError("Couldn't open file: {}".format(file_path))
+        ifile = h5py.File(__get_path(file_path), 'r')
+    except Exception as error:
+        raise ValueError(f"Error: {error}")
     check = key_path in ifile
     if not check:
-        raise ValueError("Couldn't open object with the key path: "
-                         "{}".format(key_path))
+        raise ValueError(f"Couldn't open object with the key: {key_path}")
     return ifile[key_path]
 
 
@@ -307,12 +360,16 @@ def _create_folder(file_path):
     file_path : str
         Path to a file
     """
-    file_base = os.path.dirname(file_path)
-    if not os.path.exists(file_base):
+    path = Path(file_path).resolve()
+    if path.suffix:
+        folder_path = path.parent
+    else:
+        folder_path = path
+    if not folder_path.exists():
         try:
-            os.makedirs(file_base)
-        except OSError:
-            raise ValueError("Can't create the folder: {}".format(file_path))
+            folder_path.mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            raise ValueError(f"Can't create : {folder_path}. Error: {e}")
 
 
 def _create_file_name(file_path):
@@ -329,18 +386,22 @@ def _create_file_name(file_path):
     str
         Updated file path.
     """
-    file_base, file_ext = os.path.splitext(file_path)
-    if os.path.isfile(file_path):
-        nfile = 1
-        check = True
-        while check:
-            name_add = '0000' + str(nfile)
-            file_path = file_base + "_" + name_add[-4:] + file_ext
-            if os.path.isfile(file_path):
-                nfile = nfile + 1
+    file_path = Path(file_path)
+    file_base = file_path.stem
+    file_ext = file_path.suffix
+    parent_dir = file_path.parent
+    if file_path.exists():
+        nfile = 0
+        while True:
+            name_add = f"_{nfile:04d}"
+            new_file_name = f"{file_base}{name_add}{file_ext}"
+            new_file_path = parent_dir / new_file_name
+            if new_file_path.exists():
+                nfile += 1
             else:
-                check = False
-    return file_path
+                file_path = new_file_path
+                break
+    return str(file_path)
 
 
 def save_image(file_path, mat, overwrite=True):
@@ -361,10 +422,10 @@ def save_image(file_path, mat, overwrite=True):
     str
         Updated file path.
     """
-    if "\\" in file_path:
-        raise ValueError("Please use the forward slash in the file path")
-    file_base, file_ext = os.path.splitext(file_path)
-    if not (file_ext == ".tif" or file_ext == ".tiff"):
+    file_path = __get_path(file_path, check_exist=False)
+    file_path = file_path.resolve()
+    file_ext = file_path.suffix
+    if not ((file_ext == ".tif") or (file_ext == ".tiff")):
         if mat.dtype != np.uint8:
             nmin, nmax = np.min(mat), np.max(mat)
             if nmax != nmin:
@@ -375,14 +436,14 @@ def save_image(file_path, mat, overwrite=True):
         if len(mat.shape) > 2:
             axis_m = np.argmin(mat.shape)
             mat = np.mean(mat, axis=axis_m)
-    _create_folder(file_path)
+    _create_folder(str(file_path))
     if not overwrite:
-        file_path = _create_file_name(file_path)
+        file_path = _create_file_name(str(file_path))
     image = Image.fromarray(mat)
     try:
         image.save(file_path)
-    except IOError:
-        raise ValueError("Couldn't write to file {}".format(file_path))
+    except Exception as error:
+        raise ValueError(f"Couldn't write to file: {file_path}. Error {error}")
     return file_path
 
 
@@ -412,8 +473,7 @@ def save_plot_image(file_path, list_lines, height, width, overwrite=True,
     str
         Updated file path.
     """
-    if "\\" in file_path:
-        raise ValueError("Please use the forward slash in the file path")
+    file_path = str(__get_path(file_path, check_exist=False))
     _create_folder(file_path)
     if not overwrite:
         file_path = _create_file_name(file_path)
@@ -428,8 +488,8 @@ def save_plot_image(file_path, list_lines, height, width, overwrite=True,
         plt.plot(line[:, 1], height - line[:, 0], '-o', markersize=m_size)
     try:
         plt.savefig(file_path, dpi=dpi)
-    except IOError:
-        raise ValueError("Couldn't write to file {}".format(file_path))
+    except Exception as error:
+        raise ValueError(f"Couldn't write to file: {file_path}. Error {error}")
     plt.close()
     return file_path
 
@@ -460,8 +520,7 @@ def save_residual_plot(file_path, list_data, height, width, overwrite=True,
     str
         Updated file path.
     """
-    if "\\" in file_path:
-        raise ValueError("Please use the forward slash in the file path")
+    file_path = str(__get_path(file_path, check_exist=False))
     _create_folder(file_path)
     if not overwrite:
         file_path = _create_file_name(file_path)
@@ -476,8 +535,8 @@ def save_residual_plot(file_path, list_data, height, width, overwrite=True,
     plt.plot(list_data[:, 0], list_data[:, 1], '.', markersize=m_size)
     try:
         plt.savefig(file_path, dpi=dpi, bbox_inches='tight')
-    except IOError:
-        raise ValueError("Couldn't write to file {}".format(file_path))
+    except Exception as error:
+        raise ValueError(f"Couldn't write to file: {file_path}. Error {error}")
     plt.close()
     plt.rcParams.update(plt.rcParamsDefault)
     return file_path
@@ -503,19 +562,17 @@ def save_hdf_file(file_path, idata, key_path='entry', overwrite=True):
     str
         Updated file path.
     """
-    if "\\" in file_path:
-        raise ValueError("Please use the forward slash in the file path")
-    file_base, file_ext = os.path.splitext(file_path)
-    if not ((file_ext == '.hdf') or (file_ext == '.h5')):
-        file_ext = '.hdf'
-    file_path = file_base + file_ext
-    _create_folder(file_path)
+    file_path = __get_path(file_path, check_exist=False)
+    file_path = file_path.resolve()
+    if file_path.suffix.lower() not in {'.hdf', '.h5', '.nxs', '.hdf5'}:
+        file_path = file_path.with_suffix('.hdf')
+    _create_folder(str(file_path))
     if not overwrite:
-        file_path = _create_file_name(file_path)
+        file_path = _create_file_name(str(file_path))
     try:
         ofile = h5py.File(file_path, 'w')
-    except IOError:
-        raise ValueError("Couldn't write to file {}".format(file_path))
+    except Exception as error:
+        raise ValueError(f"Couldn't write to file: {file_path}. Error {error}")
     grp = ofile.create_group(key_path)
     grp.create_dataset("data", data=idata)
     ofile.close()
@@ -548,19 +605,17 @@ def open_hdf_stream(file_path, data_shape, key_path='entry/data',
     object
         hdf object.
     """
-    if "\\" in file_path:
-        raise ValueError("Please use the forward slash in the file path")
-    file_base, file_ext = os.path.splitext(file_path)
-    if not (file_ext == '.hdf' or file_ext == '.h5' or file_ext == ".nxs"):
-        file_ext = '.hdf'
-    file_path = file_base + file_ext
-    _create_folder(file_path)
+    file_path = __get_path(file_path, check_exist=False)
+    file_path = file_path.resolve()
+    if file_path.suffix.lower() not in {'.hdf', '.h5', '.nxs', '.hdf5'}:
+        file_path = file_path.with_suffix('.hdf')
+    _create_folder(str(file_path))
     if not overwrite:
-        file_path = _create_file_name(file_path)
+        file_path = _create_file_name(str(file_path))
     try:
         ofile = h5py.File(file_path, 'w')
-    except IOError:
-        raise ValueError("Couldn't write to file: {}".format(file_path))
+    except Exception as error:
+        raise ValueError(f"Couldn't write to file: {file_path}. Error {error}")
     if len(options) != 0:
         for opt_name in options:
             opts = options[opt_name]
@@ -598,15 +653,13 @@ def save_metadata_txt(file_path, xcenter, ycenter, list_fact, overwrite=True):
     str
         Updated file path.
     """
-    if "\\" in file_path:
-        raise ValueError("Please use the forward slash in the file path")
-    file_base, file_ext = os.path.splitext(file_path)
-    if not ((file_ext == '.txt') or (file_ext == '.dat')):
-        file_ext = '.txt'
-    file_path = file_base + file_ext
-    _create_folder(file_path)
+    file_path = __get_path(file_path, check_exist=False)
+    file_path = file_path.resolve()
+    if file_path.suffix.lower() not in {'.txt', '.dat'}:
+        file_path = file_path.with_suffix('.txt')
+    _create_folder(str(file_path))
     if not overwrite:
-        file_path = _create_file_name(file_path)
+        file_path = _create_file_name(str(file_path))
     metadata = OrderedDict()
     metadata['xcenter'] = xcenter
     metadata['ycenter'] = ycenter
@@ -634,9 +687,7 @@ def load_metadata_txt(file_path):
     tuple of floats and list
         Tuple of (xcenter, ycenter, list_fact).
     """
-    if "\\" in file_path:
-        raise ValueError("Please use the forward slash in the file path")
-    with open(file_path, 'r') as f:
+    with open(__get_path(file_path), 'r') as f:
         x = f.read().splitlines()
         list_data = []
         for i in x:
@@ -679,11 +730,11 @@ def save_plot_points(file_path, list_points, height, width, overwrite=True,
     str
         Updated file path.
     """
-    if "\\" in file_path:
-        raise ValueError("Please use the forward slash in the file path")
-    _create_folder(file_path)
+    file_path = __get_path(file_path, check_exist=False)
+    file_path = file_path.resolve()
+    _create_folder(str(file_path))
     if not overwrite:
-        file_path = _create_file_name(file_path)
+        file_path = _create_file_name(str(file_path))
     fig = plt.figure(frameon=False)
     fig.set_size_inches(width / dpi, height / dpi)
     ax = plt.Axes(fig, [0., 0., 1.0, 1.0])
