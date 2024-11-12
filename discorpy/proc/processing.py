@@ -784,7 +784,8 @@ def _find_cross_point_between_parabolas(para_coef_hor, para_coef_ver):
              a2 * b1 ** 2 + a1 * b2 + 2 * a1 * a2 * c1,
              -1 + b1 * b2 + 2 * a2 * b1 * c1,
              b2 * c1 + a2 * c1 ** 2 + c2]
-    xvals = np.float32(np.real(np.roots(np.nan_to_num(coefs))))
+    coefs = np.nan_to_num(coefs, nan=0.0, posinf=0.0, neginf=0.0)
+    xvals = np.float32(np.real(np.roots(coefs)))
     if len(xvals) == 0:
         raise ValueError("Can't find a cross point between two parabolas")
     if len(xvals) > 1:
