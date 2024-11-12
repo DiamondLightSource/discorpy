@@ -14,7 +14,7 @@ if python_version == "3.8":
         "pillow",
         "matplotlib<3.8",
         "scikit-image<0.19",
-        "numpy<1.21",
+        "numpy<1.20",
     ]
 else:
     dependencies = [
