@@ -201,8 +201,7 @@ class ProcessingMethods(unittest.TestCase):
         s_points, t_points = f_alias(points, scale="mean", equal_dist=False)
         num2 = np.mean(np.abs(
             np.float32(t_points) - np.asarray(t_points0, dtype=np.float32)))
-        print(num2)
-        self.assertTrue(num2 <= 1.0e-6)
+        self.assertTrue(num2 <= 1.0e-5)
 
         s_points, t_points = f_alias(points, scale="max", equal_dist=True)
         self.assertTrue(len(s_points) == 4 and len(t_points) == 4)

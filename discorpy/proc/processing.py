@@ -796,10 +796,7 @@ def _find_cross_point_between_parabolas(para_coef_hor, para_coef_ver):
     def equations(p):
         x, y = p
         return a1 * x ** 2 + b1 * x + c1 - y, a2 * y ** 2 + b2 * y + c2 - x
-
-    initial_guess = (0, 0)
-    solution = optimize.fsolve(equations, initial_guess)
-
+    solution = optimize.fsolve(equations, (0, 0))
     x, y = solution
     return x, y
 
