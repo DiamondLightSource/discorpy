@@ -780,21 +780,27 @@ def _find_cross_point_between_parabolas(para_coef_hor, para_coef_ver):
     """
     a1, b1, c1 = para_coef_hor[0:3]
     a2, b2, c2 = para_coef_ver[0:3]
-    coefs = [a1 ** 2 * a2, 2 * a1 * a2 * b1,
-             a2 * b1 ** 2 + a1 * b2 + 2 * a1 * a2 * c1,
-             -1 + b1 * b2 + 2 * a2 * b1 * c1,
-             b2 * c1 + a2 * c1 ** 2 + c2]
-    print(f"Before {coefs}")
-    coefs = np.nan_to_num(coefs, nan=0.0, posinf=0.0, neginf=0.0)
-    print(f"After {coefs}")
-    xvals = np.float32(np.real(np.roots(coefs)))
-    if len(xvals) == 0:
-        raise ValueError("Can't find a cross point between two parabolas")
-    if len(xvals) > 1:
-        x = xvals[np.argmin(np.abs(xvals - c2))]
-    else:
-        x = xvals[0]
-    y = a1 * x ** 2 + b1 * x + c1
+    # coefs = [a1 ** 2 * a2, 2 * a1 * a2 * b1,
+    #          a2 * b1 ** 2 + a1 * b2 + 2 * a1 * a2 * c1,
+    #          -1 + b1 * b2 + 2 * a2 * b1 * c1,
+    #          b2 * c1 + a2 * c1 ** 2 + c2]
+    # xvals = np.float32(np.real(np.roots(coefs)))
+    # if len(xvals) == 0:
+    #     raise ValueError("Can't find a cross point between two parabolas")
+    # if len(xvals) > 1:
+    #     x = xvals[np.argmin(np.abs(xvals - c2))]
+    # else:
+    #     x = xvals[0]
+    # y = a1 * x ** 2 + b1 * x + c1
+
+    def equations(p):
+        x, y = p
+        return a1 * x ** 2 + b1 * x + c1 - y, a2 * y ** 2 + b2 * y + c2 - x
+
+    initial_guess = (0, 0)
+    solution = optimize.fsolve(equations, initial_guess)
+
+    x, y = solution
     return x, y
 
 
