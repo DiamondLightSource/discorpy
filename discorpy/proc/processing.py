@@ -780,6 +780,8 @@ def _find_cross_point_between_parabolas(para_coef_hor, para_coef_ver):
     """
     a1, b1, c1 = para_coef_hor[0:3]
     a2, b2, c2 = para_coef_ver[0:3]
+    print(a1, b1, c1)
+    print(a2, b2, c2)
     coefs = [a1 ** 2 * a2, 2 * a1 * a2 * b1,
              a2 * b1 ** 2 + a1 * b2 + 2 * a1 * a2 * c1,
              -1 + b1 * b2 + 2 * a2 * b1 * c1,
