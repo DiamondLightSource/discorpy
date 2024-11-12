@@ -46,7 +46,7 @@ class LoaderSaverMethods(unittest.TestCase):
             shutil.rmtree("./tmp")
 
     def test_load_image(self):
-        file_path = "./tmp\data/img.tif"
+        file_path = "./tmp/data/img.tif"
         losa.save_image(file_path, np.float32(np.random.rand(64, 64)))
         mat = losa.load_image(file_path)
         self.assertTrue(mat.shape == (64, 64))
@@ -71,7 +71,7 @@ class LoaderSaverMethods(unittest.TestCase):
         self.assertTrue(len(results) == 3 and isinstance(results[0][0], str))
 
     def test_find_hdf_key(self):
-        file_path = "./tmp\data/data.hdf"
+        file_path = "./tmp/data/data.hdf"
         ifile = h5py.File(file_path, "w")
         key = "entry/energy"
         ifile.create_dataset(key, data=25.0)
@@ -92,7 +92,7 @@ class LoaderSaverMethods(unittest.TestCase):
 
     def test_load_hdf_file(self):
         f_alias = losa.load_hdf_file
-        file_path = "./tmp/data\data.hdf"
+        file_path = "./tmp/data/data.hdf"
         ifile = h5py.File(file_path, "w")
         ifile.create_dataset("entry/data", data=np.random.rand(64, 64))
         ifile.close()
@@ -152,7 +152,7 @@ class LoaderSaverMethods(unittest.TestCase):
 
     def test_load_hdf_object(self):
         f_alias = losa.load_hdf_object
-        file_path = "./tmp\data/data1.hdf"
+        file_path = "./tmp/data/data1.hdf"
         ifile = h5py.File(file_path, "w")
         ifile.create_dataset("entry/data", data=np.random.rand(64, 64))
         ifile.close()
@@ -163,7 +163,7 @@ class LoaderSaverMethods(unittest.TestCase):
     def test_save_image(self):
         mat1 = np.float32(np.random.rand(64, 64))
         mat2 = np.float32(np.random.rand(64, 64, 3))
-        file_path = "./tmp\data/tmp/img.tif"
+        file_path = "./tmp/data/tmp/img.tif"
         losa.save_image(file_path, mat1)
         self.assertTrue(os.path.isfile(file_path))
 
@@ -196,7 +196,7 @@ class LoaderSaverMethods(unittest.TestCase):
         f_alias = losa.save_residual_plot
         ver = sys.version[:3]
         list_data = np.ones((64, 2), dtype=np.float32)
-        file_path = "./tmp\data/plot1.png"
+        file_path = "./tmp/data/plot1.png"
         list_data[:, 0] = 0.5 * np.random.rand(64)
         list_data[:, 1] = np.arange(64)
         f_alias(file_path, list_data, 64, 64, dpi=100)
@@ -221,7 +221,7 @@ class LoaderSaverMethods(unittest.TestCase):
 
     def test_open_hdf_stream(self):
         f_alias = losa.open_hdf_stream
-        data_out = f_alias("./tmp\data/data.hdf", (64, 64))
+        data_out = f_alias("./tmp/data/data.hdf", (64, 64))
         self.assertTrue(isinstance(data_out, object))
 
         data_out1 = f_alias("./tmp/data/data.hdf", (64, 64), overwrite=False)
@@ -248,7 +248,7 @@ class LoaderSaverMethods(unittest.TestCase):
         path = f_alias(file_path, 31, 32, (1.0, 0.0), overwrite=False)
         self.assertTrue(path != file_path)
 
-        file_path = "./tmp\data/coef1"
+        file_path = "./tmp/data/coef1"
         f_alias(file_path, 31, 32, (1.0, 0.0))
         self.assertTrue(os.path.isfile(file_path + ".txt"))
 
@@ -262,7 +262,7 @@ class LoaderSaverMethods(unittest.TestCase):
     def test_save_plot_points(self):
         f_alias = losa.save_plot_points
         list_data = np.ones((64, 2), dtype=np.float32)
-        file_path = "./tmp\data/plot1.png"
+        file_path = "./tmp/data/plot1.png"
         list_data[:, 0] = 0.5 * np.random.rand(64)
         list_data[:, 1] = np.arange(64)
         f_alias(file_path, list_data, 64, 64, dpi=100)
