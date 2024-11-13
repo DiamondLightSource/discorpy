@@ -167,6 +167,8 @@ io.save_image(output_base + "/diff_corrected_image_bw.tif",
               np.abs(corrected_mat - mat0))
 io.save_metadata_txt(output_base + "/coefficients_bw.txt", xcenter, ycenter,
                      list_fact)
+# io.save_metadata_json(output_base + "/coefficients_bw.json", xcenter, ycenter,
+#                      list_fact)
 
 # Check the correction results
 list_uhor_lines = post.unwarp_line_backward(list_hor_lines, xcenter, ycenter,
@@ -205,6 +207,8 @@ io.save_image(output_base + "/diff_corrected_image_fw.tif",
               np.abs(corrected_mat - mat0))
 io.save_metadata_txt(output_base + "coefficients_fw.txt", xcenter, ycenter,
                      list_fact)
+# io.save_metadata_json(output_base + "coefficients_fw.json", xcenter, ycenter,
+#                      list_fact)
 
 # Check the correction results
 list_uhor_lines = post.unwarp_line_forward(list_hor_lines, xcenter, ycenter,
@@ -247,6 +251,8 @@ io.save_image(output_base + "/diff_corrected_image_bwfw.tif",
               np.abs(corrected_mat - mat0))
 io.save_metadata_txt(
     output_base + "/coefficients_bwfw.txt", xcenter, ycenter, list_bfact)
+# io.save_metadata_json(
+#     output_base + "/coefficients_bwfw.json", xcenter, ycenter, list_bfact)
 # Check the correction results
 list_uhor_lines = post.unwarp_line_backward(
     list_hor_lines, xcenter, ycenter, list_bfact)

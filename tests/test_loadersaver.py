@@ -239,6 +239,19 @@ class LoaderSaverMethods(unittest.TestCase):
         self.assertRaises(ValueError, f_alias, "./tmp/data/data4.hdf",
                           (64, 64), options={"energy/entry/data": 25.0})
 
+    def test_save_plot_points(self):
+        f_alias = losa.save_plot_points
+        list_data = np.ones((64, 2), dtype=np.float32)
+        file_path = "./tmp/data/plot1.png"
+        list_data[:, 0] = 0.5 * np.random.rand(64)
+        list_data[:, 1] = np.arange(64)
+        f_alias(file_path, list_data, 64, 64, dpi=100)
+        self.assertTrue(os.path.isfile(file_path))
+
+        path = f_alias(file_path, list_data, 64, 64,
+                       dpi=100, overwrite=False)
+        self.assertTrue(os.path.isfile(path))
+
     def test_save_metadata_txt(self):
         f_alias = losa.save_metadata_txt
         file_path = "./tmp/data/coef.txt"
@@ -253,21 +266,26 @@ class LoaderSaverMethods(unittest.TestCase):
         self.assertTrue(os.path.isfile(file_path + ".txt"))
 
     def test_load_metadata_txt(self):
-        f_alias = losa.load_metadata_txt
         file_path = "./tmp/data/coef1.txt"
         losa.save_metadata_txt(file_path, 31.0, 32.0, [1.0, 0.0])
-        (x, y, facts) = f_alias(file_path)
+        (x, y, facts) = losa.load_metadata_txt(file_path)
         self.assertTrue(((x == 31.0) and (y == 32.0)) and facts == [1.0, 0.0])
 
-    def test_save_plot_points(self):
-        f_alias = losa.save_plot_points
-        list_data = np.ones((64, 2), dtype=np.float32)
-        file_path = "./tmp/data/plot1.png"
-        list_data[:, 0] = 0.5 * np.random.rand(64)
-        list_data[:, 1] = np.arange(64)
-        f_alias(file_path, list_data, 64, 64, dpi=100)
+    def test_save_metadata_json(self):
+        f_alias = losa.save_metadata_json
+        file_path = "./tmp/data/coef.json"
+        f_alias(file_path, 31, 32, [1.0, 0.0])
         self.assertTrue(os.path.isfile(file_path))
 
-        path = f_alias(file_path, list_data, 64, 64,
-                       dpi=100, overwrite=False)
-        self.assertTrue(os.path.isfile(path))
+        path = f_alias(file_path, 31, 32, [1.0, 0.0], overwrite=False)
+        self.assertTrue(path != file_path)
+
+        file_path_no_ext = "./tmp/data/coef1"
+        f_alias(file_path_no_ext, 31, 32, [1.0, 0.0])
+        self.assertTrue(os.path.isfile(file_path_no_ext + ".json"))
+
+    def test_load_metadata_json(self):
+        file_path = "./tmp/data/coef1.json"
+        losa.save_metadata_json(file_path, 31.0, 32.0, [1.0, 0.0])
+        x, y, facts = losa.load_metadata_json(file_path)
+        self.assertTrue((x == 31.0) and (y == 32.0) and facts == [1.0, 0.0])
