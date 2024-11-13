@@ -31,7 +31,6 @@ Module for I/O tasks:
 
 """
 
-import os
 import platform
 from pathlib import Path
 import h5py
@@ -55,6 +54,7 @@ def __correct_path(file_path):
         '\r': r'\r',
         '\t': r'\t',
         '\v': r'\v',
+        '\0': r'\0',
     }
     for char, escaped in escape_sequences.items():
         if char in file_path:
