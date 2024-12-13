@@ -12,7 +12,7 @@ acquired at Beamline I12, Diamond Light Source.
     .. code-block:: python
 
         import numpy as np
-        import discorpy.losa.loadersaver as io
+        import discorpy.losa.loadersaver as losa
         import discorpy.prep.preprocessing as prep
         import discorpy.proc.processing as proc
         import discorpy.post.postprocessing as post
@@ -21,7 +21,7 @@ acquired at Beamline I12, Diamond Light Source.
         file_path = "../../data/dot_pattern_01.jpg"
         output_base = "E:/output_demo_01/"
         num_coef = 5  # Number of polynomial coefficients
-        mat0 = io.load_image(file_path) # Load image
+        mat0 = losa.load_image(file_path) # Load image
         (height, width) = mat0.shape
 
     .. figure:: figs/demo_01/fig1.jpg
@@ -45,7 +45,7 @@ acquired at Beamline I12, Diamond Light Source.
         mat1 = prep.select_dots_based_size(mat1, dot_size)
         # Remove non-elliptical objects
         mat1 = prep.select_dots_based_ratio(mat1)
-        io.save_image(output_base + "/segmented_dots.jpg", mat1) # Save image for checking
+        losa.save_image(output_base + "/segmented_dots.jpg", mat1) # Save image for checking
         # Calculate the slopes of horizontal lines and vertical lines.
         hor_slope = prep.calc_hor_slope(mat1)
         ver_slope = prep.calc_ver_slope(mat1)
@@ -79,8 +79,8 @@ acquired at Beamline I12, Diamond Light Source.
         # Optional: remove vertical outliers
         list_ver_lines = prep.remove_residual_dots_ver(list_ver_lines, ver_slope)
         # Save output for checking
-        io.save_plot_image(output_base + "/horizontal_lines.png", list_hor_lines, height, width)
-        io.save_plot_image(output_base + "/vertical_lines.png", list_ver_lines, height, width)
+        losa.save_plot_image(output_base + "/horizontal_lines.png", list_hor_lines, height, width)
+        losa.save_plot_image(output_base + "/vertical_lines.png", list_ver_lines, height, width)
 
         # Optional: correct perspective effect. Only available from Discorpy 1.4
         # list_hor_lines, list_ver_lines = proc.regenerate_grid_points_parabola(
@@ -105,9 +105,9 @@ acquired at Beamline I12, Diamond Light Source.
 
         list_hor_data = post.calc_residual_hor(list_hor_lines, 0.0, 0.0)
         list_ver_data = post.calc_residual_ver(list_ver_lines, 0.0, 0.0)
-        io.save_residual_plot(output_base + "/hor_residual_before_correction.png",
+        losa.save_residual_plot(output_base + "/hor_residual_before_correction.png",
                               list_hor_data, height, width)
-        io.save_residual_plot(output_base + "/ver_residual_before_correction.png",
+        losa.save_residual_plot(output_base + "/ver_residual_before_correction.png",
                               list_ver_data, height, width)
 
     .. figure:: figs/demo_01/fig4.png
@@ -134,7 +134,7 @@ acquired at Beamline I12, Diamond Light Source.
         list_fact = proc.calc_coef_backward(list_hor_lines, list_ver_lines,
                                             xcenter, ycenter, num_coef)
         # Save the results for later use.
-        io.save_metadata_txt(output_base + "/coefficients_radial_distortion.txt",
+        losa.save_metadata_txt(output_base + "/coefficients_radial_distortion.txt",
                              xcenter, ycenter, list_fact)
         print("X-center: {0}. Y-center: {1}".format(xcenter, ycenter))
         print("Coefficients: {0}".format(list_fact))
@@ -155,17 +155,17 @@ acquired at Beamline I12, Diamond Light Source.
         list_uver_lines = post.unwarp_line_backward(list_ver_lines, xcenter, ycenter,
                                                     list_fact)
         # Save the results for checking
-        io.save_plot_image(output_base + "/unwarpped_horizontal_lines.png", list_uhor_lines,
+        losa.save_plot_image(output_base + "/unwarpped_horizontal_lines.png", list_uhor_lines,
                            height, width)
-        io.save_plot_image(output_base + "/unwarpped_vertical_lines.png", list_uver_lines,
+        losa.save_plot_image(output_base + "/unwarpped_vertical_lines.png", list_uver_lines,
                            height, width)
         # Calculate the residual of the unwarpped points.
         list_hor_data = post.calc_residual_hor(list_uhor_lines, xcenter, ycenter)
         list_ver_data = post.calc_residual_ver(list_uver_lines, xcenter, ycenter)
         # Save the results for checking
-        io.save_residual_plot(output_base + "/hor_residual_after_correction.png",
+        losa.save_residual_plot(output_base + "/hor_residual_after_correction.png",
                               list_hor_data, height, width)
-        io.save_residual_plot(output_base + "/ver_residual_after_correction.png",
+        losa.save_residual_plot(output_base + "/ver_residual_after_correction.png",
                               list_ver_data, height, width)
 
 
@@ -194,13 +194,13 @@ acquired at Beamline I12, Diamond Light Source.
     .. code-block:: python
 
         # Load coefficients from previous calculation if need to
-        # (xcenter, ycenter, list_fact) = io.load_metadata_txt(
+        # (xcenter, ycenter, list_fact) = losa.load_metadata_txt(
         #     output_base + "/coefficients_radial_distortion.txt")
         # Correct the image
         corrected_mat = post.unwarp_image_backward(mat0, xcenter, ycenter, list_fact)
         # Save results. Note that the output is 32-bit numpy array. Convert to lower-bit if need to.
-        io.save_image(output_base + "/corrected_image.tif", corrected_mat)
-        io.save_image(output_base + "/difference.tif", corrected_mat - mat0)
+        losa.save_image(output_base + "/corrected_image.tif", corrected_mat)
+        losa.save_image(output_base + "/difference.tif", corrected_mat - mat0)
 
     .. figure:: figs/demo_01/fig7.jpg
         :name: fig_29

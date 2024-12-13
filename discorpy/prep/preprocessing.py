@@ -617,8 +617,8 @@ def group_dots_hor_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
     Returns
     -------
     list of array_like
-        List of 2D arrays. Each list is the coordinates (y, x) of dot-centroids
-        belong to the same group. Length of each list may be different.
+        List of 2D arrays. Each array is (y, x)-coordinates of points belong
+        to the same group. Length of each list may be different.
     """
     mat = np.asarray(mat)
     if mat.shape[-1] > 2:
@@ -655,7 +655,7 @@ def group_dots_hor_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
         if len(dots_selected) > 1:
             list_lines.append(dots_selected)
     list_len = [len(i) for i in list_lines]
-    len_accepted = np.int16(accepted_ratio * np.max(list_len))
+    len_accepted = int(accepted_ratio * np.max(list_len))
     lines_selected = [line for line in list_lines if len(line) > len_accepted]
     lines_selected = sorted(
         lines_selected, key=lambda list_: np.mean(list_[:, 0]))
@@ -663,7 +663,7 @@ def group_dots_hor_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
 
 
 def group_dots_ver_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
-                         accepted_ratio=0.65):
+                         accepted_ratio=0.75):
     """
     Group dots into vertical lines.
 
@@ -687,8 +687,8 @@ def group_dots_ver_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
     Returns
     -------
     list of array_like
-        List of 2D arrays. Each list is the coordinates (y, x) of dot-centroids
-        belong to the same group. Length of each list may be different.
+        List of 2D arrays. Each array is (y,x)-coordinates of points belong
+        to the same group. Length of each list may be different.
     """
     mat = np.asarray(mat)
     if mat.shape[-1] > 2:
@@ -717,7 +717,6 @@ def group_dots_ver_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
                 dot1 = dot2
                 dots_selected = np.vstack((dots_selected, dot2))
                 pos_get.append(i)
-
         list_pos = np.arange(0, len(list_dots_left), dtype=np.int32)
         pos_get = np.asarray(pos_get, dtype=np.int32)
         list_pos_left = np.asarray(
@@ -728,7 +727,7 @@ def group_dots_ver_lines(mat, slope, dot_dist, ratio=0.3, num_dot_miss=6,
             dots_selected = np.fliplr(dots_selected)  # Swap back
             list_lines.append(dots_selected)
     list_length = [len(i) for i in list_lines]
-    len_accepted = np.int16(accepted_ratio * np.max(list_length))
+    len_accepted = int(accepted_ratio * np.max(list_length))
     lines_selected = [line for line in list_lines if len(line) > len_accepted]
     lines_selected = sorted(
         lines_selected, key=lambda list_: np.mean(list_[:, 1]))
@@ -763,7 +762,10 @@ def remove_residual_dots_hor(list_lines, slope, residual=2.5):
              - list_[:, 0]) * np.cos(np.arctan(slope)))
         dots_left = np.asarray(
             [dot for i, dot in enumerate(list_) if error[i] < residual])
-        list_lines2.append(dots_left)
+        if len(dots_left) > 0:
+            list_lines2.append(dots_left)
+    if len(list_lines2) == 0:
+        raise ValueError("No dots left. Check the input or residual !!!")
     return list_lines2
 
 
@@ -797,8 +799,11 @@ def remove_residual_dots_ver(list_lines, slope, residual=2.5):
              - list_[:, 0]) * np.cos(np.arctan(slope)))
         dots_left = np.asarray(
             [dot for i, dot in enumerate(list_) if error[i] < residual])
-        dots_left = np.fliplr(dots_left)  # Swap back
-        list_lines2.append(dots_left)
+        if len(dots_left) > 0:
+            dots_left = np.fliplr(dots_left)  # Swap back
+            list_lines2.append(dots_left)
+    if len(list_lines2) == 0:
+        raise ValueError("No dots left. Check the input or residual !!!")
     return list_lines2
 
 
@@ -832,7 +837,7 @@ def calculate_threshold(mat, bgr="bright", snr=2.0):
     xlist = np.arange(0, npoint, 1.0)
     ndrop = int(0.25 * npoint)
     (slope, intercept) = np.polyfit(xlist[ndrop:-ndrop - 1],
-                                    list_dsp[ndrop:-ndrop - 1], 1)
+                                    list_dsp[ndrop:-ndrop - 1], 1)[:2]
     y_end = intercept + slope * xlist[-1]
     noise_level = np.abs(y_end - intercept)
     if bgr == "bright":

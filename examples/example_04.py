@@ -23,7 +23,7 @@
 
 import timeit
 import numpy as np
-import discorpy.losa.loadersaver as io
+import discorpy.losa.loadersaver as losa
 import discorpy.prep.preprocessing as prep
 import discorpy.proc.processing as proc
 import discorpy.post.postprocessing as post
@@ -73,13 +73,13 @@ perspective = False # Correct perspective distortion if True
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
 # Input
-mat0 = io.load_image(file_path)
+mat0 = losa.load_image(file_path)
 (height, width) = mat0.shape
 
 # Calculation of distortion coefficients
 (xcenter, ycenter, list_fact) = calc_distor_coef(mat0, num_coef,
                                                  perspective=perspective)
-io.save_metadata_txt(output_base + "/coefficients_bw.txt", xcenter, ycenter,
+losa.save_metadata_txt(output_base + "/coefficients_bw.txt", xcenter, ycenter,
                      list_fact)
 
 # Generate a 3D dataset for demonstration.
@@ -97,8 +97,8 @@ corrected_slices = post.unwarp_chunk_slices_backward(mat3D, xcenter, ycenter,
 for i in range(start_index, stop_index):
     name = "0000" + str(i)
     output_name = output_base + "/before/slice_" + name[-5:] + ".tif"
-    io.save_image(output_name, mat3D[:, i, :])
+    losa.save_image(output_name, mat3D[:, i, :])
     output_name = output_base + "/after/unwarped_slice_" + name[-5:] + ".tif"
-    io.save_image(output_name, corrected_slices[:, i - start_index, :])
+    losa.save_image(output_name, corrected_slices[:, i - start_index, :])
 time_stop = timeit.default_timer()
 print("Running time is {} second!".format(time_stop - time_start))

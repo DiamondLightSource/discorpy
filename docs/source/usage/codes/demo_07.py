@@ -1,12 +1,12 @@
 import numpy as np
-import discorpy.losa.loadersaver as io
+import discorpy.losa.loadersaver as losa
 import discorpy.proc.processing as proc
 import discorpy.post.postprocessing as post
 
 # Load image
 file_path = "../../data/demo/perspective_demo.jpg"
 output_base = "E:/output_demo_07/"
-mat = io.load_image(file_path, average=False)
+mat = losa.load_image(file_path, average=False)
 
 # Provide the coordinates of 4-points. They can be in xy-order or yx-order, this info
 # needs to be consistent with other functions. In this example, it's in the xy-order.
@@ -23,7 +23,7 @@ list_coef = proc.calc_perspective_coefficients(s_points, t_points,
 mat_cor = np.zeros_like(mat)
 for i in range(mat_cor.shape[-1]):
     mat_cor[:, :, i] = post.correct_perspective_image(mat[:, :, i], list_coef)
-io.save_image(output_base + "/corrected_image.jpg", mat_cor)
+losa.save_image(output_base + "/corrected_image.jpg", mat_cor)
 
 # The region of interest may be out of the field of view or rotated.
 # We can rotate the output image, offset, and scale it by changing the target
@@ -58,5 +58,5 @@ list_coef2 = proc.calc_perspective_coefficients(s_points, t_points2, mapping="ba
 mat_cor = np.zeros_like(mat)
 for i in range(mat_cor.shape[-1]):
     mat_cor[:, :, i] = post.correct_perspective_image(mat[:, :, i], list_coef2, order=3)
-io.save_image(output_base + "/adjusted_image.jpg", mat_cor)
+losa.save_image(output_base + "/adjusted_image.jpg", mat_cor)
 print("!!! Done !!!")

@@ -23,7 +23,7 @@
 
 import numpy as np
 import timeit
-import discorpy.losa.loadersaver as io
+import discorpy.losa.loadersaver as losa
 import discorpy.prep.preprocessing as prep
 import discorpy.proc.processing as proc
 import discorpy.post.postprocessing as post
@@ -47,7 +47,7 @@ perspective = True # Correct perspective distortion if True
 
 # Load an image
 print("Load image: {}".format(file_path))
-mat0 = io.load_image(file_path)
+mat0 = losa.load_image(file_path)
 (height, width) = mat0.shape
 
 # Correct non-uniform background. Use sigma = 5
@@ -57,7 +57,7 @@ mat1 = prep.normalization_fft(mat0, sigma=5)
 # For tiny dots, you may need to set the threshold manually and add a parameter
 # denoise=False.
 mat1 = prep.binarization(mat1, ratio=0.5, thres=None)
-io.save_image(output_base + "/binarized_image.tif", mat1)
+losa.save_image(output_base + "/binarized_image.tif", mat1)
 
 # Calculate the median dot-size and the median distance of two nearest dots.
 (dot_size, dot_dist) = prep.calc_size_distance(mat1, ratio=0.3)
@@ -67,14 +67,14 @@ print("Median size of dots: {0}\nMedian distance between two dots: {1}".format(
 # Select dots with a certain range of size.
 # Ratio is changed to 0.9 as the size of binary dots varies significantly.
 mat1 = prep.select_dots_based_size(mat1, dot_size, ratio=0.9)
-io.save_image(output_base + "/cleaned_1_image.tif", mat1)
+losa.save_image(output_base + "/cleaned_1_image.tif", mat1)
 
 # Select dots with a certain ratio between the major and the minor axis
 # Strong distortion at the edges of the image makes round-shape dots become
 # elliptical dots, so the acceptable variation is changed to be larger,
 # ratio=1.0.
 mat1 = prep.select_dots_based_ratio(mat1, ratio=1.0)
-io.save_image(output_base + "/cleaned_2_image.tif", mat1)
+losa.save_image(output_base + "/cleaned_2_image.tif", mat1)
 
 # Calculate the horizontal slope and the vertical slope of the grid.
 hor_slope = prep.calc_hor_slope(mat1, ratio=0.3)
@@ -92,19 +92,19 @@ list_hor_lines = prep.remove_residual_dots_hor(list_hor_lines, hor_slope,
                                                residual=2.0)
 list_ver_lines = prep.remove_residual_dots_ver(list_ver_lines, ver_slope,
                                                residual=2.0)
-io.save_plot_image(output_base + "/group_horizontal_dots.png", list_hor_lines,
+losa.save_plot_image(output_base + "/group_horizontal_dots.png", list_hor_lines,
                    height, width)
-io.save_plot_image(output_base + "/group_vertical_dots.png", list_ver_lines,
+losa.save_plot_image(output_base + "/group_vertical_dots.png", list_ver_lines,
                    height, width)
 
 # Following steps are straightforward:
 
 # Check if the distortion is significant.
 list_hor_data = post.calc_residual_hor(list_hor_lines, 0.0, 0.0)
-io.save_residual_plot(output_base + "/residual_hor_before_correction.png",
+losa.save_residual_plot(output_base + "/residual_hor_before_correction.png",
                       list_hor_data, height, width)
 list_ver_data = post.calc_residual_ver(list_ver_lines, 0.0, 0.0)
-io.save_residual_plot(output_base + "/residual_ver_before_correction.png",
+losa.save_residual_plot(output_base + "/residual_ver_before_correction.png",
                       list_ver_data, height, width)
 check1 = post.check_distortion(list_hor_data)
 check2 = post.check_distortion(list_ver_data)
@@ -139,10 +139,10 @@ list_ffact, list_bfact = proc.calc_coef_backward_from_forward(list_hor_lines,
 
 # Apply distortion correction
 corrected_mat = post.unwarp_image_backward(mat0, xcenter, ycenter, list_bfact)
-io.save_image(output_base + "/corrected_image.tif", corrected_mat)
-io.save_image(output_base + "/diff_corrected_image.tif",
+losa.save_image(output_base + "/corrected_image.tif", corrected_mat)
+losa.save_image(output_base + "/diff_corrected_image.tif",
               np.abs(corrected_mat - mat0))
-io.save_metadata_txt(output_base + "/distortion_coefficients_bw.txt", xcenter,
+losa.save_metadata_txt(output_base + "/distortion_coefficients_bw.txt", xcenter,
                      ycenter, list_bfact)
 
 # Check the correction results.
@@ -150,15 +150,15 @@ list_uhor_lines = post.unwarp_line_forward(list_hor_lines, xcenter, ycenter,
                                             list_ffact)
 list_uver_lines = post.unwarp_line_forward(list_ver_lines, xcenter, ycenter,
                                             list_ffact)
-io.save_plot_image(output_base + "/horizontal_dots_unwarped.png",
+losa.save_plot_image(output_base + "/horizontal_dots_unwarped.png",
                    list_uhor_lines, height, width)
-io.save_plot_image(output_base + "/vertical_dots_unwarped.png",
+losa.save_plot_image(output_base + "/vertical_dots_unwarped.png",
                    list_uver_lines, height, width)
 list_hor_data = post.calc_residual_hor(list_uhor_lines, xcenter, ycenter)
 list_ver_data = post.calc_residual_ver(list_uver_lines, xcenter, ycenter)
-io.save_residual_plot(output_base + "/residual_hor_after_correction.png",
+losa.save_residual_plot(output_base + "/residual_hor_after_correction.png",
                       list_hor_data, height, width)
-io.save_residual_plot(output_base + "/residual_ver_after_correction.png",
+losa.save_residual_plot(output_base + "/residual_ver_after_correction.png",
                       list_ver_data, height, width)
 check1 = post.check_distortion(list_hor_data)
 check2 = post.check_distortion(list_ver_data)

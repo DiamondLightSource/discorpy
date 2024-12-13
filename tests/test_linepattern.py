@@ -50,6 +50,31 @@ class LinepatternMethods(unittest.TestCase):
         self.dist = step
         self.num_hline, self.num_vline = num_hline, num_vline
 
+    def test_select_good_peaks(self):
+        list_data = np.array([0, 1.5, 5, 1.5, 0, 0, 3, 10, 3, 0])
+        peaks = np.asarray([2, 7])
+        tol, radius, sigma = 0.1, 3, 0
+        result = lipa.select_good_peaks(list_data, peaks, tol=tol,
+                                        radius=radius, sigma=sigma)
+        np.testing.assert_array_equal(result, peaks)
+        self.assertTrue(len(result) == 2)
+        tol, radius, sigma = 0.2, 3, 1
+        result = lipa.select_good_peaks(list_data, peaks, tol=tol,
+                                        radius=radius, sigma=sigma)
+        np.testing.assert_array_equal(result, peaks)
+        self.assertTrue(len(result) == 2)
+
+    def test_sliding_window_slope(self):
+        list_data = np.array([0, 1, 2, 3, 4, 5], dtype=np.float32)
+        size, norm = 3, False
+        result = lipa.sliding_window_slope(list_data, size=size, norm=norm)
+        expected = np.array([0.5, 1.0, 1.0, 1.0, 1.0, 0.5])
+        np.testing.assert_almost_equal(result, expected, decimal=1)
+        size, norm = 3, True
+        result = lipa.sliding_window_slope(list_data, size=size, norm=norm)
+        expected = np.array([0.6, 1.2, 1.2, 1.2, 1.2, 0.6])
+        np.testing.assert_almost_equal(result, expected, decimal=1)
+
     def test_get_local_extrema_points(self):
         f_alias = lipa.get_local_extrema_points
         size = 800

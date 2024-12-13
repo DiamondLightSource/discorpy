@@ -809,16 +809,12 @@ def save_metadata_json(file_path, xcenter, ycenter, list_fact, overwrite=True):
     str
         Updated file path.
     """
-    # Get resolved file path and set to JSON suffix
     file_path = __get_path(file_path, check_exist=False).resolve()
     if file_path.suffix.lower() != '.json':
         file_path = file_path.with_suffix('.json')
     _create_folder(str(file_path))
-
     if not overwrite:
         file_path = _create_file_name(str(file_path))
-
-    # Create metadata dictionary
     metadata = {
         'xcenter': float(xcenter),
         'ycenter': float(ycenter),

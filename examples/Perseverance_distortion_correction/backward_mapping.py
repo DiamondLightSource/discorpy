@@ -23,11 +23,11 @@ estimated forward model of the Hazard Cameras (Hazcams) on the underside of
 NASA’s Perseverance Mars rover.
 """
 import numpy as np
-import discorpy.losa.loadersaver as io
+import discorpy.losa.loadersaver as losa
 import discorpy.post.postprocessing as post
 
 # Load image
-mat0 = io.load_image("Sol0_1st_color.png")
+mat0 = losa.load_image("Sol0_1st_color.png")
 output_base = "figs/"
 (height, width) = mat0.shape
 mat0 = mat0 / np.max(mat0)
@@ -66,7 +66,7 @@ list_bfact = np.linalg.lstsq(Amatrix, Bmatrix, rcond=1e-64)[0]
 
 # Apply distortion correction
 corrected_mat = post.unwarp_image_backward(mat0, xcenter, ycenter, list_bfact)
-io.save_image(output_base + "/after.png", corrected_mat)
-io.save_image(output_base + "/before.png", mat0)
-io.save_metadata_txt(
+losa.save_image(output_base + "/after.png", corrected_mat)
+losa.save_image(output_base + "/before.png", mat0)
+losa.save_metadata_txt(
     output_base + "/coefficients.txt", xcenter, ycenter, list_bfact)

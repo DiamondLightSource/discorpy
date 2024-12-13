@@ -21,17 +21,24 @@
 # ============================================================================
 
 """
-Module of pre-processing methods for handling a line-pattern image:
+Module of pre-processing methods for handling line-pattern images and
+chessboard images:
 
-- Determine the slopes and distances between lines.
-- Extract points belong to a line.
-- Convert a chessboard image to a line-pattern image.
-
+-   Determine the slopes and distances between lines in horizontal and
+    vertical directions.
+-   Convert a chessboard image to a line-pattern image.
+-   Extract line profiles across an image.
+-   Get points belonging to a line by locating local extrema.
+-   Get points belonging to the edges of a chessboard image by converting
+    a line profile into a list of slopes, calculated using a linear fit of
+    neighboring points.
+-   Select good points using Gaussian peak fitting.
 """
 
 import numpy as np
 import scipy.ndimage as ndi
 from skimage.transform import radon
+from scipy.optimize import curve_fit
 import discorpy.prep.preprocessing as prep
 
 
@@ -64,8 +71,119 @@ def locate_subpixel_point(list_point, option="min"):
     return pos
 
 
+def __gauss_function(x, a, b, c, d):
+    y = a * np.exp(-np.power((x - c) / (2 * b ** 2), 2)) + d
+    return y
+
+
+def _get_gauss_peak_fit(list_data):
+    """
+    Fit a Gaussian to 1d-array and return fitted result, peak position, and a
+    successful flag.
+    """
+    npoint = len(list_data)
+    list_x = np.arange(npoint) - npoint // 2
+    check = False
+    try:
+        init_guess = [1.0, 1.0, 0.0, 0.0]
+        parameters = curve_fit(__gauss_function, list_x, list_data,
+                               p0=init_guess)[0]
+        a = parameters[0]
+        b, c = parameters[1], parameters[2]
+        d = parameters[3]
+        fit_data = __gauss_function(list_x, a, b, c, d)
+        check = True
+    except (RuntimeError, ValueError):
+        fit_data = list_data
+        c = list_x[0]
+    return fit_data, c, check
+
+
+def select_good_peaks(list_data, peaks, tol=0.1, radius=11, sigma=0):
+    """
+    Select good peaks from the input data based on Gaussian fitting and
+    tolerance criteria.
+
+   Parameters
+   ----------
+   list_data : array_like
+       1d-array.
+   peaks : list of int
+       Indices of candidate peaks in the data.
+   tol : float, optional
+       Tolerance for peak fitting accuracy.
+   radius : int, optional
+       Radius around each peak to consider for fitting.
+   sigma : float, optional
+       Standard deviation for Gaussian smoothing.
+
+   Returns
+   -------
+   list of int
+       Indices of the selected good peaks.
+   """
+    if sigma > 0:
+        list_data = ndi.gaussian_filter1d(list_data, sigma)
+    good_peaks = []
+    npoint = len(list_data)
+    for p in peaks:
+        start = max(0, p - radius)
+        stop = min(npoint, p + radius + 1)
+        if (stop - start) > 3:
+            list_sub = list_data[start:stop]
+            nmax = np.max(list_sub)
+            if nmax != 0.0:
+                list_norm = list_sub / nmax
+                fit_data, delta_x, check = _get_gauss_peak_fit(list_norm)
+                num = np.max(np.abs(fit_data - list_norm))
+                if check and abs(delta_x) < radius and num < tol:
+                    good_peaks.append(p)
+    return np.asarray(good_peaks)
+
+
+def sliding_window_slope(list_data, size=3, norm=True):
+    """
+    Compute the absolute slopes of a linear fit within a sliding window
+    across the input data, normalized by the mean slope if norm is True.
+
+    Parameters
+    ----------
+    list_data : array-like
+        1d-array.
+    size : int, optional
+        Size of the sliding window for the linear fit.
+    norm : bool, optional
+        Normalize the result by the mean slope if True.
+
+    Returns
+    -------
+    array_like
+        Normalized absolute slopes for each data point.
+    """
+    npoint = len(list_data)
+    if npoint < 3:
+        raise ValueError("Data size must be larger than 2")
+    size = int(np.clip(size, 3, npoint))
+    if size % 2 == 0:
+        size += 1
+    radius = size // 2
+    padded_data = np.pad(list_data, (radius, radius), 'edge')
+    x_list = np.arange(size)
+    slopes = np.zeros_like(list_data)
+    for i in range(len(list_data)):
+        local_data = padded_data[i:i + size]
+        slopes[i] = np.polyfit(x_list, local_data, 1)[0]
+    slopes = np.abs(slopes)
+    if norm is True:
+        nmean = np.mean(slopes)
+        if nmean != 0.0:
+            slopes = slopes / nmean
+    return slopes
+
+
 def get_local_extrema_points(list_data, option="min", radius=7, sensitive=0.1,
-                             denoise=True, norm=True, subpixel=True):
+                             denoise=True, norm=True, subpixel=True,
+                             select_peaks=False, **kwargs):
     """
     Get a list of local extremum points from a 1D array.
 
@@ -86,6 +204,10 @@ def get_local_extrema_points(list_data, option="min", radius=7, sensitive=0.1,
         Apply background normalization to the array.
     subpixel : bool, optional
         Locate points with subpixel accuracy.
+    select_peaks : bool, optional
+        To select good points based on Gaussian fitting.
+    **kwargs : optional
+        Additional parameters for the method 'select_good_peaks'
 
     Returns
     -------
@@ -99,7 +221,7 @@ def get_local_extrema_points(list_data, option="min", radius=7, sensitive=0.1,
     if option == "max":
         list_data = np.max(list_data) - list_data
     num_point = len(list_data)
-    radius = np.clip(radius, 1, num_point // 4)
+    radius = int(np.clip(radius, 1, num_point // 4))
     if norm is True:
         xlist = np.arange(num_point)
         mat_comb = np.asarray(np.vstack((xlist, list_data)))
@@ -126,10 +248,18 @@ def get_local_extrema_points(list_data, option="min", radius=7, sensitive=0.1,
         nmean = np.mean(list_sort[-radius:])
         num2 = np.abs((val - nmean) / nmean) if nmean != 0 else 0.0
         if num1 == 0.0 and num2 > sensitive:
-            if subpixel is True:
-                pos = i - 1 + locate_subpixel_point(list_data[i - 1:i + 2],
-                                                    option="min")
             points.append(pos)
+    if select_peaks is True:
+        points = select_good_peaks(np.max(list_data) - list_data, points,
+                                   radius=radius, **kwargs)
+    if subpixel is True:
+        points_sub = []
+        if len(points) > 0:
+            for i in points:
+                pos_sub = i - 1 + locate_subpixel_point(list_data[i - 1:i + 2],
+                                                        option="min")
+                points_sub.append(pos_sub)
+            return np.asarray(points_sub)
     return np.asarray(points)
 
 
@@ -160,11 +290,12 @@ def _make_circle_mask(width, ratio):
 
 def calc_slope_distance_hor_lines(mat, ratio=0.3, search_range=30.0, radius=9,
                                   sensitive=0.1, bgr="bright", denoise=True,
-                                  norm=True, subpixel=True):
+                                  norm=True, subpixel=True, chessboard=False,
+                                  select_peaks=False, **kwargs):
     """
     Calculate the representative distance between horizontal lines and the
     representative slope of these lines using the ROI around the middle of a
-    line-pattern image.
+    line-pattern image or a chessboard image.
 
     Parameters
     ----------
@@ -181,11 +312,17 @@ def calc_slope_distance_hor_lines(mat, ratio=0.3, search_range=30.0, radius=9,
     bgr : {"bright", "dark"}
         Specify the brightness of the background against the lines.
     denoise : bool, optional
-        Applying a smoothing filter if True.
+        Apply a smoothing filter if True.
     norm : bool, optional
         Apply background normalization to the array.
     subpixel : bool, optional
         Locate points with subpixel accuracy.
+    chessboard : bool, optional
+        If True, converts the input chessboard image to a line-pattern image.
+    select_peaks : bool, optional
+        To select good points based on Gaussian fitting.
+    **kwargs : optional
+        Additional parameters for the method 'select_good_peaks'
 
     Returns
     -------
@@ -194,6 +331,8 @@ def calc_slope_distance_hor_lines(mat, ratio=0.3, search_range=30.0, radius=9,
     distance : float
         Distance between horizontal lines.
     """
+    if chessboard is True:
+        mat = convert_chessboard_to_linepattern(mat)
     if denoise is True:
         mat = ndi.gaussian_filter(mat, 3)
     mat_roi = prep._select_roi(mat, ratio, square=True)
@@ -215,7 +354,9 @@ def calc_slope_distance_hor_lines(mat, ratio=0.3, search_range=30.0, radius=9,
                                               option="max", radius=radius,
                                               denoise=denoise, norm=norm,
                                               subpixel=subpixel,
-                                              sensitive=sensitive)
+                                              sensitive=sensitive,
+                                              select_peaks=select_peaks,
+                                              **kwargs)
     if len(list_ext_point) > 3:
         distance = np.median(np.abs(np.diff(list_ext_point)))
     else:
@@ -225,11 +366,12 @@ def calc_slope_distance_hor_lines(mat, ratio=0.3, search_range=30.0, radius=9,
 
 def calc_slope_distance_ver_lines(mat, ratio=0.3, search_range=30.0, radius=9,
                                   sensitive=0.1, bgr="bright", denoise=True,
-                                  norm=True, subpixel=True):
+                                  norm=True, subpixel=True, chessboard=False,
+                                  select_peaks=False, **kwargs):
     """
     Calculate the representative distance between vertical lines and the
     representative slope of these lines using the ROI around the middle of a
-    line-pattern image.
+    line-pattern image or a chessboard image.
 
     Parameters
     ----------
@@ -249,6 +391,12 @@ def calc_slope_distance_ver_lines(mat, ratio=0.3, search_range=30.0, radius=9,
         Applying a smoothing filter if True.
     subpixel : bool, optional
         Locate points with subpixel accuracy.
+    chessboard : bool, optional
+        If True, converts the input chessboard image to a line-pattern image.
+    select_peaks : bool, optional
+        To select good points based on Gaussian fitting.
+    **kwargs : optional
+        Additional parameters for the method 'select_good_peaks'
 
     Returns
     -------
@@ -257,6 +405,8 @@ def calc_slope_distance_ver_lines(mat, ratio=0.3, search_range=30.0, radius=9,
     distance : float
         Distance between vertical lines.
     """
+    if chessboard is True:
+        mat = convert_chessboard_to_linepattern(mat)
     if denoise is True:
         mat = ndi.gaussian_filter(mat, 3)
     mat_roi = prep._select_roi(mat, ratio, square=True)
@@ -278,7 +428,9 @@ def calc_slope_distance_ver_lines(mat, ratio=0.3, search_range=30.0, radius=9,
                                               option="max", radius=radius,
                                               denoise=denoise, norm=norm,
                                               subpixel=subpixel,
-                                              sensitive=sensitive)
+                                              sensitive=sensitive,
+                                              select_peaks=select_peaks,
+                                              **kwargs)
     if len(list_ext_point) > 3:
         distance = np.median(np.abs(np.diff(list_ext_point)))
     else:
@@ -404,29 +556,67 @@ def get_tilted_profile(mat, index, angle_deg, direction):
     return xlist, ylist, profile
 
 
+def convert_chessboard_to_linepattern(mat, smooth=True, bgr="bright",
+                                      sigma=3):
+    """
+    Convert a chessboard image to a line-pattern image.
+
+    Parameters
+    ----------
+    mat : array_like
+        2D array.
+    smooth : bool, optional
+        Apply a gaussian smoothing filter if True.
+    bgr : {'bright', 'dark'}
+        Select the background of the output image.
+    sigma : int
+        Sigma of the Gaussian window, if smooth is True.
+
+    Returns
+    -------
+    array_like
+        Line-pattern image.
+    """
+    if smooth is True:
+        mat = ndi.gaussian_filter(mat, sigma, mode="nearest")
+    mat_line = np.mean(np.abs(np.gradient(mat)), axis=0)
+    if smooth is True:
+        mat_line = np.pad(mat_line[4:-4, 4:-4], 4, mode="edge")
+    else:
+        mat_line = np.pad(mat_line[2:-2, 2:-2], 2, mode="edge")
+    if bgr == "bright":
+        mat_line = np.max(mat_line) - mat_line
+    mat_line = mat_line / np.mean(np.abs(mat_line))
+    return mat_line
+
+
 def get_cross_points_hor_lines(mat, slope_ver, dist_ver, ratio=1.0, norm=True,
                                offset=0, bgr="bright", radius=7,
-                               sensitive=0.1, denoise=True, subpixel=True):
+                               sensitive=0.1, denoise=True, subpixel=True,
+                               chessboard=False, select_peaks=False, **kwargs):
     """
-    Get points on horizontal lines of a line-pattern image by intersecting with
-    a list of generated vertical-lines.
+    Get points on horizontal lines of a line-pattern image, or a chessboard
+    image, by intersecting with a list of generated vertical-lines.
 
     Parameters
     ----------
     mat : array_like
         2D array.
     slope_ver : float
-        Slope in Radian of generated vertical lines.
+        Representative slope of vertical lines, can be calculated by using the
+        'calc_slope_distance_ver_lines' method.
     dist_ver : float
-        Distance between two adjacent generated lines.
+        Representative distance between vertical lines, can be calculated by
+        using the 'calc_slope_distance_ver_lines' method.
     ratio : float
-        To adjust the distance between generated lines to get more/less lines.
+        To adjust the distance (=ratio * dist_ver) between generated lines
+        to create more or fewer lines.
     norm : bool, optional
         Apply background normalization to the array.
     offset : int
         Starting index of generated lines.
     bgr : {"bright", "dark"}
-        Specify the brightness of the background against the lines.
+        Specify the brightness of the background relative to the lines.
     radius : int
         Search radius. Used to locate extremum points.
     sensitive : float
@@ -436,6 +626,13 @@ def get_cross_points_hor_lines(mat, slope_ver, dist_ver, ratio=1.0, norm=True,
         Applying a smoothing filter if True.
     subpixel : bool, optional
         Locate points with subpixel accuracy.
+    chessboard : bool, optional
+        If True, cross points are located by finding local maxima of slopes
+        of local linear fits of the generated lines.
+    select_peaks : bool, optional
+        To select good points based on Gaussian fitting.
+    **kwargs : optional
+        Additional parameters for the method 'select_good_peaks'
 
     Returns
     -------
@@ -452,17 +649,21 @@ def get_cross_points_hor_lines(mat, slope_ver, dist_ver, ratio=1.0, norm=True,
     angle = np.arctan(slope_ver)
     min_row, max_row = _calc_index_range(height, width, np.rad2deg(angle),
                                          direction="vertical")
-    offset = np.clip(offset, 0, min(height, width) // 3)
+    offset = int(np.clip(offset, 0, min(height, width) // 3))
     list_points = []
     for i in np.arange(min_row + offset, max_row - offset, ratio * dist_ver):
         xlist, ylist, profile = get_tilted_profile(mat, i, np.rad2deg(angle),
                                                    direction="vertical")
         scale = np.sqrt((xlist[-1] - xlist[0]) ** 2
                         + (ylist[-1] - ylist[0]) ** 2) / (height - 1)
+        if chessboard is True:
+            profile = sliding_window_slope(profile, size=3)
         rlist = get_local_extrema_points(profile, option="max", radius=radius,
                                          sensitive=sensitive,
                                          denoise=not denoise, norm=not norm,
-                                         subpixel=subpixel) * scale
+                                         subpixel=subpixel,
+                                         select_peaks=select_peaks,
+                                         **kwargs) * scale
         xlist1 = rlist * np.sin(angle) + xlist[0]
         ylist1 = rlist * np.cos(angle) + ylist[0]
         list_points.extend(np.asarray(list(zip(ylist1, xlist1))))
@@ -471,21 +672,25 @@ def get_cross_points_hor_lines(mat, slope_ver, dist_ver, ratio=1.0, norm=True,
 
 def get_cross_points_ver_lines(mat, slope_hor, dist_hor, ratio=1.0, norm=True,
                                offset=0, bgr="bright", radius=7,
-                               sensitive=0.1, denoise=True, subpixel=True):
+                               sensitive=0.1, denoise=True, subpixel=True,
+                               chessboard=False, select_peaks=False, **kwargs):
     """
-    Get points on vertical lines of a line-pattern image by intersecting with
-    a list of generated horizontal-lines.
+    Get points on vertical lines of a line-pattern image, or a chessboard
+    image, by intersecting with a list of generated horizontal-lines.
 
     Parameters
     ----------
     mat : array_like
         2D array.
     slope_hor : float
-        Slope in Radian of generated horizontal lines.
+        Representative slope of horizontal lines, can be calculated by using
+        the 'calc_slope_distance_hor_lines' method.
     dist_hor : float
-        Distance between two adjacent generated lines.
+        Representative distance between horizontal lines, can be calculated by
+        using the 'calc_slope_distance_hor_lines' method.
     ratio : float
-        To adjust the distance between generated lines to get more/less lines.
+        To adjust the distance (=ratio * dist_hor) between generated lines
+        to create more or fewer lines.
     norm : bool, optional
         Apply background normalization to the array.
     offset : int
@@ -501,6 +706,13 @@ def get_cross_points_ver_lines(mat, slope_hor, dist_hor, ratio=1.0, norm=True,
         Applying a smoothing filter if True.
     subpixel : bool, optional
         Locate points with subpixel accuracy.
+    chessboard : bool, optional
+        If True, cross points are located by finding local maxima of slopes
+        of local linear fits of the generated lines.
+    select_peaks : bool, optional
+        To select good points based on Gaussian fitting.
+    **kwargs : optional
+        Additional parameters for the method 'select_good_peaks'
 
     Returns
     -------
@@ -517,49 +729,23 @@ def get_cross_points_ver_lines(mat, slope_hor, dist_hor, ratio=1.0, norm=True,
     angle = np.arctan(slope_hor)
     min_col, max_col = _calc_index_range(height, width, -np.rad2deg(angle),
                                          direction="horizontal")
-    offset = np.clip(offset, 0, min(height, width) // 8)
+    offset = int(np.clip(offset, 0, min(height, width) // 8))
     list_points = []
     for i in np.arange(min_col + offset, max_col - offset, ratio * dist_hor):
         xlist, ylist, profile = get_tilted_profile(mat, i, -np.rad2deg(angle),
                                                    direction="horizontal")
         scale = np.sqrt((xlist[-1] - xlist[0]) ** 2
                         + (ylist[-1] - ylist[0]) ** 2) / (width - 1)
+        if chessboard is True:
+            profile = sliding_window_slope(profile, size=3)
         rlist = get_local_extrema_points(profile, option="max", radius=radius,
                                          sensitive=sensitive,
                                          denoise=not denoise, norm=not norm,
-                                         subpixel=subpixel) * scale
+                                         subpixel=subpixel,
+                                         select_peaks=select_peaks,
+                                         **kwargs) * scale
         xlist1 = rlist * np.cos(angle) + xlist[0]
         ylist1 = rlist * np.sin(angle) + ylist[0]
         list_points.extend(np.asarray(list(zip(ylist1, xlist1))))
     return np.asarray(list_points)
 
-
-def convert_chessboard_to_linepattern(mat, smooth=False, bgr="bright"):
-    """
-    Convert a chessboard image to a line-pattern image.
-
-    Parameters
-    ----------
-    mat : array_like
-        2D array.
-    smooth : bool, optional
-        Apply a gaussian smoothing filter if True.
-    bgr : {'bright', 'dark'}
-        Select the background of the output image.
-
-    Returns
-    -------
-    array_like
-        Line-pattern image.
-    """
-    if smooth is True:
-        mat = ndi.gaussian_filter(mat, 1, mode="nearest")
-    mat_line = np.mean(np.abs(np.gradient(mat)), axis=0)
-    if smooth is True:
-        mat_line = np.pad(mat_line[4:-4, 4:-4], 4, mode="edge")
-    else:
-        mat_line = np.pad(mat_line[2:-2, 2:-2], 2, mode="edge")
-    if bgr == "bright":
-        mat_line = np.max(mat_line) - mat_line
-    mat_line = mat_line / np.mean(np.abs(mat_line))
-    return mat_line

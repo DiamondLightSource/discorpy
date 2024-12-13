@@ -26,11 +26,11 @@ https://mars.nasa.gov/system/downloadable_items/45689_PIA24430-Perseverance's_fi
 
 
 import numpy as np
-import discorpy.losa.loadersaver as io
+import discorpy.losa.loadersaver as losa
 import discorpy.post.postprocessing as post
 
 # Load image
-mat0 = io.load_image("Sol0_1st_color.png")
+mat0 = losa.load_image("Sol0_1st_color.png")
 output_base = "figs/"
 (height, width) = mat0.shape
 mat0 = mat0 / np.max(mat0)
@@ -54,4 +54,4 @@ mat_pad = np.pad(line_pattern, pad, mode='edge')
 mat_cor = post.unwarp_image_backward(mat_pad, xcenter + pad,
                                      ycenter + pad, list_ffact)
 mat_cor = mat_cor[pad:pad + height, pad:pad + width]
-io.save_image(output_base + "/overlay.jpg", (mat0 + 0.5*mat_cor))
+losa.save_image(output_base + "/overlay.jpg", (mat0 + 0.5*mat_cor))

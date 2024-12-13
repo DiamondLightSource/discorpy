@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import discorpy.losa.loadersaver as io
+import discorpy.losa.loadersaver as losa
 import discorpy.prep.preprocessing as prep
 import discorpy.proc.processing as proc
 import discorpy.post.postprocessing as post
@@ -10,7 +10,7 @@ import discorpy.post.postprocessing as post
 file_path = "../../data/dot_pattern_06.jpg"
 output_base = "E:/output_demo_05/"
 num_coef = 4  # Number of polynomial coefficients
-mat0 = io.load_image(file_path) # Load image
+mat0 = losa.load_image(file_path) # Load image
 (height, width) = mat0.shape
 
 # Normalize background
@@ -18,7 +18,7 @@ mat1 = prep.normalization_fft(mat0, sigma=20)
 # Segment dots
 threshold = prep.calculate_threshold(mat1, bgr="bright", snr=1.5)
 mat1 = prep.binarization(mat1, thres=threshold)
-io.save_image(output_base + "/segmented_dots.jpg", mat1)
+losa.save_image(output_base + "/segmented_dots.jpg", mat1)
 
 # Calculate the median dot size and distance between them.
 (dot_size, dot_dist) = prep.calc_size_distance(mat1)
@@ -36,13 +36,13 @@ list_ver_lines0 = prep.group_dots_ver_lines(mat1, ver_slope, dot_dist,
                                             accepted_ratio=0.6)
 
 # Save output for checking
-io.save_plot_image(output_base + "/horizontal_lines.png", list_hor_lines0, height, width)
-io.save_plot_image(output_base + "/vertical_lines.png", list_ver_lines0, height, width)
+losa.save_plot_image(output_base + "/horizontal_lines.png", list_hor_lines0, height, width)
+losa.save_plot_image(output_base + "/vertical_lines.png", list_ver_lines0, height, width)
 list_hor_data = post.calc_residual_hor(list_hor_lines0, 0.0, 0.0)
 list_ver_data = post.calc_residual_ver(list_ver_lines0, 0.0, 0.0)
-io.save_residual_plot(output_base + "/hor_residual_before_correction.png", list_hor_data,
+losa.save_residual_plot(output_base + "/hor_residual_before_correction.png", list_hor_data,
                       height, width)
-io.save_residual_plot(output_base + "/ver_residual_before_correction.png", list_ver_data,
+losa.save_residual_plot(output_base + "/ver_residual_before_correction.png", list_ver_data,
                       height, width)
 
 # Optional: for checking perspective distortion
@@ -83,16 +83,16 @@ list_hor_lines1, list_ver_lines1 = proc.regenerate_grid_points_parabola(
     list_hor_lines0, list_ver_lines0, perspective=True)
 
 # Save output for checking
-io.save_plot_image(output_base + "/horizontal_lines_regenerated.png",
+losa.save_plot_image(output_base + "/horizontal_lines_regenerated.png",
                    list_hor_lines1, height, width)
-io.save_plot_image(output_base + "/vertical_lines_regenerated.png",
+losa.save_plot_image(output_base + "/vertical_lines_regenerated.png",
                    list_ver_lines1, height, width)
 
 # Calculate parameters of the radial correction model
 (xcenter, ycenter) = proc.find_cod_coarse(list_hor_lines1, list_ver_lines1)
 list_fact = proc.calc_coef_backward(list_hor_lines1, list_ver_lines1,
                                     xcenter, ycenter, num_coef)
-io.save_metadata_txt(output_base + "/coefficients_radial_distortion.txt",
+losa.save_metadata_txt(output_base + "/coefficients_radial_distortion.txt",
                      xcenter, ycenter, list_fact)
 print("X-center: {0}. Y-center: {1}".format(xcenter, ycenter))
 print("Coefficients: {0}".format(list_fact))
@@ -120,14 +120,14 @@ list_uver_lines = post.unwarp_line_backward(list_ver_lines2, xcenter, ycenter, l
 # Check the residual of unwarped lines:
 list_hor_data = post.calc_residual_hor(list_uhor_lines, xcenter, ycenter)
 list_ver_data = post.calc_residual_ver(list_uver_lines, xcenter, ycenter)
-io.save_residual_plot(output_base + "/hor_residual_after_correction.png", list_hor_data, height, width)
-io.save_residual_plot(output_base + "/ver_residual_after_correction.png", list_ver_data, height, width)
+losa.save_residual_plot(output_base + "/hor_residual_after_correction.png", list_hor_data, height, width)
+losa.save_residual_plot(output_base + "/ver_residual_after_correction.png", list_ver_data, height, width)
 
 # Unwarp the image
 mat_rad_corr = post.unwarp_image_backward(mat0, xcenter, ycenter, list_fact)
 # Save results
-io.save_image(output_base + "/image_radial_corrected.jpg", mat_rad_corr)
-io.save_image(output_base + "/radial_difference.jpg", mat_rad_corr - mat0)
+losa.save_image(output_base + "/image_radial_corrected.jpg", mat_rad_corr)
+losa.save_image(output_base + "/radial_difference.jpg", mat_rad_corr - mat0)
 
 # -------------------------------------
 # For perspective distortion correction
@@ -147,5 +147,5 @@ pers_coef = proc.calc_perspective_coefficients(source_points, target_points, map
 image_pers_corr = post.correct_perspective_image(mat_rad_corr, pers_coef)
 # Save results
 np.savetxt(output_base + "/perspective_coefficients.txt", np.transpose([pers_coef]))
-io.save_image(output_base + "/image_radial_perspective_corrected.jpg", image_pers_corr)
-io.save_image(output_base + "/perspective_difference.jpg", image_pers_corr - mat_rad_corr)
+losa.save_image(output_base + "/image_radial_perspective_corrected.jpg", image_pers_corr)
+losa.save_image(output_base + "/perspective_difference.jpg", image_pers_corr - mat_rad_corr)

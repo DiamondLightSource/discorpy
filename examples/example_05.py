@@ -23,7 +23,7 @@
 
 import timeit
 import numpy as np
-import discorpy.losa.loadersaver as io
+import discorpy.losa.loadersaver as losa
 import discorpy.post.postprocessing as post
 
 
@@ -47,11 +47,11 @@ step = 20
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
 # Import distortion coefficients
-(xcenter, ycenter, list_fact) = io.load_metadata_txt(file_path)
+(xcenter, ycenter, list_fact) = losa.load_metadata_txt(file_path)
 
 # Generate a 3D dataset for demonstration.
 # Replace this step with a real 3D data in your codes.
-mat0 = io.load_image("../data/dot_pattern_05.jpg")
+mat0 = losa.load_image("../data/dot_pattern_05.jpg")
 (height, width) = mat0.shape
 mat3D = np.zeros((600, height, width), dtype=np.float32)
 mat3D[:] = mat0
@@ -69,7 +69,7 @@ for x_search in range(-search_range, search_range + step, step):
         output_name = output_base + "/xcenter_"\
             + "{:5.2f}".format(xcenter + x_search) + "_ycenter_"\
             + "{:5.2f}".format(ycenter + y_search) + ".tif"
-        io.save_image(output_name, corrected_slice)
+        losa.save_image(output_name, corrected_slice)
 
 time_stop = timeit.default_timer()
 print("Running time is {} second!".format(time_stop - time_start))

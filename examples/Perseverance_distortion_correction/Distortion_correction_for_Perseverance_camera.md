@@ -16,11 +16,11 @@ and overlay on the original image to check by eyes.
 
 ```python
 import numpy as np
-import discorpy.losa.loadersaver as io
+import discorpy.losa.loadersaver as losa
 import discorpy.post.postprocessing as post
 
 # Load image
-mat0 = io.load_image("Sol0_1st_color.png")
+mat0 = losa.load_image("Sol0_1st_color.png")
 output_base = "figs/"
 (height, width) = mat0.shape
 mat0 = mat0 / np.max(mat0)
@@ -43,17 +43,17 @@ pad = width
 mat_pad = np.pad(line_pattern, pad, mode='edge')
 mat_cor = post.unwarp_image_backward(mat_pad, xcenter + pad, ycenter + pad, list_ffact)
 mat_cor = mat_cor[pad:pad + height, pad:pad + width]
-io.save_image(output_base + "/overlay.jpg", (mat0 + 0.5*mat_cor))
+losa.save_image(output_base + "/overlay.jpg", (mat0 + 0.5*mat_cor))
 ```
 From the estimated parameters of the forward model, we can calculate parameters
 of a backward model which will be used for image correction.
 ```python
 import numpy as np
-import discorpy.losa.loadersaver as io
+import discorpy.losa.loadersaver as losa
 import discorpy.post.postprocessing as post
 
 # Load image
-mat0 = io.load_image("Sol0_1st_color.png")
+mat0 = losa.load_image("Sol0_1st_color.png")
 output_base = "figs/"
 (height, width) = mat0.shape
 mat0 = mat0 / np.max(mat0)
@@ -92,15 +92,15 @@ list_bfact = np.linalg.lstsq(Amatrix, Bmatrix, rcond=1e-64)[0]
 
 # Apply distortion correction
 corrected_mat = post.unwarp_image_backward(mat0, xcenter, ycenter, list_bfact)
-io.save_image(output_base + "/after.png", corrected_mat)
-io.save_image(output_base + "/before.png", mat0)
-io.save_metadata_txt(output_base + "/coefficients.txt", xcenter, ycenter, list_bfact)
+losa.save_image(output_base + "/after.png", corrected_mat)
+losa.save_image(output_base + "/before.png", mat0)
+losa.save_metadata_txt(output_base + "/coefficients.txt", xcenter, ycenter, list_bfact)
 ```
 Knowing the parameters of the backward model, distortion correction can 
 easily be applied to other images of that camera.
 ```python
 import numpy as np
-import discorpy.losa.loadersaver as io
+import discorpy.losa.loadersaver as losa
 import discorpy.post.postprocessing as post
 from PIL import Image
 
@@ -109,11 +109,11 @@ file_path = "Sol0_1st_color.png"
 output_base = "figs/"
 mat = np.asarray(Image.open(file_path), dtype=np.float32)
 # Import distortion coefficients
-(xcenter, ycenter, list_fact) = io.load_metadata_txt("figs/coefficients.txt")
+(xcenter, ycenter, list_fact) = losa.load_metadata_txt("figs/coefficients.txt")
 
 for i in range(mat.shape[-1]):
     mat[:, :, i] = post.unwarp_image_backward(mat[:, :, i], xcenter, ycenter, list_fact)
-io.save_image(output_base + "/Sol0_1st_color_correction.png", mat)
+losa.save_image(output_base + "/Sol0_1st_color_correction.png", mat)
 ```
 ![Overlay Image](figs/Sol0_1st_color_correction.png) 
 

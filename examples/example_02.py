@@ -23,7 +23,7 @@
 
 import timeit
 import numpy as np
-import discorpy.losa.loadersaver as io
+import discorpy.losa.loadersaver as losa
 import discorpy.prep.preprocessing as prep
 import discorpy.proc.processing as proc
 import discorpy.post.postprocessing as post
@@ -72,16 +72,16 @@ perspective = False # Correct perspective distortion if True
 # -----------------------------------------------------------------------------
 # Input
 print("Load image")
-mat0 = io.load_image(file_path)
+mat0 = losa.load_image(file_path)
 # Calculation of distortion coefficients
 print("Calculate distortion coefficients of a backward model...")
 (xcenter, ycenter, list_fact) = calc_distor_coef(mat0, num_coef,
                                                  perspective=perspective)
 # Output
 corrected_mat = post.unwarp_image_backward(mat0, xcenter, ycenter, list_fact)
-io.save_image(output_base + "/corrected_image.tif", corrected_mat)
-io.save_image(output_base + "/difference.tif", corrected_mat - mat0)
-io.save_metadata_txt(output_base + "/coefficients_bw.txt", xcenter, ycenter,
+losa.save_image(output_base + "/corrected_image.tif", corrected_mat)
+losa.save_image(output_base + "/difference.tif", corrected_mat - mat0)
+losa.save_metadata_txt(output_base + "/coefficients_bw.txt", xcenter, ycenter,
                      list_fact)
 time_stop = timeit.default_timer()
 print("Done!!!\nRunning time is {} second !".format(time_stop - time_start))

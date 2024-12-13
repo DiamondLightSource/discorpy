@@ -8,14 +8,14 @@ Useful tips
     .. code-block:: python
 
         import numpy as np
-        import discorpy.losa.loadersaver as io
+        import discorpy.losa.loadersaver as losa
         import discorpy.proc.processing as proc
         import discorpy.post.postprocessing as post
 
         file_path = "../../data/percy_cam/F_R_hazcam.png"
         output_base = "E:/output/unwarping/"
 
-        img = io.load_image(file_path, average=False)
+        img = losa.load_image(file_path, average=False)
         # Define a function for convenient use.
         def unwarp_color_image(img, xcenter, ycenter, list_bfact, mode='reflect'):
             if len(img.shape) != 3:
@@ -29,7 +29,7 @@ Useful tips
 
         # Suppose that we get xcenter, ycenter, list_bfact (backward mode) to this point
         img_corrected = unwarp_color_image(img, xcenter, ycenter, list_bfact)
-        io.save_image(output_base + "/corrected_F_R_hazcam.png", img_corrected)
+        losa.save_image(output_base + "/corrected_F_R_hazcam.png", img_corrected)
 
 2)  Find the coordinates of a point in one space given its corresponding
     coordinates in another space. Suppose that we get distortion coefficients of
@@ -39,11 +39,11 @@ Useful tips
     .. code-block:: python
 
         import numpy as np
-        import discorpy.losa.loadersaver as io
+        import discorpy.losa.loadersaver as losa
         import discorpy.proc.processing as proc
         import discorpy.post.postprocessing as post
 
-        img = io.load_image("E:/data/image.jpg", average=True)
+        img = losa.load_image("E:/data/image.jpg", average=True)
         # Suppose that we get coefficients of the backward model (xcenter, yxenter, list_bfact).
         # We need to find the forward transformation using the given backward model.
         (height, width) = img.shape
@@ -91,7 +91,7 @@ Useful tips
                 img_pad = np.pad(img, ((pad_top, pad_bot), (pad_left, pad_right), (0, 0)), mode="constant")
                 img_corrected = unwarp_color_image(img_pad, xcenter + pad_left, ycenter + pad_top,
                                                    list_bfact, mode='constant')
-                io.save_image(output_base + "/F_R_hazcam_unwarped_padding.jpg", img_corrected)
+                losa.save_image(output_base + "/F_R_hazcam_unwarped_padding.jpg", img_corrected)
 
             .. image:: figs/tips/img1.jpg
                 :width: 100 %
@@ -113,7 +113,7 @@ Useful tips
                     img_tmp = post.unwarp_image_backward(img_tmp, xcenter1, ycenter1, list_bfact1)
                     img_corrected.append(img_tmp)
                 img_corrected = np.moveaxis(np.asarray(img_corrected), 0, 2)
-                io.save_image(output_base + "/F_R_hazcam_unwarped_zoom.jpg", img_corrected)
+                losa.save_image(output_base + "/F_R_hazcam_unwarped_zoom.jpg", img_corrected)
 
             .. image:: figs/tips/img2.jpg
                 :width: 100 %

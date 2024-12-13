@@ -27,7 +27,7 @@
 """
 Module of processing methods:
 
-- Fit lines of dots to parabolas, find the center of distortion.
+- Fit lines of points to parabolas, find the center of distortion.
 - Calculate undistorted intercepts of gridlines.
 - Calculate distortion coefficients of the backward model, the forward model,
   and the backward-from-forward model.
@@ -42,23 +42,23 @@ from scipy import optimize
 
 def _para_fit_hor(list_lines, xcenter, ycenter):
     """
-    Fit horizontal lines of dots to parabolas.
+    Fit horizontal lines of points to parabolas.
 
     Parameters
     ----------
     list_lines : list of 2D arrays
-        List of the (y,x)-coordinates of dot-centroids on each line.
+        List of (y,x)-coordinates of points on each line.
     xcenter : float
-        Center of distortion in x-direction.
+        Center of distortion in the x-direction.
     ycenter : float
-        Center of distortion in y-direction.
+        Center of distortion in the y-direction.
 
     Returns
     -------
     list_coef : list of 1D arrays
-        List of the coefficients of each parabola (y=ax**2+bx+c).
+        List of coefficients of each parabola (y=ax**2+bx+c).
     list_slines : list of 2D arrays
-        List of the shifted (y,x)-coordinates of dot-centroids on each line.
+        List of shifted (y,x)-coordinates of points on each line.
     """
     num_line = len(list_lines)
     list_coef = np.zeros((num_line, 3), dtype=np.float32)
@@ -75,23 +75,23 @@ def _para_fit_hor(list_lines, xcenter, ycenter):
 
 def _para_fit_ver(list_lines, xcenter, ycenter):
     """
-    Fit vertical lines of dots to parabolas.
+    Fit vertical lines of points to parabolas.
 
     Parameters
     ----------
     list_lines : list of 2D arrays
-        List of the (y,x)-coordinates of dot-centroids on each line.
+        List of (y,x)-coordinates of points on each line.
     xcenter : float
-        Center of distortion in x-direction.
+        Center of distortion in the x-direction.
     ycenter : float
-        Center of distortion in y-direction.
+        Center of distortion in the y-direction.
 
     Returns
     -------
     list_coef : list of 1D arrays
-        List of the coefficients of each parabola (x=ay**2+by+c).
+        List of coefficients of each parabola (x=ay**2+by+c).
     list_slines : list of 2D arrays
-        List of the shifted (y,x)-coordinates of dot-centroids on each line.
+        List of shifted (y,x)-coordinates of points on each line.
     """
     num_line = len(list_lines)
     list_coef = np.zeros((num_line, 3), dtype=np.float32)
@@ -113,16 +113,16 @@ def find_cod_coarse(list_hor_lines, list_ver_lines):
     Parameters
     ----------
     list_hor_lines : list of 2D arrays
-        List of the (y,x)-coordinates of dot-centroids on each horizontal line.
+        List of (y,x)-coordinates of points on each horizontal line.
     list_ver_lines : list of 2D arrays
-        List of the (y,x)-coordinates of dot-centroids on each vertical line.
+        List of (y,x)-coordinates of points on each vertical line.
 
     Returns
     -------
     xcenter : float
-        Center of distortion in x-direction.
+        Center of distortion in the x-direction.
     ycenter : float
-        Center of distortion in y-direction.
+        Center of distortion in the y-direction.
     """
     (list_coef_hor, list_hor_lines) = _para_fit_hor(list_hor_lines, 0.0, 0.0)
     (list_coef_ver, list_ver_lines) = _para_fit_ver(list_ver_lines, 0.0, 0.0)
@@ -195,9 +195,9 @@ def _calc_metric(list_hor_lines, list_ver_lines, xcenter, ycenter,
     Parameters
     ----------
     list_hor_lines : list of 2D arrays
-        List of the (y,x)-coordinates of dot-centroids on each horizontal line.
+        List of the (y,x)-coordinates of points on each horizontal line.
     list_ver_lines : list of 2D arrays
-        List of the (y,x)-coordinates of dot-centroids on each vertical line.
+        List of the (y,x)-coordinates of points on each vertical line.
     xcenter : float
         Center of distortion in x-direction.
     ycenter : float
@@ -250,15 +250,15 @@ def find_cod_fine(list_hor_lines, list_ver_lines, xcenter, ycenter, dot_dist):
     Parameters
     ----------
     list_hor_lines : list of 2D arrays
-        List of the (y,x)-coordinates of dot-centroids on each horizontal line.
+        List of the (y,x)-coordinates of points on each horizontal line.
     list_ver_lines : list of 2D arrays
-        List of the (y,x)-coordinates of dot-centroids on each vertical line.
+        List of the (y,x)-coordinates of points on each vertical line.
     xcenter : float
         Coarse estimation of the CoD in x-direction.
     ycenter : float
         Coarse estimation of the CoD in y-direction.
     dot_dist : float
-        Median distance of two nearest dots.
+        Median distance of two nearest points.
 
     Returns
     -------
@@ -349,9 +349,9 @@ def _calc_undistor_intercept(list_hor_lines, list_ver_lines, xcenter, ycenter,
     Parameters
     ----------
     list_hor_lines : list of 2D arrays
-        List of the (y,x)-coordinates of dot-centroids on each horizontal line.
+        List of the (y,x)-coordinates of points on each horizontal line.
     list_ver_lines : list of 2D arrays
-        List of the (y,x)-coordinates of dot-centroids on each vertical line.
+        List of the (y,x)-coordinates of points on each vertical line.
     xcenter : float
         Center of distortion in x-direction.
     ycenter : float
@@ -375,7 +375,7 @@ def _calc_undistor_intercept(list_hor_lines, list_ver_lines, xcenter, ycenter,
     check = _check_missing_lines(list_coef_hor, list_coef_ver,
                                  threshold=threshold)
     if check:
-        msg = "!!! Parameters of the methods of grouping dots need to be " \
+        msg = "!!! Parameters of the methods of grouping points need to be " \
               "adjusted !!!\n!!! Check if there are missing lines or adjust " \
               "the threshold value !!!"
         raise ValueError(msg)
@@ -414,9 +414,9 @@ def calc_coef_backward(list_hor_lines, list_ver_lines, xcenter, ycenter,
     Parameters
     ----------
     list_hor_lines : list of 2D arrays
-        List of the (y,x)-coordinates of dot-centroids on each horizontal line.
+        List of the (y,x)-coordinates of points on each horizontal line.
     list_ver_lines : list of 2D arrays
-        List of the (y,x)-coordinates of dot-centroids on each vertical line.
+        List of the (y,x)-coordinates of points on each vertical line.
     xcenter : float
         Center of distortion in x-direction.
     ycenter : float
@@ -478,9 +478,9 @@ def calc_coef_forward(list_hor_lines, list_ver_lines, xcenter, ycenter,
     Parameters
     ----------
     list_hor_lines : list of 2D arrays
-        List of the (y,x)-coordinates of dot-centroids on each horizontal line.
+        List of the (y,x)-coordinates of points on each horizontal line.
     list_ver_lines : list of 2D arrays
-        List of the (y,x)-coordinates of dot-centroids on each vertical line.
+        List of the (y,x)-coordinates of points on each vertical line.
     xcenter : float
         Center of distortion in x-direction.
     ycenter : float
@@ -548,9 +548,9 @@ def calc_coef_backward_from_forward(list_hor_lines, list_ver_lines, xcenter,
     Parameters
     ----------
     list_hor_lines : list of 2D arrays
-        List of the (y,x)-coordinates of dot-centroids on each horizontal line.
+        List of the (y,x)-coordinates of points on each horizontal line.
     list_ver_lines : list of 2D arrays
-        List of the (y,x)-coordinates of dot-centroids on each vertical line.
+        List of the (y,x)-coordinates of points on each vertical line.
     xcenter : float
         Center of distortion in x-direction.
     ycenter : float
