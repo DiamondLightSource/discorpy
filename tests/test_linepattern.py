@@ -58,7 +58,9 @@ class LinepatternMethods(unittest.TestCase):
                                         radius=radius, sigma=sigma)
         np.testing.assert_array_equal(result, peaks)
         self.assertTrue(len(result) == 2)
-        tol, radius, sigma = 0.2, 3, 1
+        list_data = np.array([0, 1, 2, 9, 2, 1, 0, 0, 3, 10, 3, 0, 0])
+        peaks = np.asarray([3, 9])
+        tol, radius, sigma = 0.3, 3, 1
         result = lipa.select_good_peaks(list_data, peaks, tol=tol,
                                         radius=radius, sigma=sigma)
         np.testing.assert_array_equal(result, peaks)
