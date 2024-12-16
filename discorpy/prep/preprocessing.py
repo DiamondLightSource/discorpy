@@ -23,13 +23,15 @@
 """
 Module of pre-processing methods:
 
-- Normalize, binarize an image.
-- Determine the median dot-size, median distance between two nearest dots,
-  and the slopes of grid-lines of a dot-pattern image.
-- Remove non-dot objects or misplaced dots.
-- Group dot-centroids into horizontal lines and vertical lines.
-- Calculate a threshold value for binarizing.
-
+-   Normalize, binarize an image.
+-   Determine the median dot-size, median distance between two nearest dots,
+    and the slopes of grid-lines of a dot-pattern image.
+-   Remove non-dot objects or misplaced dots.
+-   Group dot-centroids into horizontal lines and vertical lines.
+-   Calculate a threshold value for binarizing.
+-   Create a 2D mask with parabolic boundary.
+-   Remove points outside a parabolic mask in a 2D space.
+-   Extract dot-centroids of a dot-pattern from a binary or grayscale image.
 """
 
 import numpy as np
@@ -182,7 +184,8 @@ def _select_roi(mat, ratio, square=False):
     else:
         depad_hei = int((height - ratio * height) / 2)
         depad_wid = int((width - ratio * width) / 2)
-        mat_roi = mat[depad_hei:height - depad_hei, depad_wid:width - depad_wid]
+        mat_roi = mat[depad_hei:height - depad_hei,
+                      depad_wid:width - depad_wid]
     return mat_roi
 
 
@@ -438,8 +441,9 @@ def select_dots_based_distance(mat, dot_dist, ratio=0.3):
     list_index = np.arange(1, num_dots + 1)
     list_cent = np.asarray(
         center_of_mass(mat, labels=mat_label, index=list_index))
-    list_dist = np.asarray([np.sort(np.sqrt(
-        (dot[0] - list_cent[:, 0]) ** 2 + (dot[1] - list_cent[:, 1]) ** 2))[1:4]
+    list_dist = np.asarray([np.sort(
+        np.sqrt((dot[0] - list_cent[:, 0]) ** 2 + (
+                    dot[1] - list_cent[:, 1]) ** 2))[1:4]
                             for dot in list_cent])
     mat1 = np.zeros_like(mat)
     for i, j in enumerate(list_dots):
@@ -845,3 +849,197 @@ def calculate_threshold(mat, bgr="bright", snr=2.0):
     else:
         threshold = y_end + noise_level * snr * 0.5
     return threshold
+
+
+def make_parabola_mask(height, width, hor_curviness=0.3, ver_curviness=0.3,
+                       hor_margin=100, ver_margin=100, rotate=0.0):
+    """
+    Create a 2D mask with parabolic boundary.
+    The function generates a mask where the boundary is defined by parabolic
+    curves on four sides of a 2D array. The mask can be rotated by a
+    specified angle.
+
+    Parameters
+    ----------
+    height : int
+        Height of the mask.
+    width : int
+        Width of the mask.
+    hor_curviness : float, optional
+        Horizontal curvature factor. Controls the curvature of the
+        parabolas along the left and right boundaries. Larger is stronger.
+    ver_curviness : float, optional
+        Vertical curvature factor. Controls the curvature of the parabolas
+        along the top and bottom boundaries. Larger is stronger.
+    hor_margin : int or tuple of int, optional
+        Horizontal margins.
+    ver_margin : int or tuple of int, optional
+        Vertical margins.
+    rotate : float, optional
+        Angle (degrees) to rotate the mask.
+
+    Returns
+    -------
+    mask : array_like
+        2D array which values are 1.0 inside the mask and 0.0 outside.
+    """
+    if isinstance(ver_margin, tuple) or isinstance(ver_margin, list):
+        top_margin = ver_margin[0]
+        bot_margin = ver_margin[-1]
+    else:
+        top_margin = bot_margin = ver_margin
+    if isinstance(hor_margin, tuple) or isinstance(hor_margin, list):
+        left_margin = hor_margin[0]
+        right_margin = hor_margin[-1]
+    else:
+        left_margin = right_margin = hor_margin
+    if (left_margin + right_margin) > width:
+        raise ValueError("Invalid horizontal margin!!!")
+    if (top_margin + bot_margin) > height:
+        raise ValueError("Invalid vertical margin!!!")
+    y, x = np.ogrid[:height, :width]
+    parabola_y = (ver_curviness / width) * (
+            x - width / 2) ** 2 + top_margin
+    mask_top = np.float32(y > parabola_y)
+    parabola_y = -(ver_curviness / width) * (
+            x - width / 2) ** 2 + height - bot_margin
+    mask_bot = np.float32(y < parabola_y)
+    parabola_x = (hor_curviness / height) * (
+            y - height / 2) ** 2 + left_margin
+    mask_left = np.float32(x > parabola_x)
+    parabola_x = -(hor_curviness / height) * (
+            y - height / 2) ** 2 + width - right_margin
+    mask_right = np.float32(x < parabola_x)
+    mask = mask_bot * mask_top * mask_left * mask_right
+    if rotate != 0.0:
+        mask = np.round(ndi.rotate(mask, rotate, reshape=False))
+    return np.float32(mask)
+
+
+def remove_points_using_parabola_mask(points, height, width, hor_curviness=0.3,
+                                      ver_curviness=0.3, hor_margin=100,
+                                      ver_margin=100, rotate=0.0):
+    """
+    Remove points outside a parabolic mask in a 2D space.
+    The mask is defined by its dimensions, curvature, margins, and an optional
+    rotation angle.
+
+    Parameters
+    ----------
+    points : array_like
+       Array of shape (N, 2) of (y, x)-coordinates of points.
+    height : int
+        Height of the mask.
+    width : int
+        Width of the mask.
+    hor_curviness : float, optional
+        Horizontal curvature factor. Controls the curvature of the
+        parabolas along the left and right boundaries. Larger is stronger.
+    ver_curviness : float, optional
+        Vertical curvature factor. Controls the curvature of the parabolas
+        along the top and bottom boundaries. Larger is stronger.
+    hor_margin : int or tuple of int, optional
+        Horizontal margins.
+    ver_margin : int or tuple of int, optional
+        Vertical margins.
+    rotate : float, optional
+        Angle (degrees) to rotate the mask.
+
+    Returns
+    -------
+    array_like
+       Filtered points. Array of shape (M, 2) of (y, x)-coordinates of points.
+    """
+    mask = make_parabola_mask(height, width, hor_curviness=hor_curviness,
+                              ver_curviness=ver_curviness,
+                              hor_margin=hor_margin, ver_margin=ver_margin,
+                              rotate=rotate)
+    y_cors, x_cors = np.int32(points[:, 0]), np.int32(points[:, 1])
+    valid_indices = ((y_cors >= 0) & (y_cors < height) &
+                     (x_cors >= 0) & (x_cors < width) &
+                     (mask[y_cors, x_cors] == 1.0))
+    return points[valid_indices]
+
+
+def get_points_dot_pattern(mat, binarize=True, ratio=0.3, thres=None):
+    """
+    Extract dot-centroids of a dot-pattern from a binary or grayscale image.
+
+    Parameters
+    ----------
+    mat : array_like
+        2D array of the dot pattern. If `binary` is False, the input must be
+        a binary image (values 0 and 1 only).
+    binarize : bool, optional
+        To select if the input is a grayscale image that needs to be binarized.
+    ratio : float
+        Used to select the ROI around the middle of the image for calculating
+        threshold.
+    thres : float, optional
+        Threshold for binarizing. Automatically calculated if None.
+
+    Returns
+    -------
+    array_like
+       Array of shape (N, 2) of the (y, x)-coordinates of dots' center.
+    """
+    if binarize:
+        mat = binarization(mat, ratio=ratio, thres=thres)
+    else:
+        if np.max(mat) != 1.0 or np.min(mat) != 0.0:
+            raise ValueError("Input not a binary image, "
+                             "e.i. maximum_value=1 and minimum value=0!!!")
+    mat_label, num_dots = ndi.label(np.int16(mat))
+    points = ndi.center_of_mass(mat, labels=mat_label,
+                                index=np.arange(1, num_dots + 1))
+    return np.asarray(points)
+
+
+def rotate_points(points, angle, degree_unit=True):
+    """
+    Rotate a set of 2D points by a specified angle.
+
+    Parameters
+    ----------
+    points : array_like
+        Array of shape (N, 2) of (y, x)-coordinates of points.
+    angle : float
+        Rotation angle in degree or radian. Positive values rotate
+        counterclockwise.
+    degree_unit : bool, optional
+        To select the unit of the input angle.
+
+    Returns
+    -------
+    array_like
+        Array of shape (N, 2) of rotated (y, x)-coordinates of the points.
+    """
+    points = np.asarray(points)
+    if degree_unit:
+        angle = np.deg2rad(angle)
+    x, y = points[:, 1], points[:, 0]
+    xr = x * np.cos(angle) - y * np.sin(angle)
+    yr = x * np.sin(angle) + y * np.cos(angle)
+    return np.column_stack((yr, xr))
+
+
+def remove_subset_points(selected_points, points):
+    """
+    Remove a subset points from a set of points.
+
+    Parameters
+    ----------
+    selected_points : array_like
+        Array of shape (N, 2) of (y, x)-coordinates of points to exclude.
+    points : array_like
+        Array of shape (M, 2) of (y, x)-coordinates of points.
+
+    Returns
+    -------
+    array_like
+        Array of shape (K, 2) of points after the removal.
+    """
+    elements_set = set(map(tuple, selected_points))
+    filtered_list = [pair for pair in points if
+                     tuple(pair) not in elements_set]
+    return np.asarray(filtered_list)

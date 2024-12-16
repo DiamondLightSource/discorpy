@@ -11,6 +11,8 @@
    .. autosummary::
 
       locate_subpixel_point
+      select_good_peaks
+      sliding_window_slope
       get_local_extrema_points
       calc_slope_distance_hor_lines
       calc_slope_distance_ver_lines

@@ -289,3 +289,24 @@ class LoaderSaverMethods(unittest.TestCase):
         losa.save_metadata_json(file_path, 31.0, 32.0, [1.0, 0.0])
         x, y, facts = losa.load_metadata_json(file_path)
         self.assertTrue((x == 31.0) and (y == 32.0) and facts == [1.0, 0.0])
+
+    def test_save_python_list(self):
+        f_alias = losa.save_python_list
+        file_path = "./tmp/data/list_data.pkl"
+        test_list = [[10, 20, 30, 40, 50], [20, 25]]
+        f_alias(file_path, test_list, overwrite=True)
+        self.assertTrue(os.path.isfile(file_path))
+
+        saved_path = f_alias(file_path, test_list, overwrite=True)
+        self.assertTrue(saved_path != file_path)
+
+        file_path_no_ext = "./tmp/data/list_data"
+        f_alias(file_path_no_ext, test_list, overwrite=True)
+        self.assertTrue(os.path.isfile(file_path_no_ext + ".pkl"))
+
+    def test_load_python_list(self):
+        file_path = "./tmp/data/test_list.pkl"
+        test_list = [1, 2, 3, 4, 5]
+        losa.save_python_list(file_path, test_list, overwrite=True)
+        loaded_list = losa.load_python_list(file_path)
+        self.assertEqual(test_list, loaded_list)

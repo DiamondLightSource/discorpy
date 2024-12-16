@@ -28,10 +28,12 @@ Module for I/O tasks:
 - Save a 2D array as a tif/png/jpg image or a 2D, 3D array to a hdf file.
 - Save a plot of data points to an image.
 - Save/load metadata to/from a text file.
+- Save/load python list
 
 """
 
 import json
+import pickle
 import platform
 from pathlib import Path
 import h5py
@@ -845,3 +847,51 @@ def load_metadata_json(file_path):
     ycenter = metadata['ycenter']
     list_fact = metadata['list_fact']
     return xcenter, ycenter, list_fact
+
+
+def load_python_list(file_path):
+    """
+    Load a Python list from a pickle file (.pkl).
+
+    Parameters
+    ----------
+    file_path : str
+        Path to the pickle file.
+
+    Returns
+    -------
+    list
+        The Python list.
+    """
+    with open(__get_path(file_path), 'rb') as f:
+        loaded_data = pickle.load(f)
+    return loaded_data
+
+
+def save_python_list(file_path, python_list, overwrite=True):
+    """
+    Write python list to a pickle file (.pkl).
+
+    Parameters
+    ----------
+    file_path : str
+        Output file path.
+    python_list : list
+        Python list.
+    overwrite : bool, optional
+        Overwrite an existing file if True.
+
+    Returns
+    -------
+    str
+        Updated file path.
+    """
+    file_path = __get_path(file_path, check_exist=False).resolve()
+    if file_path.suffix.lower() != '.pkl':
+        file_path = file_path.with_suffix('.pkl')
+    _create_folder(str(file_path))
+    if not overwrite:
+        file_path = _create_file_name(str(file_path))
+    with open(file_path, 'wb') as f:
+        pickle.dump(python_list, f)
+    return file_path

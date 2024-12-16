@@ -25,3 +25,8 @@
       remove_residual_dots_hor
       remove_residual_dots_ver
       calculate_threshold
+      make_parabola_mask
+      remove_points_using_parabola_mask
+      get_points_dot_pattern
+      rotate_points
+      remove_subset_points

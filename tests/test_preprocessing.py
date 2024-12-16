@@ -175,3 +175,95 @@ class PreprocessingMethods(unittest.TestCase):
         mat = np.max(mat) - mat
         threshold = prep.calculate_threshold(mat, bgr="bright")
         self.assertTrue(threshold > 0.5)
+
+    def test_make_parabola_mask(self):
+        height, width, margin = 60, 80, 10
+        mask1 = prep.make_parabola_mask(height, width, hor_curviness=0.3,
+                                        ver_curviness=0.3, hor_margin=10,
+                                        ver_margin=10, rotate=0.0)
+        self.assertEqual(mask1.shape, (height, width))
+        self.assertTrue(np.min(mask1)==0.0 and np.max(mask1)==1.0)
+        num_col = len(np.where(np.mean(mask1, axis=0) > 0)[0])
+        self.assertTrue(num_col != margin)
+        num_row = len(np.where(np.mean(mask1, axis=1) > 0)[0])
+        self.assertTrue(num_row != margin)
+        self.assertRaises(ValueError, prep.make_parabola_mask,
+                          height, width, 40, 40)
+        rotate_angle = 45.0
+        mask_rotated = prep.make_parabola_mask(height, width,
+                                               hor_margin=margin,
+                                               ver_margin=margin,
+                                               rotate=rotate_angle)
+        self.assertEqual(mask_rotated.shape, (height, width))
+        self.assertTrue(np.any(mask_rotated == 1.0))
+
+    def test_remove_points_using_parabola_mask(self):
+        f_alias = prep.remove_points_using_parabola_mask
+        height, width, margin = 60, 80, 5
+        points = np.array([[25, 25], [30, 35], [40, 60]], dtype=np.float32)
+        filtered_points = f_alias(points, height, width,
+                                  hor_curviness=0.1, ver_curviness=0.1,
+                                  hor_margin=margin, ver_margin=margin)
+        self.assertTrue(len(filtered_points) == len(points))
+
+        points_outside = np.array([[0, 0], [59, 79], [59, 79]],
+                                  dtype=np.float32)
+        filtered_points = f_alias(points_outside, height, width,
+                                  hor_curviness=0.1, ver_curviness=0.1,
+                                  hor_margin=margin, ver_margin=margin)
+        self.assertEqual(len(filtered_points), 0)
+
+        mixed_points = np.array([[0, 0], [30, 30], [40, 7]], dtype=np.float32)
+        filtered_points = f_alias(mixed_points, height, width,
+                                  hor_curviness=0.1, ver_curviness=0.1,
+                                  hor_margin=margin, ver_margin=margin)
+        self.assertTrue(len(filtered_points) < len(mixed_points))
+
+    def test_get_points_dot_pattern(self):
+        points = prep.get_points_dot_pattern(self.mat_dots, binarize=False)
+        self.assertTrue(len(points) == self.num_dots)
+
+        mat_noise = self.mat_dots + 0.2 * np.random.rand(self.hei, self.wid)
+        points = prep.get_points_dot_pattern(mat_noise, binarize=True)
+        self.assertTrue(len(points) == self.num_dots)
+
+        with self.assertRaises(ValueError):
+            prep.get_points_dot_pattern(mat_noise, binarize=False)
+
+    def test_rotate_points(self):
+        points = np.array([[1, 0], [0, 1], [-1, 0], [0, -1]])
+        rotated_points = prep.rotate_points(points, 90)
+        expected_points = np.array([[0, -1], [1, 0], [0, 1], [-1, 0]])
+        np.testing.assert_almost_equal(rotated_points, expected_points,
+                                       decimal=6)
+
+        points = np.array([[1, 0], [0, 1]])
+        rotated_points = prep.rotate_points(points, 45)
+        expected_points = np.array([[0.7071, -0.7071], [0.7071, 0.7071]])
+        np.testing.assert_almost_equal(rotated_points, expected_points,
+                                       decimal=4)
+
+        points = np.array([[1, 0]])
+        rotated_points = prep.rotate_points(points, np.pi / 2,
+                                            degree_unit=False)
+        expected_points = np.array([[0, -1]])
+        np.testing.assert_almost_equal(rotated_points, expected_points,
+                                       decimal=6)
+
+    def test_remove_subset_points(self):
+        points = np.array([[1, 2], [3, 4], [5, 6]])
+        selected_points = np.array([[3, 4]])
+        filtered_points = prep.remove_subset_points(selected_points, points)
+        expected_points = np.array([[1, 2], [5, 6]])
+        np.testing.assert_array_equal(filtered_points, expected_points)
+
+        points = np.array([[1, 2], [3, 4], [5, 6], [7, 8]])
+        selected_points = np.array([[1, 2], [7, 8]])
+        filtered_points = prep.remove_subset_points(selected_points, points)
+        expected_points = np.array([[3, 4], [5, 6]])
+        np.testing.assert_array_equal(filtered_points, expected_points)
+
+        points = np.array([[1, 2], [3, 4], [5, 6]])
+        selected_points = np.array([[7, 8]])
+        filtered_points = prep.remove_subset_points(selected_points, points)
+        np.testing.assert_array_equal(filtered_points, points)

@@ -35,10 +35,11 @@ chessboard images:
 -   Select good points using Gaussian peak fitting.
 """
 
+import warnings
 import numpy as np
 import scipy.ndimage as ndi
 from skimage.transform import radon
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit, OptimizeWarning
 import discorpy.prep.preprocessing as prep
 
 
@@ -86,58 +87,68 @@ def _get_gauss_peak_fit(list_data):
     check = False
     try:
         init_guess = [1.0, 1.0, 0.0, 0.0]
-        parameters = curve_fit(__gauss_function, list_x, list_data,
-                               p0=init_guess)[0]
-        a = parameters[0]
-        b, c = parameters[1], parameters[2]
-        d = parameters[3]
-        fit_data = __gauss_function(list_x, a, b, c, d)
-        check = True
-    except (RuntimeError, ValueError):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=OptimizeWarning)
+            parameters = curve_fit(__gauss_function, list_x, list_data,
+                                   p0=init_guess)[0]
+            a = parameters[0]
+            b, c = parameters[1], parameters[2]
+            d = parameters[3]
+            fit_data = __gauss_function(list_x, a, b, c, d)
+            check = True
+    except:
         fit_data = list_data
-        c = list_x[0]
-    return fit_data, c, check
+        c, d = list_x[0], 1.0
+    return fit_data, c, d, check
 
 
-def select_good_peaks(list_data, peaks, tol=0.1, radius=11, sigma=0):
+def select_good_peaks(list_data, peaks, tol=0.2, radius=11, sigma=0,
+                      use_offset=True):
     """
     Select good peaks from the input data based on Gaussian fitting and
     tolerance criteria.
 
-   Parameters
-   ----------
-   list_data : array_like
-       1d-array.
-   peaks : list of int
-       Indices of candidate peaks in the data.
-   tol : float, optional
-       Tolerance for peak fitting accuracy.
-   radius : int, optional
-       Radius around each peak to consider for fitting.
-   sigma : float, optional
-       Standard deviation for Gaussian smoothing.
+    Parameters
+    ----------
+    list_data : array_like
+        1d-array.
+    peaks : list of int
+        Indices of candidate peaks in the data.
+    tol : float, optional
+        Tolerance for peak fitting accuracy.
+    radius : int, optional
+        Radius around each peak to consider for fitting.
+    sigma : float, optional
+        Standard deviation for Gaussian smoothing.
+    use_offset : bool, optional
+        Use fitted offset value for judging if True.
 
-   Returns
-   -------
-   list of int
-       Indices of the selected good peaks.
-   """
+    Returns
+    -------
+    list of int
+        Indices of the selected good peaks.
+    """
     if sigma > 0:
         list_data = ndi.gaussian_filter1d(list_data, sigma)
     good_peaks = []
     npoint = len(list_data)
+    half_radius = radius // 2
     for p in peaks:
         start = max(0, p - radius)
         stop = min(npoint, p + radius + 1)
         if (stop - start) > 3:
             list_sub = list_data[start:stop]
-            nmax = np.max(list_sub)
-            if nmax != 0.0:
-                list_norm = list_sub / nmax
-                fit_data, delta_x, check = _get_gauss_peak_fit(list_norm)
-                num = np.max(np.abs(fit_data - list_norm))
-                if check and abs(delta_x) < radius and num < tol:
-                    good_peaks.append(p)
+            std = np.std(list_sub)
+            if std != 0.0:
+                list_norm = (list_sub - np.min(list_sub)) / std
+                fit_data, del_x, offset, check = _get_gauss_peak_fit(list_norm)
+                num = np.percentile(np.abs(fit_data - list_norm), 80)
+                if check and abs(del_x) < half_radius and num < tol:
+                    if use_offset:
+                        if abs(offset) < tol:
+                            good_peaks.append(p)
+                    else:
+                        good_peaks.append(p)
     return np.asarray(good_peaks)
 
 
@@ -590,8 +601,8 @@ def convert_chessboard_to_linepattern(mat, smooth=True, bgr="bright",
     return mat_line
 
 
-def get_cross_points_hor_lines(mat, slope_ver, dist_ver, ratio=1.0, norm=True,
-                               offset=0, bgr="bright", radius=7,
+def get_cross_points_hor_lines(mat, slope_ver, dist_ver, ratio=0.3, norm=True,
+                               offset=0, bgr="bright", radius=11,
                                sensitive=0.1, denoise=True, subpixel=True,
                                chessboard=False, select_peaks=False, **kwargs):
     """
@@ -670,8 +681,8 @@ def get_cross_points_hor_lines(mat, slope_ver, dist_ver, ratio=1.0, norm=True,
     return np.asarray(list_points)
 
 
-def get_cross_points_ver_lines(mat, slope_hor, dist_hor, ratio=1.0, norm=True,
-                               offset=0, bgr="bright", radius=7,
+def get_cross_points_ver_lines(mat, slope_hor, dist_hor, ratio=0.3, norm=True,
+                               offset=0, bgr="bright", radius=11,
                                sensitive=0.1, denoise=True, subpixel=True,
                                chessboard=False, select_peaks=False, **kwargs):
     """
@@ -748,4 +759,3 @@ def get_cross_points_ver_lines(mat, slope_hor, dist_hor, ratio=1.0, norm=True,
         ylist1 = rlist * np.sin(angle) + ylist[0]
         list_points.extend(np.asarray(list(zip(ylist1, xlist1))))
     return np.asarray(list_points)
-

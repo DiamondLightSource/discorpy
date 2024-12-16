@@ -20,6 +20,10 @@
       save_residual_plot
       save_hdf_file
       open_hdf_stream
+      save_plot_points
       save_metadata_txt
       load_metadata_txt
-      save_plot_points
+      save_metadata_json
+      load_metadata_json
+      load_python_list
+      save_python_list
