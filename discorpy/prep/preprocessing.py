@@ -832,7 +832,7 @@ def calculate_threshold(mat, bgr="bright", snr=2.0):
 
     References
     ----------
-    .. [1] https://doi.org/10.1364/OE.26.028396
+        https://doi.org/10.1364/OE.26.028396
     """
     size = max(mat.shape)
     list_sort = np.sort(np.ndarray.flatten(mat))
@@ -872,9 +872,9 @@ def make_parabola_mask(height, width, hor_curviness=0.3, ver_curviness=0.3,
         Vertical curvature factor. Controls the curvature of the parabolas
         along the top and bottom boundaries. Larger is stronger.
     hor_margin : int or tuple of int, optional
-        Horizontal margins.
+        Horizontal margins (left and right of an image).
     ver_margin : int or tuple of int, optional
-        Vertical margins.
+        Vertical margins (top and bottom of an image).
     rotate : float, optional
         Angle (degrees) to rotate the mask.
 
@@ -939,16 +939,16 @@ def remove_points_using_parabola_mask(points, height, width, hor_curviness=0.3,
         Vertical curvature factor. Controls the curvature of the parabolas
         along the top and bottom boundaries. Larger is stronger.
     hor_margin : int or tuple of int, optional
-        Horizontal margins.
+        Horizontal margins (left and right of an image).
     ver_margin : int or tuple of int, optional
-        Vertical margins.
+        Vertical margins (top and bottom of an image).
     rotate : float, optional
         Angle (degrees) to rotate the mask.
 
     Returns
     -------
     array_like
-       Filtered points. Array of shape (M, 2) of (y, x)-coordinates of points.
+        Filtered points. Array of shape (M, 2) of (y, x)-coordinates of points.
     """
     mask = make_parabola_mask(height, width, hor_curviness=hor_curviness,
                               ver_curviness=ver_curviness,
@@ -1043,3 +1043,360 @@ def remove_subset_points(selected_points, points):
     filtered_list = [pair for pair in points if
                      tuple(pair) not in elements_set]
     return np.asarray(filtered_list)
+
+
+def _get_nearby_hor_points(current_points, points, residual, order=2):
+    """
+    Find nearby horizontal points based on polynomial fit.
+    This function gets points that are within a specified residual
+    distance from a fitted curve of current points.
+
+    Parameters
+    ----------
+    current_points : array_like
+        Array of shape (N, 2) of (y, x)-coordinates of current points.
+    points : array_like
+        Array of shape (M, 2) of (y, x)-coordinates of points to evaluate.
+    residual : float
+        Maximum allowable distance between a point and the fitted curve.
+    order : int, optional
+        Polynomial order
+
+    Returns
+    -------
+    nearby_points : array_like
+        Selected points.
+    """
+    cx, cy = current_points[:, 1], current_points[:, 0]
+    poly_fit = np.poly1d(np.polyfit(cx, cy, int(order)))
+    x, y = points[:, 1], points[:, 0]
+    distances = np.abs(y - poly_fit(x))
+    nearby_points = points[distances <= residual]
+    return nearby_points
+
+
+def _get_nearby_hor_points_iter(initial_points, points, x_left, x_right,
+                                search_dist, residual, overlap_ratio=0.5,
+                                order=2):
+    """
+    Iteratively find nearby horizontal points based on polynomial fit.
+    This function iteratively gets points within a horizontal search range
+    and appends those to the selected points.
+
+    Parameters
+    ----------
+    initial_points : array_like
+        Array of shape (N, 2) of (y, x)-coordinates of initial points.
+    points : array_like
+        Array of shape (M, 2) of (y, x)-coordinates of points to evaluate.
+    x_left : float
+        Initial x-coordinate to start the leftward search.
+    x_right : float
+        Initial x-coordinate to start the rightward search.
+    search_dist : float
+        Distance to expand the horizontal search range in each iteration.
+    residual : float
+        Maximum allowable distance between a point and the fitted curve.
+    overlap_ratio : float, optional
+        To specify the overlap of the searching range between searching steps.
+    order : int, optional
+        Polynomial order
+
+    Returns
+    -------
+    selected_points : array_like
+        (y, x)-coordinates of selected points.
+    """
+    overlap_ratio = np.clip(overlap_ratio, 0.0, 1.0)
+    overlap = search_dist * overlap_ratio
+    xr_curr = x_right
+    xr_next = xr_curr + search_dist
+    xl_curr = x_left
+    xl_next = xl_curr - search_dist
+    x_list = points[:, 1]
+    selected_points = initial_points
+    check = True
+    while check:
+        xr_next1, xr_curr1 = xr_next + overlap, xr_curr - overlap
+        xl_next1, xl_curr1 = xl_next - overlap, xl_curr + overlap
+        indices = np.where(((xr_next1 >= x_list) & (x_list > xr_curr1)) |
+                           ((xl_next1 <= x_list) & (x_list < xl_curr1)))[0]
+        if len(indices) > 0:
+            nearby_points = _get_nearby_hor_points(selected_points,
+                                                   points[indices], residual,
+                                                   order=order)
+            if len(nearby_points) > 0:
+                selected_points = np.vstack([selected_points, nearby_points])
+                selected_points = np.unique(selected_points, axis=0)
+            else:
+                check = False
+        else:
+            check = False
+        xr_curr = xr_next
+        xr_next = xr_curr + search_dist
+        xl_curr = xl_next
+        xl_next = xl_curr - search_dist
+    return selected_points
+
+
+def group_dots_hor_lines_based_polyfit(points, slope, line_dist, ratio=0.1,
+                                       num_dot_miss=3, accepted_ratio=0.65,
+                                       overlap_ratio=0.5, order=2):
+    """
+    Group dots into horizontal lines.
+
+    Parameters
+    ----------
+    points : array_like
+        Array of shape (N, 2) of (y, x)-coordinates of points.
+    slope : float
+        Horizontal slope of the grid.
+    line_dist : float
+        Nominal distance between two lines.
+    ratio : float
+        Acceptable variation.
+    num_dot_miss : int
+        Acceptable missing dots between dot1 and dot2.
+    accepted_ratio : float
+        Use to select lines having the number of dots equal to or larger than
+        the multiplication of the `accepted_ratio` and the maximum number of
+        dots per line.
+    overlap_ratio : float, optional
+        To specify the overlap of the searching range between searching steps.
+    order : int, optional
+        Polynomial order.
+
+    Returns
+    -------
+    list of array_like
+        List of 2D arrays. Each array is (y, x)-coordinates of points belong
+        to the same group. Length of each list may be different.
+    """
+    angle = -np.arctan(slope)
+    num_points = len(points)
+    if num_points == 0:
+        raise ValueError("Input is empty!!!")
+    points = rotate_points(points, angle, degree_unit=False)
+    points = points[points[:, 1].argsort()]
+    x_list = points[:, 1]
+    x_min, x_max = x_list[0], x_list[-1]
+    x_mid = (x_min + x_max) * 0.5
+    num_dot_miss = np.clip(num_dot_miss, 1, num_points)
+    search_dist = num_dot_miss * line_dist + 0.5 * line_dist
+    x_start = np.clip(x_mid - search_dist, x_min, x_max)
+    x_stop = np.clip(x_mid + search_dist, x_min, x_max)
+    idx_list = np.where((x_list >= x_start) & (x_list <= x_stop))[0]
+    list_lines = []
+    if len(idx_list) > 0:
+        selected_points = points[idx_list]
+        grouped_points = group_dots_hor_lines(
+            selected_points, 0.0, line_dist, ratio=ratio,
+            num_dot_miss=num_dot_miss, accepted_ratio=accepted_ratio)
+        if len(grouped_points) > 0:
+            residual = ratio * line_dist
+            for current_points in grouped_points:
+                if len(current_points) > 2:
+                    selected_points = current_points
+                    x_left = selected_points[0, 1]
+                    x_right = selected_points[-1, 1]
+                    selected_points = _get_nearby_hor_points_iter(
+                        selected_points, points, x_left, x_right, search_dist,
+                        residual=residual, overlap_ratio=overlap_ratio,
+                        order=order)
+                if len(selected_points) > 2:
+                    selected_points = rotate_points(selected_points, -angle,
+                                                    degree_unit=False)
+                    selected_points = selected_points[
+                        selected_points[:, 1].argsort()]
+                    list_lines.append(selected_points)
+    list_len = [len(i) for i in list_lines]
+    len_accepted = np.int16(accepted_ratio * np.max(list_len))
+    lines_selected = [line for line in list_lines if len(line) > len_accepted]
+    y_vals = [np.median(line[:, 0]) for line in lines_selected]
+    ids = np.where(np.abs(np.diff(y_vals)) > 0.1 * line_dist)[0]
+    if len(ids) > 0:
+        ids = np.insert(ids + 1, 0, 0)
+        lines_tmp = [line for idx, line in enumerate(lines_selected) if
+                     idx in ids]
+        lines_selected = lines_tmp
+    lines_selected = sorted(
+        lines_selected, key=lambda list_: np.mean(list_[:, 0]))
+    return lines_selected
+
+
+def _get_nearby_ver_points(current_points, points, residual, order=2):
+    """
+    Find nearby vertical points based on polynomial fit.
+    This function gets points that are within a specified residual distance
+    from a fitted curve of current points.
+
+    Parameters
+    ----------
+    current_points : array_like
+        Array of shape (N, 2) of (y, x)-coordinates of current points.
+    points : array_like
+        Array of shape (M, 2) of (y, x)-coordinates of points to evaluate.
+    residual : float
+        Maximum allowable distance between a point and the fitted curve.
+    order : int, optional
+        polynomial order
+
+    Returns
+    -------
+    nearby_points : array_like
+        Selected points.
+    """
+    cx, cy = current_points[:, 1], current_points[:, 0]
+    poly_fit = np.poly1d(np.polyfit(cy, cx, int(order)))
+    x, y = points[:, 1], points[:, 0]
+    distances = np.abs(x - poly_fit(y))
+    nearby_points = points[distances <= residual]
+    return nearby_points
+
+
+def _get_nearby_ver_points_iter(initial_points, points, y_left, y_right,
+                                search_dist, residual, overlap_ratio=0.5,
+                                order=2):
+    """
+    Iteratively find nearby vertical points based on polynomial fit.
+    This function iteratively gets points within a horizontal search range
+    and appends those to the selected points.
+
+    Parameters
+    ----------
+    initial_points : array_like
+        Array of shape (N, 2) of (y, x)-coordinates of initial points.
+    points : array_like
+        Array of shape (M, 2) of (y, x)-coordinates of points to evaluate.
+    x_left : float
+        Initial x-coordinate to start the leftward search.
+    x_right : float
+        Initial x-coordinate to start the rightward search.
+    search_dist : float
+        Distance to expand the horizontal search range in each iteration.
+    residual : float
+        Maximum allowable distance between a point and the fitted curve.
+    overlap_ratio : float, optional
+        To specify the overlap of the searching range between searching steps.
+    order : int, optional
+        polynomial order
+
+    Returns
+    -------
+    selected_points : array_like
+        (y, x)-coordinates of selected points.
+    """
+    overlap_ratio = np.clip(overlap_ratio, 0.0, 1.0)
+    overlap = search_dist * overlap_ratio
+    yr_curr = y_right
+    yr_next = yr_curr + search_dist
+    yl_curr = y_left
+    yl_next = yl_curr - search_dist
+    y_list = points[:, 0]
+    selected_points = initial_points
+    check = True
+    while check:
+        yr_next1, yr_curr1 = yr_next + overlap, yr_curr - overlap
+        yl_next1, yl_curr1 = yl_next - overlap, yl_curr + overlap
+        indices = np.where(((yr_next1 >= y_list) & (y_list > yr_curr1)) |
+                           ((yl_next1 <= y_list) & (y_list < yl_curr1)))[0]
+        if len(indices) > 0:
+            nearby_points = _get_nearby_ver_points(selected_points,
+                                                   points[indices], residual,
+                                                   order=order)
+            if len(nearby_points) > 0:
+                selected_points = np.vstack([selected_points, nearby_points])
+                selected_points = np.unique(selected_points, axis=0)
+            else:
+                check = False
+        else:
+            check = False
+        yr_curr = yr_next
+        yr_next = yr_curr + search_dist
+        yl_curr = yl_next
+        yl_next = yl_curr - search_dist
+    return selected_points
+
+
+def group_dots_ver_lines_based_polyfit(points, slope, line_dist, ratio=0.1,
+                                       num_dot_miss=3, accepted_ratio=0.65,
+                                       overlap_ratio=0.5, order=2):
+    """
+    Group dots into vertical lines.
+
+    Parameters
+    ----------
+    points : array_like
+        Array of shape (N, 2) of (y, x)-coordinates of points.
+    slope : float
+        Vertical slope of the grid.
+    line_dist : float
+        Nominal distance between two lines.
+    ratio : float
+        Acceptable variation.
+    num_dot_miss : int
+        Acceptable missing dots between dot1 and dot2.
+    accepted_ratio : float
+        Use to select lines having the number of dots equal to or larger than
+        the multiplication of the `accepted_ratio` and the maximum number of
+        dots per line.
+    overlap_ratio : float, optional
+        To specify the overlap of the searching range between searching steps.
+    order : int, optional
+        Polynomial order.
+
+    Returns
+    -------
+    list of array_like
+        List of 2D arrays. Each array is (y, x)-coordinates of points belong
+        to the same group. Length of each list may be different.
+    """
+    angle = np.arctan(slope)
+    num_points = len(points)
+    if num_points == 0:
+        raise ValueError("Input is empty!!!")
+    points = rotate_points(points, angle, degree_unit=False)
+    points = points[points[:, 0].argsort()]
+    y_list = points[:, 0]
+    y_min, y_max = y_list[0], y_list[-1]
+    y_mid = (y_min + y_max) * 0.5
+    num_dot_miss = np.clip(num_dot_miss, 1, num_points)
+    search_dist = num_dot_miss * line_dist + 0.5 * line_dist
+    y_start = np.clip(y_mid - search_dist, y_min, y_max)
+    y_stop = np.clip(y_mid + search_dist, y_min, y_max)
+    idx_list = np.where((y_list >= y_start) & (y_list <= y_stop))[0]
+    list_lines = []
+    if len(idx_list) > 0:
+        selected_points = points[idx_list]
+        grouped_points = group_dots_ver_lines(
+            selected_points, 0.0, line_dist, ratio=ratio,
+            num_dot_miss=num_dot_miss, accepted_ratio=accepted_ratio)
+        if len(grouped_points) > 0:
+            residual = ratio * line_dist
+            for current_points in grouped_points:
+                if len(current_points) > 2:
+                    selected_points = current_points
+                    y_left = selected_points[0, 0]
+                    y_right = selected_points[-1, 0]
+                    selected_points = _get_nearby_ver_points_iter(
+                        selected_points, points, y_left, y_right, search_dist,
+                        residual, overlap_ratio=overlap_ratio, order=order)
+                if len(selected_points) > 2:
+                    selected_points = rotate_points(selected_points, -angle,
+                                                    degree_unit=False)
+                    selected_points = selected_points[
+                        selected_points[:, 0].argsort()]
+                    list_lines.append(selected_points)
+    list_len = [len(i) for i in list_lines]
+    len_accepted = np.int16(accepted_ratio * np.max(list_len))
+    lines_selected = [line for line in list_lines if len(line) > len_accepted]
+    x_vals = [np.median(line[:, 1]) for line in lines_selected]
+    ids = np.where( np.abs(np.diff(x_vals)) > 0.1 * line_dist)[0]
+    if len(ids) > 0:
+        ids = np.insert(ids + 1, 0, 0)
+        lines_tmp = [line for idx, line in enumerate(lines_selected) if
+                     idx in ids]
+        lines_selected = lines_tmp
+    lines_selected = sorted(
+        lines_selected, key=lambda list_: np.mean(list_[:, 1]))
+    return lines_selected

@@ -462,6 +462,7 @@ def _generate_perspective_map(mat, list_coef):
 def correct_perspective_image(mat, list_coef, order=1, mode="reflect",
                               map_index=None):
     """
+    Apply perspective correction to an image.
 
     Parameters
     ----------

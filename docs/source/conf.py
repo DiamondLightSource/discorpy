@@ -131,7 +131,6 @@ texinfo_documents = [
      'Discorpy'),
 ]
 
-
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
@@ -149,4 +148,4 @@ autodoc_mock_imports = [
 ]
 autodoc_member_order = 'bysource'
 numfig = True
-numfig_secnum_depth = 0
+numfig_secnum_depth = 4

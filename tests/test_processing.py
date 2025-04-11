@@ -27,6 +27,7 @@ Tests for methods in processing.py
 import unittest
 import numpy as np
 import discorpy.proc.processing as proc
+import discorpy.losa.loadersaver as losa
 
 
 class ProcessingMethods(unittest.TestCase):
@@ -264,3 +265,41 @@ class ProcessingMethods(unittest.TestCase):
         num1 = np.mean(np.abs(ffacts2 - ffacts1))
         num2 = np.mean(np.abs(bfacts2 - bfacts1))
         self.assertTrue(num1 <= 1.0e-3 and num2 <= 1.0e-3)
+
+    def test_find_center_based_vanishing_points(self):
+        data = losa.load_python_list("./data_for_test/data_for_pers_cod.pkl")
+        list_hor_lines, list_ver_lines = data
+        xcenter0, ycenter0 = 2005, 1520
+        xcenter1, ycenter1 = proc.find_center_based_vanishing_points(
+            list_hor_lines, list_ver_lines)
+        num1 = np.abs(xcenter1 - xcenter0)
+        num2 = np.abs(ycenter1 - ycenter0)
+        self.assertTrue(num1 <= 10.0 and num2 <= 10.0)
+
+    def test_correct_perspective_effect(self):
+        data = losa.load_python_list("./data_for_test/data_for_pers_cod.pkl")
+        list_hor_lines, list_ver_lines = data
+        xcenter, ycenter = proc.find_center_based_vanishing_points(
+            list_hor_lines, list_ver_lines)
+
+        corr_hor_lines, corr_ver_lines = proc.correct_perspective_effect(
+            list_hor_lines, list_ver_lines, xcenter, ycenter)
+
+        list_hor_coef = proc._para_fit_hor(corr_hor_lines, xcenter, ycenter)[0]
+        list_ver_coef = proc._para_fit_ver(corr_ver_lines, xcenter, ycenter)[0]
+        num1 = np.abs(list_hor_coef[0, 1] - list_hor_coef[-1, 1])
+        num2 = np.abs(list_ver_coef[0, 1] - list_ver_coef[-1, 1])
+        num3 = np.abs(list_hor_coef[0, 1] + list_ver_coef[0, 1])
+        num4 = np.abs(list_hor_coef[-1, 1] + list_ver_coef[-1, 1])
+        self.assertTrue(num1 <= 2.0e-3 and num2 <= 2.0e-3 and
+                        num3 <= 2.0e-3 and num4 <= 2.0e-3)
+
+    def test_find_center_based_vanishing_points_iteration(self):
+        data = losa.load_python_list("./data_for_test/data_for_pers_cod.pkl")
+        list_hor_lines, list_ver_lines = data
+        xcenter0, ycenter0 = 2005, 1520
+        xcenter1, ycenter1 = proc.find_center_based_vanishing_points_iteration(
+            list_hor_lines, list_ver_lines)
+        num1 = np.abs(xcenter1 - xcenter0)
+        num2 = np.abs(ycenter1 - ycenter0)
+        self.assertTrue(num1 <= 10.0 and num2 <= 10.0)

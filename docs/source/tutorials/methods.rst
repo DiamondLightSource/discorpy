@@ -44,21 +44,47 @@ that lines of these points must be straight, equidistant, parallel, or perpendic
 we can estimate the locations of these reference-points in the undistorted
 space with high-accuracy.
 
+Among many models for characterizing radial distortion, the polynomial model is
+versatile enough to correct both small-to-medium distortion with sub-pixel accuracy `[Haneishi] <https://doi.org/10.1109/42.414620>`__,
+:cite:`Vo:2015` and strong distortion such as fisheye effect `[Basu] <https://doi.org/10.1016/0167-8655(94)00115-J>`__.
+For a comprehensive overview of radial distortion correction methods, readers are
+recommended to refer to these review articles `[Hughes-2008] <https://doi.org/10.1049/cp:20080656>`__,
+`[Hughes-2010] <https://doi.org/10.1364/AO.49.003338>`__, :cite:`Ricolfe-Viala:2010`. When perspective distortion
+and optical center offset are present, radial distortion can be calibrated using two main approaches. One approach
+is iterative optimization, which uses a cost function to ensure that corrected lines in the undistorted image
+appear straight `[Devernay] <https://doi.org/10.1007/PL00013269>`__. Although it requires only a single calibration image,
+this method is computationally expensive and does not always guarantee convergence. The other approach relies
+on multiple calibration images to estimate all distortion parameters, as implemented in OpenCV. However,
+its accuracy is limited because the polynomial model uses only even-order terms `[Zhang] <https://doi.org/10.1109/34.888718>`__.
+Therefore, a method for calibrating radial distortion in the presence of other distortions that achieves
+high accuracy using only a single calibration image is both practical and crucially needed.
+
 Discorpy is the Python implementation of radial distortion correction methods
 presented in :cite:`Vo:2015`. These methods employ polynomial models and use a
 calibration image for calculating coefficients of the models where the optical
 center is determined independently. The reason of using these models and a
 calibration image is to achieve sub-pixel accuracy as strictly required by
 parallel-beam tomography systems. The methods were developed and used internally
-at the beamline I12, Diamond Light Source-UK, as Mathematica codes. In 2018, they
-were converted to Python codes and packaged as open-source software :cite:`Vo:2018`
-under the name Vounwarp. The name was changed to Discorpy in 2021. From version 1.4,
-methods for correcting perspective distortion :cite:`Criminisi:1999` and extracting
-reference points from a line-pattern image were added to the software. A key
-feature of methods developed and implemented in Discorpy is that radial distortion,
-center-of-distortion (optical center), and perspective distortion are determined
-independently using a single calibration image. The following sections explain
-methods implemented in Discorpy.
+at the beamline I12 and I13, Diamond Light Source-UK, as Mathematica codes. In 2018, they
+were converted to Python codes and packaged as open-source software under the name Vounwarp.
+The name was changed to Discorpy in 2021. At the beginning of the software development, only methods
+for radial distortion characterization were provided as the optical design of the detection system at I12
+features a plug-and-play scintillator that can be swapped with a dot-target, enabling the removal
+of perspective distortion. However, in the detection system at I13, replacing the
+scintillator with a visible light dot-target is not practical. Instead, an X-ray dot target has been used.
+The main disadvantage of this approach is that it is difficult to align the target to minimize
+perspective distortion to an ignorable level. To address this problem, starting with version 1.4 of
+Discorpy, algorithms for perspective characterization and correction based on :cite:`Criminisi:1999`
+has been developed and added to software.
+
+The inclusion of perspective correction independent of radial distortion correction was a significant
+development, enabling broader applications of Discorpy beyond scientific purposes. Considering that previous
+algorithms in Discorpy were primarily focused on calibrating small-to-medium distortions, methods for calibrating
+strong radial distortion, known as fisheye distortion, have been developed, published in :cite:`Vo:2025`, and added to Discorpy
+from version 1.7. With this new development, Discorpy and its algorithms stand out for their capability of
+independently characterizing both distortion types - radial distortion and perspective distortion of varying strengths - with
+high accuracy using a single calibration image. This makes Discorpy a practical tool for a wide range of imaging applications.
+
 
 .. _reference_points:
 
@@ -131,8 +157,26 @@ to get the best results (:numref:`fig_16`).
     (a) Points extracted from a calibration image including unwanted
     points. (b) Results of applying the grouping method to points in (a).
 
-The coordinates of points on each group are fitted to parabolas in which horizontal
-lines are represented by
+The introduced method works well for small-to-medium distortions where lines are not strongly curved.
+However, for fisheye images, where lines are significantly curved, using the slope (orientation) of
+the grid to guide the search is not effective. To address this problem, a different approach has been developed :cite:`Vo:2025`,
+where points are grouped from the middle of the image outward, guided by a polynomial fit to locate nearby points.
+The process includes two steps: first, in the horizontal direction, points around the center of the image,
+where distortion is minimal, are grouped line by line using the previous method. For each group of points, a
+parabolic fit is applied. The search window then moves to the next slab (left and right from the center) and
+selects points close to the fitted parabola. The parabolic fit is then updated to include the newly grouped points.
+This search window continues moving to both sides until the entire image is covered (:numref:`fig_16_1`).
+
+.. figure:: figs/methods/fig5_1.png
+    :name: fig_16_1
+    :figwidth: 90 %
+    :align: center
+    :figclass: align-center
+
+    Demonstration of the grouping method for strongly curved lines: (a) Initial search window, (b) Next search window.
+
+After points are grouped line-by-line, the coordinates of  points on each group are fitted to parabolas in which horizontal lines are
+represented by
 
 .. math::
     :label: eq_1
@@ -146,14 +190,15 @@ and vertical lines by
 
     x = {a_j}{y^2} + {b_j}{y} + {c_j}
 
-where :math:`i`, :math:`j` are the index of the horizontal lines and vertical
-lines respectively.
+where :math:`i`, :math:`j` are the indices of the horizontal and vertical lines, respectively. Noting that the origin
+of :math:`x` and :math:`y` corresponds to image coordinate system, i.e. the top-left corner of the image.
 
+.. _calculate_distortion center:
 
 Calculating the optical center of radial distortion
 ---------------------------------------------------
 
-The coarse estimate of the center of distortion (COD) is explained in :numref:`fig_17` where
+If there is no perspective distortion, the center of distortion (COD) is determined as explained in :numref:`fig_17` where
 (:math:`{x_0}`, :math:`{y_0}`) is the average of the axis intercepts :math:`c` of two
 parabolas between which the coefficient :math:`a` changes sign. The slopes of the red
 and green line are the average of the :math:`b` coefficients of these parabolas.
@@ -184,18 +229,42 @@ accurate enough.
 
     Metric map of the CoD search.
 
+For cases where perspective distortion is present and radial distortion is not strong, methods
+proposed in :cite:`Bailey:2002` can be used. However, for strong radial distortion, two approaches have been developed :cite:`Vo:2025`.
+These methods is based on the idea of using vanishing points `[Hughes] <https://doi.org/10.1016/j.imavis.2009.09.001>`__
+formed by the intersections of distorted line. However, unlike the approach described in that article, the method
+developed for Discorpy uses parabola fitting instead of circular fitting, and it does not attempt to locate four vanishing points.
+Instead, the first approach involves finding the intersection points between parabolas with opposite signs of
+the :math:`a`-coefficient at the same orientation, e.g., horizontal parabolas. A linear fit is then applied to these points (:numref:`fig_18_1`).
+The same process is repeated for vertical parabolas. The intersection of the two fitted lines provides the distortion center.
+This method works well only for barrel radial distortion.
+
+.. figure:: figs/methods/fig7_1.png
+    :name: fig_18_1
+    :figwidth: 80 %
+    :align: center
+    :figclass: align-center
+
+    Demonstration of the method for finding the distortion center using the vanishing points
+
+For broader applicability where perspective distortion of calibration image is strong, the second approach is as follows:
+for each orientation, e.g., horizontal direction, the parabola with the absolute minimum :math:`a`-coefficient is identified,
+then the intersection points between this parabola and the rest are calculated. A linear fit is applied to these points.
+The same routine is repeated for vertical direction parabolas. The intersection points of these two fitted lines determine
+the calculated center. This entire routine is repeated two or three times to refine the calculated center further by
+combining it with perspective distortion correction, as will be shown in the next section.
+
+
 .. _Correcting perspective effect:
 
 Correcting perspective effect
 -----------------------------
 
-In practice, a target sample may not be mounted in parallel to :ref:`a sensor-plane <distortion_causes>`,
-particularly for a high-resolution detector. This causes perspective distortion
-in the acquired image which affects the accuracy of a calculated model for radial
-distortion. Perspective distortion can be detected by making use of parabolic
-coefficients of lines :cite:`Bailey:2002` where the origin of the coordinate system
-is shifted to the COD, calculated by the approach in :cite:`Bailey:2002`, before the parabola
-fitting. :numref:`fig_19` (a) shows the plot of :math:`a`-coefficients against :math:`c`-coefficients
+In practice, the target object used for acquiring a calibration image is often not aligned parallel to the :ref:`sensor-plane <distortion_causes>`.
+This causes perspective distortion in the acquired image, which affects the accuracy of the calculated model for
+radial distortion. Perspective distortion can be detected by analyzing the parabolic coefficients of
+lines :cite:`Bailey:2002` where the origin of the coordinate system is shifted to the COD, calculated by the approaches
+shown in above (:cite:`Bailey:2002` or :cite:`Vo:2025`), before the parabola fitting. :numref:`fig_19` (a) shows the plot of :math:`a`-coefficients against :math:`c`-coefficients
 for horizontal lines (Eq. :eq:`eq_1`) and vertical lines (Eq. :eq:`eq_2`). If
 there is perspective distortion, the slopes of straight lines fitted to the
 plotted data are different. The other consequence is that :math:`b`-coefficients
@@ -211,6 +280,8 @@ perspective-distortion are shown in :numref:`fig_20`.
 
     Effects of perspective distortion to parabolic coefficients. (a) Between
     :math:`a` and :math:`c`-coefficients. (b) Between :math:`b` and :math:`c`-coefficients.
+    Noting that the sign of the :math:`b`-coefficients for vertical lines has been reversed to match
+    the sign of the horizontal lines.
 
 .. figure:: figs/methods/fig9.png
     :name: fig_20
@@ -221,134 +292,33 @@ perspective-distortion are shown in :numref:`fig_20`.
     (a) Corresponding to :numref:`fig_19` (a) without perspective distortion. (b)
     Corresponding to :numref:`fig_19` (b) without perspective distortion.
 
-In Discorpy 1.4, a method for correcting perspective effect has been developed
-and added to the list of functionalities. This is a novel feature and has not yet been published in
-a journal. The method works by correcting coefficients of parabolas using the fact that the resulting coefficients have
-to satisfy the conditions as shown in :numref:`fig_20`. From the corrected coefficients,
-a grid of points are regenerated by finding cross points between parabolas.
-Details of the method can be found `here <https://discorpy.readthedocs.io/en/latest/api/discorpy.proc.processing.html#discorpy.proc.processing.regenerate_grid_points_parabola>`__.
+To calibrate radial distortion, perspective distortion must be corrected first. This can be achieved in two ways.
+In the first approach, the coefficients of the parabolic fit are adjusted. Specifically, the :math:`a`- and :math:`c`-
+coefficients of parabolas in one direction (e.g., horizontal) are corrected using a ratio calculated as the division
+between the average of the differences of :math:`c`-coefficients in the other direction (vertical) and those in
+the same direction (horizontal). The :math:`b`-coefficient is simply taken as the value at the intersection of
+the fitted lines, as shown in :numref:`fig_19` (b). The grid lines are then regenerated using these updated
+coefficients. This approach was introduced from Discorpy 1.4 and works well for small-to-medium radial distortion.
+However, for strong distortion - fisheye image, the graphs of :math:`a`-versus-:math:`c`
+coefficients and :math:`b`-versus-:math:`c` coefficients are not straight, as shown in :numref:`fig_20_1`.
 
-.. _Polynomial model:
+.. figure:: figs/methods/fig9_1.png
+    :name: fig_20_1
+    :figwidth: 90 %
+    :align: center
+    :figclass: align-center
 
-Calculating coefficients of a polynomial model for radial-distortion correction
--------------------------------------------------------------------------------
+    Effects of perspective distortion on parabolic coefficients of a strongly distorted grid: (a) Relationship between
+    :math:`a`- and :math:`c`-coefficients, (b) :math:`b` and :math:`c`-coefficients.
 
-For sub-pixel accuracy, the models chosen in :cite:`Vo:2015` are as follows; for the forward mapping:
-
-.. math::
-    :label: eq_3
-
-    \begin{align}
-    \frac{r_u}{r_d} = \frac{x_u}{x_d} = \frac{y_u}{y_d} = k_0^f + {k_1^f}{r_d} + {k_2^f}{r_d^2} + {k_3^f}{r_d^3} + .. + {k_n^f}{r_d^n} \equiv F({r_d})
-    \end{align}
-
-for the backward mapping:
-
-.. math::
-    :label: eq_4
-
-    \begin{align}
-    \frac{r_d}{r_u} = \frac{x_d}{x_u} = \frac{y_d}{y_u} = k_0^b + {k_1^b}{r_u} + {k_2^b}{r_u^2} + {k_3^b}{r_u^3} + .. + {k_n^b}{r_u^n} \equiv B({r_u})
-    \end{align}
-
-:math:`({x_u}, {y_u})` are the coordinate of a point
-in the undistorted space and :math:`{r_u}` is its distance from the COD.
-:math:`({x_d}, {y_d}, {r_d})` are for a point in the distorted space. The subscript
-:math:`d` is used for clarification. It can be omitted as in Eq. :eq:`eq_1` and
-:eq:`eq_2`.
-
-To calculate coefficients of two models, we need to determine
-the coordinates of reference-points in both the distorted-space and in the
-undistorted-space, correspondingly; and solve a system of linear equations.
-In :cite:`Vo:2015` this task is simplified by finding the intercepts of
-undistorted lines, :math:`(c_i^u, c_j^u)`, instead. A system of `linear equations <https://discorpy.readthedocs.io/en/latest/api/discorpy.proc.processing.html#discorpy.proc.processing.calc_coef_forward>`__
-for finding coefficients of the forward mapping is derived as
-
-.. math::
-    :label: eq_5
-
-    \begin{align}
-    \left( \begin{array}{ccccc} \vdots & \vdots & \ddots & \vdots & \vdots \\
-    1 & r_d & {r_d^2} & \cdots & {r_d^n} \\
-    \vdots & \vdots & \ddots & \vdots\\
-    1 & r_d & {r_d^2} & \cdots & {r_d^n} \\
-    \vdots & \vdots & \ddots & \vdots & \vdots
-    \end{array} \right)
-    \left(\begin{array}{c}
-        k_0^f \\ k_1^f \\ k_2^f \\ \vdots \\ k_n^f
-    \end{array} \right)
-    = \left(\begin{array}{c}
-    \vdots \\ {c_i^u}/({a_i}{x_d^2} + c_i) \\ \vdots \\ {c_j^u}/({a_j}{y_d^2} + c_j) \\ \vdots
-    \end{array} \right)
-    \end{align}
-
-where each reference-point provides two equations: one associated with a horizontal
-line (Eq. :eq:`eq_1`) and one with a vertical line (Eq. :eq:`eq_2`). For the
-backward mapping, the `equation system <https://discorpy.readthedocs.io/en/latest/_modules/discorpy/proc/processing.html#calc_coef_backward>`__ is
-
-.. math::
-    :label: eq_6
-
-    \begin{align}
-    \left( \begin{array}{ccccc} \vdots & \vdots & \ddots & \vdots & \vdots \\
-    1 & {r_d}/{F_i} & {r_d^2}/F_i^2 & \cdots & {r_d^n / F_i^n} \\
-    \vdots & \vdots & \ddots & \vdots\\
-    1 & {r_d}/{F_j} & {r_d^2}/F_j^2 & \cdots & {r_d^n / F_j^n} \\
-    \vdots & \vdots & \ddots & \vdots & \vdots
-    \end{array} \right)
-    \left(\begin{array}{c}
-        k_0^b \\ k_1^b \\ k_2^b \\ \vdots \\ k_n^b
-    \end{array} \right)
-    = \left(\begin{array}{c}
-    \vdots \\ F_i \\ \vdots \\ F_j \\ \vdots
-    \end{array} \right)
-    \end{align}
-
-where :math:`F_i=({a_i}{x_d^2} + c_i)/c_i^u` and
-:math:`F_j=({a_j}{y_d^2} + c_j)/c_j^u`. In practice, using distortion coefficients
-up to the fifth order is accurate enough, as there is no significant gain in
-accuracy with higher order. As can be seen, the number of linear equations, given by
-the number of reference-points, is much higher than the number of coefficients.
-This is crucial to achieve high accuracy in radial-distortion correction. Because the
-strength of distortion varies across an image, providing many reference-points
-with high-density improves the robustness of a calculated model.
-
-To solve these above equations we need to determine :math:`c_i^u` and :math:`c_j^u`.
-Using the assumption that lines are equidistant, :math:`c_i^u` and :math:`c_j^u` are
-calculated by extrapolating from a few lines around the COD as
-
-.. math::
-    :label: eq_7
-
-    c_i^u=sgn(c_i) \times \vert (i - i_0) \overline{\Delta{c}} \vert + c_{i_0}
-
-and
-
-.. math::
-    :label: eq_8
-
-    c_j^u=sgn(c_j) \times \vert (j - j_0) \overline{\Delta{c}} \vert + c_{j_0}
-
-where the :math:`sgn()` function returns the value of -1, 0, or 1 corresponding
-to its input of negative, zero, or positive value. :math:`i_0` is the index of the line
-closest to the COD. :math:`\overline{\Delta{c}}` is the average of the difference
-of :math:`c_i` near the COD. :math:`\overline{\Delta{c}}` can be refined further
-by varying it around an initial guess and find the minimum of :math:`\sum_{i} (c_i - c_i^u)^2`
-, which also is provided in the package.
-
-Sometime we need to calculate coefficients of a backward model given that
-coefficients of the corresponding forward-model are known, or vice versa. This
-is straightforward as one can generate a list of reference-points and calculate
-their positions in the opposite space using the known model. From the data-points of
-two spaces and using Eq. :eq:`eq_3` or Eq. :eq:`eq_4` directly, a system of linear
-equations can be formulated and solved to find the coefficients of the opposite
-model. This functionality is available in `Discorpy <https://discorpy.readthedocs.io/en/latest/api/discorpy.proc.processing.html#discorpy.proc.processing.transform_coef_backward_and_forward>`__.
+To address this problem, perspective distortion is calibrated using the fact that the **representative lines**
+between directions are perpendicular and using the perspective model presented in the next section.
 
 Calculating coefficients of a correction model for perspective distortion
 -------------------------------------------------------------------------
 
-The forward mapping between a distorted point and an undistorted point are given
-by :cite:`Criminisi:1999`
+The perspective model is described in :cite:`Criminisi:1999` where the forward mapping between a distorted point and
+an undistorted point are given by
 
 .. math::
     :label: eq_9
@@ -459,6 +429,160 @@ this implementation can be found in `Discorpy's API <https://discorpy.readthedoc
     mean of distances in the distorted space is used.
 
 
+The following describes the second approach of correcting perspective effect :cite:`Vo:2025` from a radial-distortion
+calibration-image, which calculates the coefficients of the above model and applies correction.
+
+First, the distortion center is determined using the vanishing points approach described in the :ref:`above section <calculate_distortion center>`.
+The coordinates of the reference points are updated by shifting the origin from the top-left corner of the image to
+the distortion center, and the parabola fit is recalculated using the updated coordinates. Next, the intersection of
+four lines is found: two in the horizontal direction and two in the vertical direction, as follows. The first horizontal
+line is determined by averaging the :math:`b`-coefficients and :math:`c`-coefficients of parabolas with positive :math:`a`-coefficients,
+while the second horizontal line is determined using the same approach but applied only to parabolas with negative
+:math:`a`-coefficients. The two vertical lines are determined in a similar manner.
+
+From the four intersection points of these lines, the undistorted points can be calculated using the condition that
+the lines must be parallel in one direction and perpendicular in the other. The idea involves averaging the slopes
+and intercepts to determine the slopes and intercepts of these lines in the undistorted space, and then finding the
+intersection of the lines (:numref:`fig_21_1` b). As the scale between the two spaces is uncertain, the average
+distance between points is used to define the scale. If the pixel size of the camera is known and the distance between
+lines is measured, the scale can be determined more accurately. In such cases, Discorpy provides an option to specify
+the scale of the undistorted space. Using these pairs of points between the distorted and undistorted spaces,
+perspective distortion coefficients are calculated from Eq. :eq:`eq_9` and Eq. :eq:`eq_10`.
+The correction is then applied to all reference points and the results are used in the next step of calibration.
+
+.. figure:: figs/methods/fig10_1.png
+    :name: fig_21_1
+    :figwidth: 98 %
+    :align: center
+    :figclass: align-center
+
+    Demonstration of the method for characterizing perspective distortion: (a) Line-pattern calibration image,
+    (b) Grid showing four distorted points and four undistorted points, (c) Corrected grid. Note that the red outline
+    frame in (b) and the blue outline frame in (c) highlight the perspective effect before and after correction.
+
+The key development in Discorpy enabling this correction is the accurate determination of the distortion center using
+the vanishing point approaches described above. If the distortion center is determined incorrectly, it will
+impact the results of perspective distortion correction and then radial distortion correction down the pipeline.
+
+.. _Polynomial model:
+
+Calculating coefficients of a polynomial model for radial-distortion correction
+-------------------------------------------------------------------------------
+
+For sub-pixel accuracy, the models chosen in :cite:`Vo:2015` are as follows; for the forward mapping:
+
+.. math::
+    :label: eq_3
+
+    \begin{align}
+    \frac{r_u}{r_d} = \frac{x_u}{x_d} = \frac{y_u}{y_d} = k_0^f + {k_1^f}{r_d} + {k_2^f}{r_d^2} + {k_3^f}{r_d^3} + .. + {k_n^f}{r_d^n} \equiv F({r_d})
+    \end{align}
+
+for the backward mapping:
+
+.. math::
+    :label: eq_4
+
+    \begin{align}
+    \frac{r_d}{r_u} = \frac{x_d}{x_u} = \frac{y_d}{y_u} = k_0^b + {k_1^b}{r_u} + {k_2^b}{r_u^2} + {k_3^b}{r_u^3} + .. + {k_n^b}{r_u^n} \equiv B({r_u})
+    \end{align}
+
+:math:`({x_u}, {y_u})` are the coordinate of a point
+in the undistorted space and :math:`{r_u}` is its distance from the COD.
+:math:`({x_d}, {y_d}, {r_d})` are for a point in the distorted space. The subscript
+:math:`d` is used for clarification. It can be omitted as in Eq. :eq:`eq_1` and
+:eq:`eq_2`.
+
+To calculate coefficients of two models, we need to determine
+the coordinates of reference-points in both the distorted-space and in the
+undistorted-space, correspondingly; and solve a system of linear equations.
+In :cite:`Vo:2015` this task is simplified by finding the intercepts of
+undistorted lines, :math:`(c_i^u, c_j^u)`, instead. A system of `linear equations <https://discorpy.readthedocs.io/en/latest/api/discorpy.proc.processing.html#discorpy.proc.processing.calc_coef_forward>`__
+for finding coefficients of the forward mapping is derived as
+
+.. math::
+    :label: eq_5
+
+    \begin{align}
+    \left( \begin{array}{ccccc} \vdots & \vdots & \ddots & \vdots & \vdots \\
+    1 & r_d & {r_d^2} & \cdots & {r_d^n} \\
+    \vdots & \vdots & \ddots & \vdots\\
+    1 & r_d & {r_d^2} & \cdots & {r_d^n} \\
+    \vdots & \vdots & \ddots & \vdots & \vdots
+    \end{array} \right)
+    \left(\begin{array}{c}
+        k_0^f \\ k_1^f \\ k_2^f \\ \vdots \\ k_n^f
+    \end{array} \right)
+    = \left(\begin{array}{c}
+    \vdots \\ {c_i^u}/({a_i}{x_d^2} + c_i) \\ \vdots \\ {c_j^u}/({a_j}{y_d^2} + c_j) \\ \vdots
+    \end{array} \right)
+    \end{align}
+
+where each reference-point provides two equations: one associated with a horizontal
+line (Eq. :eq:`eq_1`) and one with a vertical line (Eq. :eq:`eq_2`). For the
+backward mapping, the `equation system <https://discorpy.readthedocs.io/en/latest/_modules/discorpy/proc/processing.html#calc_coef_backward>`__ is
+
+.. math::
+    :label: eq_6
+
+    \begin{align}
+    \left( \begin{array}{ccccc} \vdots & \vdots & \ddots & \vdots & \vdots \\
+    1 & {r_d}/{F_i} & {r_d^2}/F_i^2 & \cdots & {r_d^n / F_i^n} \\
+    \vdots & \vdots & \ddots & \vdots\\
+    1 & {r_d}/{F_j} & {r_d^2}/F_j^2 & \cdots & {r_d^n / F_j^n} \\
+    \vdots & \vdots & \ddots & \vdots & \vdots
+    \end{array} \right)
+    \left(\begin{array}{c}
+        k_0^b \\ k_1^b \\ k_2^b \\ \vdots \\ k_n^b
+    \end{array} \right)
+    = \left(\begin{array}{c}
+    \vdots \\ F_i \\ \vdots \\ F_j \\ \vdots
+    \end{array} \right)
+    \end{align}
+
+where :math:`F_i=({a_i}{x_d^2} + c_i)/c_i^u` and
+:math:`F_j=({a_j}{y_d^2} + c_j)/c_j^u`. In practice, using distortion coefficients
+up to the fifth order is accurate enough, as there is no significant gain in
+accuracy with higher order. As can be seen, the number of linear equations, given by
+the number of reference-points, is much higher than the number of coefficients.
+This is crucial to achieve high accuracy in radial-distortion correction. Because the
+strength of distortion varies across an image, providing many reference-points
+with high-density improves the robustness of a calculated model.
+
+To solve these above equations we need to determine :math:`c_i^u` and :math:`c_j^u`.
+Using the assumption that lines are equidistant, :math:`c_i^u` and :math:`c_j^u` are
+calculated by extrapolating from a few lines around the COD as
+
+.. math::
+    :label: eq_7
+
+    c_i^u=sgn(c_i) \times \vert (i - i_0) \overline{\Delta{c}} \vert + c_{i_0}
+
+and
+
+.. math::
+    :label: eq_8
+
+    c_j^u=sgn(c_j) \times \vert (j - j_0) \overline{\Delta{c}} \vert + c_{j_0}
+
+where the :math:`sgn()` function returns the value of -1, 0, or 1 corresponding
+to its input of negative, zero, or positive value. :math:`i_0`, :math:`j_0` are the indices of the
+horizontal and vertical line closest to the COD. :math:`\overline{\Delta{c}}` is the average of the difference
+of :math:`c_i` near the COD. :math:`\overline{\Delta{c}}` can be refined further
+by varying it around an initial guess and find the minimum of :math:`\sum_{i} (c_i - c_i^u)^2`
+, which also is provided in the package.
+
+Sometime we need to calculate coefficients of a backward model given that
+coefficients of the corresponding forward-model are known, or vice versa. This
+is straightforward as one can generate a list of reference-points and calculate
+their positions in the opposite space using the known model. From the data-points of
+two spaces and using Eq. :eq:`eq_3` or Eq. :eq:`eq_4` directly, a system of linear
+equations can be formulated and solved to find the coefficients of the opposite
+model. This functionality is available in `Discorpy <https://discorpy.readthedocs.io/en/latest/api/discorpy.proc.processing.html#discorpy.proc.processing.transform_coef_backward_and_forward>`__.
+
+
+
+
 Correcting a distorted image
 ----------------------------
 
@@ -497,15 +621,15 @@ is calculated by interpolation as explained above.
 Summary
 -------
 
-The above sections present a complete workflow of calibrating a lens-coupled
-detector in a concise way. It can be divided into three stages: pre-processing
-stage is for extracting and grouping reference-points from a calibration image;
-processing stage is for calculating coefficients of correction models; and
-post-processing stage is for correcting images. Discorpy's API is structured
-following this workflow including an input-output module.
+The above sections present a complete workflow of calibrating a lens-coupled detector in a concise way.
+It can be divided into three stages: pre-processing stage is for extracting and grouping reference-points
+from a calibration image; processing stage is for calculating coefficients of correction models; and
+post-processing stage is for correcting images. Discorpy's API is structured following this workflow including
+input-output and utility modules.
 
-As shown above, parameters of correction models for radial distortion and
-perspective distortion can be determined independently because reference-points
-in the undistorted space can be generated easily using methods available in
-Discorpy. Details of how to use Discorpy to process real data are shown
-in :ref:`section 3 <usage>`.
+As shown above, parameters of correction models for radial distortion, the distortion center, and perspective
+distortion can be determined independently by using grid lines of reference points extracted from a single
+calibration image. This makes Discorpy a practical tool for a wide range of imaging applications. Details
+on how to use Discorpy to process real data are provided in :ref:`section 3 <usage>`.
+New developments :cite:`Vo:2025` introduced in Discorpy 1.7 for calibrating strong radial distortion (i.e., fisheye distortion)
+in the presence of perspective distortion using only a single calibration image are presented in section 4.

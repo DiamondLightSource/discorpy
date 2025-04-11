@@ -14,12 +14,12 @@
 ![Coverage](https://github.com/DiamondLightSource/discorpy/raw/master/docs/coverage_report/coverage.svg)
 
 
-**Discorpy** is an open-source Python package designed for camera calibration and distortion 
-correction with sub-pixel accuracy. It calculates parameters of correction models 
-using a grid pattern image. Primarily, the package implements methods published in 
-[Optics Express](https://doi.org/10.1364/OE.23.032859) and offers a comprehensive 
-pipeline for data processing. Starting from version 1.4, the package also includes 
-perspective distortion correction capabilities. 
+**Discorpy** is an open-source Python package implementing methods for calibrating and correcting distortion 
+in lens-based imaging systems ([1](https://doi.org/10.1364/OE.23.032859), [2](https://doi.org/10.1107/S1600577525002267)). 
+Unlike existing approaches that require multiple calibration images or iterative optimization, 
+Discorpy and its algorithms can independently characterize both radial and perspective distortion 
+with high accuracy across a wide range of distortion strengths—using only a single calibration image 
+and direct computation. This makes the software a practical tool for a wide range of imaging applications.
 
 **Author and maintainer:** Nghia Vo, *NSLS-II, Brookhaven National Laboratory, US; Diamond Light Source, UK.*
 
@@ -104,6 +104,10 @@ Demonstrations
   ![webcam_before](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/checkboard_before.jpg)
 
   ![webcam_after](https://github.com/DiamondLightSource/discorpy/raw/master/data/demo/checkboard_after.jpg)
+
+- Calibrate a fisheye camera (GoPro Hero-8).
+ 
+  ![GoPro_Hero8](./data/demo/fisheye_calibration.jpg)
 
 - Apply to a hazard camera of the [Mars Perseverance Rover](https://mars.nasa.gov/mars2020/multimedia/raw-images/).
   Details of how to estimate distortion coefficients of that camera without using

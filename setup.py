@@ -31,7 +31,7 @@ README = (HERE / "README.md").read_text()
 
 setuptools.setup(
     name="discorpy",
-    version="1.6.0",
+    version="1.7.0",
     author="Nghia Vo",
     author_email="nvo@bnl.gov",
     description='Correction for radial distortion and perspective distortion '

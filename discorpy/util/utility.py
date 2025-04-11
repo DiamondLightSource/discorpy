@@ -87,6 +87,8 @@ def make_dot_pattern(height=1800, width=2000, dot_distance=90,
         Dot-pattern image.
     """
     dot_size = np.clip(dot_size, 1, min(height, width) // 8)
+    if dot_distance < dot_size:
+        raise ValueError("Dot size must be smaller than the dot-distance!!!")
     mat = np.zeros((height, width), dtype=np.float32)
     if isinstance(margin, tuple) or isinstance(margin, list):
         marg_ver, marg_hor = margin[0:2]

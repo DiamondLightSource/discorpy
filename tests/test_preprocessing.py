@@ -27,6 +27,7 @@ Tests for methods in preprocessing.py
 import unittest
 import numpy as np
 import scipy.ndimage as ndi
+import discorpy.losa.loadersaver as losa
 import discorpy.prep.preprocessing as prep
 
 
@@ -267,3 +268,23 @@ class PreprocessingMethods(unittest.TestCase):
         selected_points = np.array([[7, 8]])
         filtered_points = prep.remove_subset_points(selected_points, points)
         np.testing.assert_array_equal(filtered_points, points)
+
+    def test_group_dots_based_polyfit(self):
+        num_hor_line = 27
+        num_ver_line = 37
+        data = losa.load_python_list("./data_for_test/data_for_grouping.pkl")
+        slope_hor, dist_hor = data[0]
+        slope_ver, dist_ver = data[1]
+        points = np.asarray(data[2])
+        list_hor_lines = prep.group_dots_hor_lines_based_polyfit(points,
+                                                                 slope_hor,
+                                                                 dist_hor,
+                                                                 order=2)
+        list_ver_lines = prep.group_dots_ver_lines_based_polyfit(points,
+                                                                 slope_ver,
+                                                                 dist_ver,
+                                                                 order=2)
+        self.assertTrue(len(list_hor_lines) == num_hor_line)
+        self.assertTrue(len(list_ver_lines) == num_ver_line)
+        self.assertTrue(len(list_hor_lines[0]) == num_ver_line)
+        self.assertTrue(len(list_ver_lines[0]) == num_hor_line)

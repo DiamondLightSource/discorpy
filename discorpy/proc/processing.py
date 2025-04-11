@@ -38,6 +38,8 @@ Module of processing methods:
 """
 import numpy as np
 from scipy import optimize
+import warnings
+import discorpy.post.postprocessing as post
 
 
 def _para_fit_hor(list_lines, xcenter, ycenter):
@@ -68,7 +70,7 @@ def _para_fit_hor(list_lines, xcenter, ycenter):
         list_coef[i] = np.asarray(np.polyfit(line[:, 1] - xcenter,
                                              line[:, 0] - ycenter, 2))
         list_temp = np.asarray(
-            [(dot[0] - ycenter, dot[1] - xcenter) for dot in line])
+            [(point[0] - ycenter, point[1] - xcenter) for point in line])
         list_slines.append(list_temp)
     return list_coef, list_slines
 
@@ -101,7 +103,7 @@ def _para_fit_ver(list_lines, xcenter, ycenter):
         list_coef[i] = np.asarray(
             np.polyfit(line[:, 0] - ycenter, line[:, 1] - xcenter, 2))
         list_temp = np.asarray(
-            [(dot[0] - ycenter, dot[1] - xcenter) for dot in line])
+            [(point[0] - ycenter, point[1] - xcenter) for point in line])
         list_slines.append(list_temp)
     return list_coef, list_slines
 
@@ -242,7 +244,8 @@ def _calc_metric(list_hor_lines, list_ver_lines, xcenter, ycenter,
     return xshift, yshift
 
 
-def find_cod_fine(list_hor_lines, list_ver_lines, xcenter, ycenter, dot_dist):
+def find_cod_fine(list_hor_lines, list_ver_lines, xcenter, ycenter,
+                  point_dist):
     """
     Find the best center of distortion (CoD) by searching around the coarse
     estimation of the CoD.
@@ -257,7 +260,7 @@ def find_cod_fine(list_hor_lines, list_ver_lines, xcenter, ycenter, dot_dist):
         Coarse estimation of the CoD in x-direction.
     ycenter : float
         Coarse estimation of the CoD in y-direction.
-    dot_dist : float
+    point_dist : float
         Median distance of two nearest points.
 
     Returns
@@ -268,7 +271,7 @@ def find_cod_fine(list_hor_lines, list_ver_lines, xcenter, ycenter, dot_dist):
         Center of distortion in y-direction.
     """
     step0 = 2.0
-    list_xshift = np.arange(-dot_dist, dot_dist + step0, step0)
+    list_xshift = np.arange(-point_dist, point_dist + step0, step0)
     list_yshift = list_xshift
     (xshift, yshift) = _calc_metric(
         list_hor_lines, list_ver_lines, xcenter, ycenter, list_xshift,
@@ -375,10 +378,10 @@ def _calc_undistor_intercept(list_hor_lines, list_ver_lines, xcenter, ycenter,
     check = _check_missing_lines(list_coef_hor, list_coef_ver,
                                  threshold=threshold)
     if check:
-        msg = "!!! Parameters of the methods of grouping points need to be " \
-              "adjusted !!!\n!!! Check if there are missing lines or adjust " \
-              "the threshold value !!!"
-        raise ValueError(msg)
+        msg = ("\n!!! Check if there is any missing grouped line !!!\n" 
+              "Parameters of the methods of grouping points may need to be "
+              "adjusted!")
+        warnings.warn(msg, UserWarning)
     pos_hor = np.argmin(np.abs(list_coef_hor[:, 2]))
     pos_ver = np.argmin(np.abs(list_coef_ver[:, 2]))
     num_hline = len(list_hor_lines)
@@ -764,7 +767,7 @@ def _generate_non_perspective_parabola_coef(list_hor_lines, list_ver_lines):
 
 def _find_cross_point_between_parabolas(para_coef_hor, para_coef_ver):
     """
-    Find a cross point between two parabolas.
+    Find a cross point between two parabolas in opposite direction.
 
     Parameters
     ----------
@@ -790,7 +793,7 @@ def _find_cross_point_between_parabolas(para_coef_hor, para_coef_ver):
 
 
 def regenerate_grid_points_parabola(list_hor_lines, list_ver_lines,
-                                    perspective=True):
+                                    perspective=False, find_center=False):
     """
     Regenerating grid points by finding cross points between horizontal lines
     and vertical lines using their parabola coefficients.
@@ -802,7 +805,11 @@ def regenerate_grid_points_parabola(list_hor_lines, list_ver_lines,
     list_ver_lines : list of 2D-arrays
         List of the (y,x)-coordinates of points on each vertical line.
     perspective : bool, optional
-        Apply perspective correction if True.
+        If True, apply perspective correction and set "find_center" to True.
+    find_center : bool, optional
+        If True, calculate distortion center, translate the coordinates of
+        points to the center, apply parabola fitting, and translate the
+        coordinates back
 
     Returns
     -------
@@ -817,7 +824,10 @@ def regenerate_grid_points_parabola(list_hor_lines, list_ver_lines,
                                                           list_ver_lines)
         list_coef_hor, list_coef_ver, xcenter, ycenter = results
     else:
-        xcenter, ycenter = find_cod_bailey(list_hor_lines, list_ver_lines)
+        if find_center is True:
+            xcenter, ycenter = find_cod_bailey(list_hor_lines, list_ver_lines)
+        else:
+            xcenter, ycenter = 0.0, 0.0
         list_coef_hor = _para_fit_hor(list_hor_lines, xcenter, ycenter)[0]
         list_coef_ver = _para_fit_ver(list_ver_lines, xcenter, ycenter)[0]
     num_hline, num_vline = len(list_coef_hor), len(list_coef_ver)
@@ -869,7 +879,7 @@ def _generate_linear_coef(list_hor_lines, list_ver_lines, xcenter=0.0,
 
 def _find_cross_point_between_lines(line_coef_hor, line_coef_ver):
     """
-    Find a cross point between two lines.
+    Find a cross point between two lines in opposite direction.
 
     Parameters
     ----------
@@ -986,7 +996,8 @@ def _calc_undistor_intercept_perspective(list_hor_lines, list_ver_lines,
     return u_intercept_hor, u_intercept_ver
 
 
-def regenerate_grid_points_linear(list_hor_lines, list_ver_lines):
+def regenerate_grid_points_linear(list_hor_lines, list_ver_lines,
+                                  is_coef=False):
     """
     Regenerating grid points by finding cross points between horizontal lines
     and vertical lines using their linear coefficients.
@@ -994,9 +1005,14 @@ def regenerate_grid_points_linear(list_hor_lines, list_ver_lines):
     Parameters
     ----------
     list_hor_lines : list of 2D-arrays
-        List of the (y,x)-coordinates of points on each horizontal line.
+        List of the (y, x)-coordinates of points on each horizontal line,
+        or list of linear fitted coefficients of lines (if is_coef=True).
     list_ver_lines : list of 2D-arrays
-        List of the (y,x)-coordinates of points on each vertical line.
+        List of the (y, x)-coordinates of points on each vertical line,
+        or list of linear fitted coefficients of lines (if is_coef=True).
+    is_coef : bool, optional
+        Whether the input is linear fitted coefficients of lines.
+        If False, linear fitting will be applied to the input lines.
 
     Returns
     -------
@@ -1007,8 +1023,11 @@ def regenerate_grid_points_linear(list_hor_lines, list_ver_lines):
         List of the updated (y,x)-coordinates of points on each vertical line.
     """
     num_hline, num_vline = len(list_hor_lines), len(list_ver_lines)
-    list_coef_hor, list_coef_ver = _generate_linear_coef(list_hor_lines,
-                                                         list_ver_lines)
+    if is_coef is not True:
+        list_coef_hor, list_coef_ver = _generate_linear_coef(list_hor_lines,
+                                                             list_ver_lines)
+    else:
+        list_coef_hor, list_coef_ver = list_hor_lines, list_ver_lines
     new_hor_lines = np.zeros((num_hline, num_vline, 2), dtype=np.float32)
     new_ver_lines = np.zeros((num_vline, num_hline, 2), dtype=np.float32)
     for i in range(num_hline):
@@ -1251,7 +1270,7 @@ def calc_perspective_coefficients(source_points, target_points,
 
 def update_center(list_lines, xcenter, ycenter):
     """
-    Update the coordinate-center of points on lines.
+    Update the coordinates of points on lines.
 
     Parameters
     ----------
@@ -1270,6 +1289,361 @@ def update_center(list_lines, xcenter, ycenter):
     for i, iline in enumerate(list_lines):
         line = np.asarray(iline)
         list_temp = np.asarray(
-            [(dot[0] + ycenter, dot[1] + xcenter) for dot in line])
+            [(point[0] + ycenter, point[1] + xcenter) for point in line])
         updated_lines.append(list_temp)
     return updated_lines
+
+
+def __get_representative_linear_coefs(parabola_coefs, indices, method):
+    """
+    Supplementary method for the method of correct_perspective_effect.
+    Used to calculate the linear coefficients of a representative straight
+    line of parapolas.
+    """
+    if method == "median":
+        b_val = np.median(parabola_coefs[:, 1][indices])
+        c_val = np.median(parabola_coefs[:, 2][indices])
+    elif method == "max":
+        list_tmp = np.vstack((parabola_coefs[:, 1][indices],
+                              parabola_coefs[:, 2][indices],
+                              parabola_coefs[:, 0][indices]))
+        sorted_idx = list_tmp[-1].argsort()
+        list_sort = np.vstack((list_tmp[0, sorted_idx],
+                               list_tmp[1, sorted_idx]))
+        if list_tmp[2, sorted_idx][0] > 0:
+            b_val = list_sort[0, -1]
+            c_val = list_sort[1, -1]
+        else:
+            b_val = list_sort[0, 0]
+            c_val = list_sort[1, 0]
+    elif method == "min":
+        list_tmp = np.vstack((parabola_coefs[:, 1][indices],
+                              parabola_coefs[:, 2][indices],
+                              parabola_coefs[:, 0][indices]))
+        sorted_idx = list_tmp[-1].argsort()
+        list_sort = np.vstack((list_tmp[0, sorted_idx],
+                               list_tmp[1, sorted_idx]))
+        if list_tmp[2, sorted_idx][0] > 0:
+            b_val = list_sort[0, 0]
+            c_val = list_sort[1, 0]
+        else:
+            b_val = list_sort[0, -1]
+            c_val = list_sort[1, -1]
+    else:
+        b_val = np.mean(parabola_coefs[:, 1][indices])
+        c_val = np.mean(parabola_coefs[:, 2][indices])
+    return b_val, c_val
+
+
+def correct_perspective_effect(list_hor_lines, list_ver_lines, xcenter,
+                               ycenter, method="mean", scale="mean"):
+    """
+    Correct perspective effect of radial-distorted grid lines.
+
+    Parameters
+    ----------
+    list_hor_lines : list of 2D-arrays
+        List of the (y,x)-coordinates of points on each horizontal line.
+    list_ver_lines : list of 2D-arrays
+        List of the (y,x)-coordinates of points on each vertical line.
+    xcenter : float
+        Center of radial distortion in x-direction.
+    ycenter : float
+        Center of radial distortion in y-direction.
+    method : {'mean', 'median', 'min', 'max'}
+        Method to find 4 representative straight lines of parabolas with
+        opposite curves in each direction. 4 intersection points of these lines
+        are used to calculate perspective coefficients.
+    scale : {'mean', 'median', 'min', 'max', float}
+        Scale option for perspective-corrected grid.
+
+    Returns
+    -------
+    corr_hor_lines : list of 2D-arrays
+        List of the corrected (y,x)-coordinates of points on each horizontal
+        line.
+    corr_ver_lines : list of 2D-arrays
+        List of the corrected (y,x)-coordinates of points on each vertical line.
+    """
+    list_coef_hor, list_hor_lines = _para_fit_hor(list_hor_lines, xcenter,
+                                                  ycenter)
+    list_coef_ver, list_ver_lines = _para_fit_ver(list_ver_lines, xcenter,
+                                                  ycenter)
+    if len(list_coef_hor) < 2:
+        raise ValueError("Need at least 2 horizontal lines!!!")
+    if len(list_coef_ver) < 2:
+        raise ValueError("Need at least 2 vertical lines!!!")
+    indices = np.where(list_coef_hor[:, 0] > 0)
+    if len(indices) > 0:
+        bh1, ch1 = __get_representative_linear_coefs(list_coef_hor, indices,
+                                                     method)
+    else:
+        raise ValueError("Input error!!! No curved line open upwards !!!")
+    indices = np.where(list_coef_hor[:, 0] < 0)
+    if len(indices) > 0:
+        bh2, ch2 = __get_representative_linear_coefs(list_coef_hor, indices,
+                                                     method)
+    else:
+        raise ValueError("Input error!!! No curved line open downwards !!!")
+    indices = np.where(list_coef_ver[:, 0] > 0)
+    if len(indices) > 0:
+        bv1, cv1 = __get_representative_linear_coefs(list_coef_ver, indices,
+                                                     method)
+    else:
+        raise ValueError("Input error!!! No curved line open rightwards !!!")
+    indices = np.where(list_coef_ver[:, 0] < 0)
+    if len(indices) > 0:
+        bv2, cv2 = __get_representative_linear_coefs(list_coef_ver, indices,
+                                                     method)
+    else:
+        raise ValueError("Input error!!! No curved line open leftwards !!!")
+    x1, y1 = _find_cross_point_between_lines([bh1, ch1], [bv1, cv1])
+    x2, y2 = _find_cross_point_between_lines([bh1, ch1], [bv2, cv2])
+    x3, y3 = _find_cross_point_between_lines([bh2, ch2], [bv1, cv1])
+    x4, y4 = _find_cross_point_between_lines([bh2, ch2], [bv2, cv2])
+    source_points = np.asarray([[y1, x1], [y2, x2], [y3, x3], [y4, x4]])
+    results = generate_4_source_target_perspective_points(source_points,
+                                                          input_order="yx",
+                                                          equal_dist=False,
+                                                          scale=scale)
+    source_points, target_points = results
+    pers_coef = calc_perspective_coefficients(source_points, target_points,
+                                              mapping="forward")
+    corr_hor_lines = post.correct_perspective_line(list_hor_lines, pers_coef)
+    corr_ver_lines = post.correct_perspective_line(list_ver_lines, pers_coef)
+    corr_hor_lines = update_center(corr_hor_lines, xcenter, ycenter)
+    corr_ver_lines = update_center(corr_ver_lines, xcenter, ycenter)
+    return corr_hor_lines, corr_ver_lines
+
+
+def _find_cross_point_between_parabolas_same_direction(para_coef1, para_coef2):
+    """
+    Find the two intersection points of two parabolas with the
+    same orientation.
+    I.e., solve: a1*x^2 + b1*x + c1 = a2*x^2 + b2*x + c2
+
+    Parameters
+    ----------
+    para_coef1 : tuple
+        Coefficients of the first parabola (a, b, c). Highest order first
+    para_coef2
+        Coefficients of the second parabola.
+    Returns
+    -------
+    tuple of floats
+        x-coordinates of crossed points if input are horizontal parabolas
+        or y-coordinates if input are vertical parabolas
+    """
+    a = para_coef1[0] - para_coef2[0]
+    b = para_coef1[1] - para_coef2[1]
+    c = para_coef1[2] - para_coef2[2]
+    results = np.roots([a, b, c])
+    if np.iscomplexobj(results):
+        return None
+    return results
+
+
+def find_center_based_vanishing_points(list_hor_lines, list_ver_lines):
+    """
+    Find the center of distortion (COD) using vanishing points formed by the
+    intersections of parapolas with opposite curves in the horizontal and
+    vertical directions.
+    Valid only for barrel distortion.
+
+    Parameters
+    ----------
+    list_hor_lines : list of 2D-arrays
+        List of (y,x)-coordinates of points on each horizontal line.
+    list_ver_lines : list of 2D-arrays
+        List of (y,x)-coordinates of points on each vertical line.
+
+    Returns
+    -------
+    xcenter : float
+        Center of distortion in the x-direction.
+    ycenter : float
+        Center of distortion in the y-direction.
+    """
+    list_coef_hor, list_hor_lines = _para_fit_hor(list_hor_lines, 0, 0)
+    list_coef_ver, list_ver_lines = _para_fit_ver(list_ver_lines, 0, 0)
+    indices1 = np.where(list_coef_hor[:, 0] > 0)[0]
+
+    list_tmp1 = np.vstack((list_coef_hor[:, 0][indices1],
+                           list_coef_hor[:, 1][indices1],
+                           list_coef_hor[:, 2][indices1]))
+    sorted_idx1 = np.argsort(np.abs(list_tmp1[0]))
+    list_sort1 = np.transpose(np.vstack((list_tmp1[0, sorted_idx1],
+                                         list_tmp1[1, sorted_idx1],
+                                         list_tmp1[2, sorted_idx1])))
+
+    indices2 = np.where(list_coef_hor[:, 0] < 0)[0]
+    list_tmp2 = np.vstack((list_coef_hor[:, 0][indices2],
+                           list_coef_hor[:, 1][indices2],
+                           list_coef_hor[:, 2][indices2]))
+    sorted_idx2 = np.argsort(np.abs(list_tmp2[0]))
+    list_sort2 = np.transpose(np.vstack((list_tmp2[0, sorted_idx2],
+                                         list_tmp2[1, sorted_idx2],
+                                         list_tmp2[2, sorted_idx2])))
+
+    num_idx = min(len(indices1), len(indices2))
+    xy_hlist = []
+    for i in range(num_idx):
+        results = _find_cross_point_between_parabolas_same_direction(
+            list_sort1[i], list_sort2[i])
+        if results is not None:
+            (x1, x2) = results
+            a1, b1, c1 = list_sort1[i]
+            a2, b2, c2 = list_sort2[i]
+            y1 = a1 * x1 ** 2 + b1 * x1 + c1
+            y2 = a2 * x2 ** 2 + b2 * x2 + c2
+            xy_hlist.extend([[x1, y1], [x2, y2]])
+    if len(xy_hlist) > 2:
+        xy_vlist = []
+        indices1 = np.where(list_coef_ver[:, 0] > 0)[0]
+        list_tmp1 = np.vstack((list_coef_ver[:, 0][indices1],
+                               list_coef_ver[:, 1][indices1],
+                               list_coef_ver[:, 2][indices1]))
+        sorted_idx1 = np.argsort(np.abs(list_tmp1[0]))
+        list_sort1 = np.transpose(np.vstack((list_tmp1[0, sorted_idx1],
+                                             list_tmp1[1, sorted_idx1],
+                                             list_tmp1[2, sorted_idx1])))
+
+        indices2 = np.where(list_coef_ver[:, 0] < 0)[0]
+        list_tmp2 = np.vstack((list_coef_ver[:, 0][indices2],
+                               list_coef_ver[:, 1][indices2],
+                               list_coef_ver[:, 2][indices2]))
+        sorted_idx2 = np.argsort(np.abs(list_tmp2[0]))
+        list_sort2 = np.transpose(np.vstack((list_tmp2[0, sorted_idx2],
+                                             list_tmp2[1, sorted_idx2],
+                                             list_tmp2[2, sorted_idx2])))
+        num_idx = min(len(indices1), len(indices2))
+        for i in range(num_idx):
+            results = _find_cross_point_between_parabolas_same_direction(
+                list_sort1[i], list_sort2[i])
+            if results is not None:
+                (y1, y2) = results
+                a1, b1, c1 = list_sort1[i]
+                a2, b2, c2 = list_sort2[i]
+                x1 = a1 * y1 ** 2 + b1 * y1 + c1
+                x2 = a2 * y2 ** 2 + b2 * y2 + c2
+                xy_vlist.extend([[x1, y1], [x2, y2]])
+        if len(xy_vlist) > 2:
+            xy_hlist = np.asarray(xy_hlist)
+            xy_vlist = np.asarray(xy_vlist)
+            a1, b1 = np.polyfit(xy_hlist[:, 0], xy_hlist[:, 1], 1)[:2]
+            a2, b2 = np.polyfit(xy_vlist[:, 1], xy_vlist[:, 0], 1)[:2]
+            ycenter = (a1 * b2 + b1) / (1.0 - a1 * a2)
+            xcenter = a2 * ycenter + b2
+        else:
+            xcenter, ycenter = find_cod_bailey(list_hor_lines, list_ver_lines)
+    else:
+        xcenter, ycenter = find_cod_bailey(list_hor_lines, list_ver_lines)
+    return xcenter, ycenter
+
+
+def _find_center_based_vanishing_points_2nd_way(list_hor_lines,
+                                                list_ver_lines):
+    """
+    Find the center of distortion (COD) using vanishing points formed by the
+    intersections of parapolas with lines of minimum curvature in the
+    horizontal and vertical directions.
+
+    Parameters
+    ----------
+    list_hor_lines : list of 2D-arrays
+        List of (y,x)-coordinates of points on each horizontal line.
+    list_ver_lines : list of 2D-arrays
+        List of (y,x)-coordinates of points on each vertical line.
+
+    Returns
+    -------
+    xcenter : float
+        Center of distortion in the x-direction.
+    ycenter : float
+        Center of distortion in the y-direction.
+    """
+    list_coef_hor, list_hor_lines = _para_fit_hor(list_hor_lines, 0, 0)
+    list_coef_ver, list_ver_lines = _para_fit_ver(list_ver_lines, 0, 0)
+    xy_hlist = []
+    pos_min = np.argmin(np.abs(list_coef_hor[:, 0]))
+    idx_list = np.delete(np.arange(len(list_coef_hor)), pos_min)
+    for i in idx_list:
+        results = _find_cross_point_between_parabolas_same_direction(
+            list_coef_hor[i], list_coef_hor[pos_min])
+        if results is not None:
+            (x1, x2) = results
+            a1, b1, c1 = list_coef_hor[i]
+            a2, b2, c2 = list_coef_hor[pos_min]
+            y1 = a1 * x1 ** 2 + b1 * x1 + c1
+            y2 = a2 * x2 ** 2 + b2 * x2 + c2
+            xy_hlist.extend([[x1, y1], [x2, y2]])
+    if len(xy_hlist) > 2:
+        xy_vlist = []
+        pos_min = np.argmin(np.abs(list_coef_ver[:, 0]))
+        idx_list = np.delete(np.arange(len(list_coef_ver)), pos_min)
+        for i in idx_list:
+            results = _find_cross_point_between_parabolas_same_direction(
+                list_coef_ver[i], list_coef_ver[pos_min])
+            if results is not None:
+                (y1, y2) = results
+                a1, b1, c1 = list_coef_ver[i]
+                a2, b2, c2 = list_coef_ver[pos_min]
+                x1 = a1 * y1 ** 2 + b1 * y1 + c1
+                x2 = a2 * y2 ** 2 + b2 * y2 + c2
+                xy_vlist.extend([[x1, y1], [x2, y2]])
+        if len(xy_vlist) > 2:
+            xy_hlist = np.asarray(xy_hlist)
+            xy_vlist = np.asarray(xy_vlist)
+            a1, b1 = np.polyfit(xy_hlist[:, 0], xy_hlist[:, 1], 1)[:2]
+            a2, b2 = np.polyfit(xy_vlist[:, 1], xy_vlist[:, 0], 1)[:2]
+            ycenter = (a1 * b2 + b1) / (1.0 - a1 * a2)
+            xcenter = a2 * ycenter + b2
+        else:
+            xcenter, ycenter = find_cod_bailey(list_hor_lines, list_ver_lines)
+    else:
+        xcenter, ycenter = find_cod_bailey(list_hor_lines, list_ver_lines)
+    return xcenter, ycenter
+
+
+def find_center_based_vanishing_points_iteration(list_hor_lines, list_ver_lines,
+                                                 iteration=2, method="mean"):
+    """
+    Find the center of distortion (COD) using vanishing points formed by the
+    intersections of parapolas with lines of minimum curvature in the
+    horizontal and vertical directions. This approach is more robust than
+    the others when there's significant perspective distortion.
+
+    Parameters
+    ----------
+    list_hor_lines : list of 2D-arrays
+        List of (y,x)-coordinates of points on each horizontal line.
+    list_ver_lines : list of 2D-arrays
+        List of (y,x)-coordinates of points on each vertical line.
+    iteration : int, optional
+        Iteration number
+    method : {'mean', 'median', 'min', 'max'}
+        Method to find 4 representative straight lines of parabolas with
+        opposite curves in each direction. 4 intersection points of these lines
+        are used to correct perspective distortion.
+
+    Returns
+    -------
+    xcenter : float
+        Center of distortion in the x-direction.
+    ycenter : float
+        Center of distortion in the y-direction.
+    """
+    xcenter, ycenter = _find_center_based_vanishing_points_2nd_way(
+        list_hor_lines, list_ver_lines)
+    for i in range(iteration):
+        list_hor_lines1, list_ver_lines1 = correct_perspective_effect(
+            list_hor_lines, list_ver_lines, xcenter, ycenter, method=method)
+        list_hor_lines1 = _para_fit_hor(list_hor_lines1, xcenter,
+                                        ycenter)[-1]
+        list_ver_lines1 = _para_fit_ver(list_ver_lines1, xcenter,
+                                        ycenter)[-1]
+        xcenter1, ycenter1 = _find_center_based_vanishing_points_2nd_way(
+            list_hor_lines1, list_ver_lines1)
+        xcenter += xcenter1
+        ycenter += ycenter1
+    return xcenter, ycenter

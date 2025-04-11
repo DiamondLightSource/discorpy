@@ -27,7 +27,7 @@ Module for I/O tasks:
 - Load data from an image file (tif, png, jpg) or a hdf file.
 - Save a 2D array as a tif/png/jpg image or a 2D, 3D array to a hdf file.
 - Save a plot of data points to an image.
-- Save/load metadata to/from a text file.
+- Save/load metadata to/from a text/json file.
 - Save/load python list
 
 """
@@ -453,15 +453,15 @@ def save_image(file_path, mat, overwrite=True):
 def save_plot_image(file_path, list_lines, height, width, overwrite=True,
                     dpi=100):
     """
-    Save the plot of dot-centroids to an image. Useful to check if the dots
-    are arranged properly where dots on the same line having the same color.
+    Save the plot of points to an image. Useful to check if the points are
+    arranged properly where points on the same line having the same color.
 
     Parameters
     ----------
     file_path : str
         Output file path.
     list_lines : list of array_like
-        List of 2D arrays. Each list is the coordinates of dots on a line.
+        List of 2D arrays. Each list is the coordinates of points on a line.
     height : int
         Height of the image.
     width : int
@@ -469,7 +469,7 @@ def save_plot_image(file_path, list_lines, height, width, overwrite=True,
     overwrite : bool, optional
         Overwrite the existing file if True.
     dpi : int, optional
-        The resolution in dots per inch.
+        The resolution in points per inch.
 
     Returns
     -------
@@ -529,7 +529,7 @@ def save_residual_plot(file_path, list_data, height, width, overwrite=True,
     file_path : str
         Output file path.
     list_data : array_like
-        2D array. List of [residual, radius] of each dot.
+        2D array. List of [residual, radius] of each point.
     height : int
         Height of the output image.
     width : int
@@ -537,7 +537,7 @@ def save_residual_plot(file_path, list_data, height, width, overwrite=True,
     overwrite : bool, optional
         Overwrite the existing file if True.
     dpi : int, optional
-        The resolution in dots per inch.
+        The resolution in points per inch.
     font_family : str, optional
         To set the font family
 
@@ -659,8 +659,8 @@ def open_hdf_stream(file_path, data_shape, key_path='entry/data',
 def save_plot_points(file_path, list_points, height, width, overwrite=True,
                      dpi=100, marker="o", color="blue"):
     """
-    Save the plot of dot-centroids to an image. Useful to check if the dots
-    are arranged properly where dots on the same line having the same color.
+    Save the plot of points to an image. Useful to check if the points are
+    arranged properly where points on the same line having the same color.
 
     Parameters
     ----------
@@ -675,7 +675,7 @@ def save_plot_points(file_path, list_points, height, width, overwrite=True,
     overwrite : bool, optional
         Overwrite the existing file if True.
     dpi : int, optional
-        The resolution in dots per inch.
+        The resolution in points per inch.
     marker : str
         Plot marker. Full list is at:
         https://matplotlib.org/stable/api/markers_api.html
@@ -777,11 +777,10 @@ def load_metadata_txt(file_path):
 
 
 def __numpy_encoder(obj):
-    if isinstance(obj, (np.int_, np.intc, np.intp, np.int8,
-                        np.int16, np.int32, np.int64, np.uint8,
-                        np.uint16, np.uint32, np.uint64)):
+    if isinstance(obj, (np.int8, np.int16, np.int32, np.int64,
+                        np.uint8, np.uint16, np.uint32, np.uint64)):
         return int(obj)
-    elif isinstance(obj, (np.float_, np.float16, np.float32, np.float64)):
+    elif isinstance(obj, (np.float16, np.float32, np.float64)):
         return float(obj)
     elif isinstance(obj, (np.ndarray,)):
         return obj.tolist()
@@ -895,3 +894,24 @@ def save_python_list(file_path, python_list, overwrite=True):
     with open(file_path, 'wb') as f:
         pickle.dump(python_list, f)
     return file_path
+
+
+def find_file(path):
+    """
+    Search file
+
+    Parameters
+    ----------
+    path : str
+        Path and pattern to find files.
+
+    Returns
+    -------
+    str or list of str
+        List of files.
+    """
+    path = __correct_path(path)
+    file_paths = list(path.parent.glob(path.name))
+    if not file_paths:
+        raise FileNotFoundError(f"No files found matching: {path}")
+    return sorted([file.as_posix() for file in file_paths])
