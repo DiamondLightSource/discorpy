@@ -7,8 +7,8 @@ Usage
 Resources
 ---------
 
--   A technical report explaining step-by-step on how to calculate distortion
-    coefficients from a dot pattern image is available at `Zenodo <https://zenodo.org/record/1322720>`__.
+-   A peer-reviewed paper describing the methods developed and implemented for Discorpy is available on
+    `Journal of Synchrotron Radiation <https://doi.org/10.1107/S1600577525002267>`__.
 -   Examples of how to use the package are in the "/examples" folder at the `github page <https://github.com/DiamondLightSource/discorpy/tree/master/examples>`__.
 -   Coefficients determined by the package can be used by other tomographic
     software such as `Tomopy <https://tomopy.readthedocs.io/en/latest/api/tomopy.prep.alignment.html>`__,
