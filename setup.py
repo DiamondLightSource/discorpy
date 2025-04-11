@@ -2,9 +2,6 @@ import pathlib
 import setuptools
 import sys
 
-py_ver = sys.version.split(".")[:2]
-python_version = py_ver[0] + "." + py_ver[1]
-
 dependencies = [
     "scikit-image",
     "scipy",

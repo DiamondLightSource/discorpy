@@ -18,7 +18,7 @@
 in lens-based imaging systems ([1](https://doi.org/10.1364/OE.23.032859), [2](https://doi.org/10.1107/S1600577525002267)). 
 Unlike existing approaches that require multiple calibration images or iterative optimization, 
 Discorpy and its algorithms can independently characterize both radial and perspective distortion 
-with high accuracy across a wide range of distortion strengths—using only a single calibration image 
+with high accuracy across a wide range of distortion strengths - using only a single calibration image 
 and direct computation. This makes the software a practical tool for a wide range of imaging applications.
 
 **Author and maintainer:** Nghia Vo, *NSLS-II, Brookhaven National Laboratory, US; Diamond Light Source, UK.*
