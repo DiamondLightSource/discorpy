@@ -32,4 +32,7 @@
       generate_4_source_target_perspective_points
       calc_perspective_coefficients
       update_center
+      correct_perspective_effect
+      find_center_based_vanishing_points
+      find_center_based_vanishing_points_iteration
 

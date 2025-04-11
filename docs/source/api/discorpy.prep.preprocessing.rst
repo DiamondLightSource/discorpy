@@ -30,3 +30,5 @@
       get_points_dot_pattern
       rotate_points
       remove_subset_points
+      group_dots_hor_lines_based_polyfit
+      group_dots_ver_lines_based_polyfit

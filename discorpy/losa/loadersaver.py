@@ -28,7 +28,7 @@ Module for I/O tasks:
 - Save a 2D array as a tif/png/jpg image or a 2D, 3D array to a hdf file.
 - Save a plot of data points to an image.
 - Save/load metadata to/from a text/json file.
-- Save/load python list
+- Save/load python list.
 
 """
 

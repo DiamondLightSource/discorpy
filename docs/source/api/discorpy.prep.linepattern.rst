@@ -17,6 +17,6 @@
       calc_slope_distance_hor_lines
       calc_slope_distance_ver_lines
       get_tilted_profile
+      convert_chessboard_to_linepattern
       get_cross_points_hor_lines
       get_cross_points_ver_lines
-      convert_chessboard_to_linepattern

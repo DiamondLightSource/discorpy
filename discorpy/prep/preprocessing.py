@@ -27,11 +27,13 @@ Module of pre-processing methods:
 -   Determine the median dot-size, median distance between two nearest dots,
     and the slopes of grid-lines of a dot-pattern image.
 -   Remove non-dot objects or misplaced dots.
--   Group dot-centroids into horizontal lines and vertical lines.
+-   Group points into horizontal lines and vertical lines.
 -   Calculate a threshold value for binarizing.
 -   Create a 2D mask with parabolic boundary.
 -   Remove points outside a parabolic mask in a 2D space.
 -   Extract dot-centroids of a dot-pattern from a binary or grayscale image.
+-   Group points on strongly curved lines into horizontal lines and vertical
+    lines based on polynomial fit.
 """
 
 import numpy as np
