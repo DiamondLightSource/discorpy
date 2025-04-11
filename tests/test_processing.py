@@ -24,6 +24,7 @@
 Tests for methods in processing.py
 """
 
+import os
 import unittest
 import numpy as np
 import discorpy.proc.processing as proc
@@ -267,7 +268,10 @@ class ProcessingMethods(unittest.TestCase):
         self.assertTrue(num1 <= 1.0e-3 and num2 <= 1.0e-3)
 
     def test_find_center_based_vanishing_points(self):
-        data = losa.load_python_list("./data_for_test/data_for_pers_cod.pkl")
+        current_dir = os.path.dirname(__file__)
+        data_path = os.path.join(current_dir, "data_for_test",
+                                 "data_for_pers_cod.pkl")
+        data = losa.load_python_list(data_path)
         list_hor_lines, list_ver_lines = data
         xcenter0, ycenter0 = 2005, 1520
         xcenter1, ycenter1 = proc.find_center_based_vanishing_points(
@@ -277,7 +281,10 @@ class ProcessingMethods(unittest.TestCase):
         self.assertTrue(num1 <= 10.0 and num2 <= 10.0)
 
     def test_correct_perspective_effect(self):
-        data = losa.load_python_list("./data_for_test/data_for_pers_cod.pkl")
+        current_dir = os.path.dirname(__file__)
+        data_path = os.path.join(current_dir, "data_for_test",
+                                 "data_for_pers_cod.pkl")
+        data = losa.load_python_list(data_path)
         list_hor_lines, list_ver_lines = data
         xcenter, ycenter = proc.find_center_based_vanishing_points(
             list_hor_lines, list_ver_lines)
@@ -295,7 +302,10 @@ class ProcessingMethods(unittest.TestCase):
                         num3 <= 2.0e-3 and num4 <= 2.0e-3)
 
     def test_find_center_based_vanishing_points_iteration(self):
-        data = losa.load_python_list("./data_for_test/data_for_pers_cod.pkl")
+        current_dir = os.path.dirname(__file__)
+        data_path = os.path.join(current_dir, "data_for_test",
+                                 "data_for_pers_cod.pkl")
+        data = losa.load_python_list(data_path)
         list_hor_lines, list_ver_lines = data
         xcenter0, ycenter0 = 2005, 1520
         xcenter1, ycenter1 = proc.find_center_based_vanishing_points_iteration(

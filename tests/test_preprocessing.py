@@ -24,6 +24,7 @@
 Tests for methods in preprocessing.py
 """
 
+import os
 import unittest
 import numpy as np
 import scipy.ndimage as ndi
@@ -272,7 +273,10 @@ class PreprocessingMethods(unittest.TestCase):
     def test_group_dots_based_polyfit(self):
         num_hor_line = 27
         num_ver_line = 37
-        data = losa.load_python_list("./data_for_test/data_for_grouping.pkl")
+        current_dir = os.path.dirname(__file__)
+        data_path = os.path.join(current_dir, "data_for_test",
+                                 "data_for_grouping.pkl")
+        data = losa.load_python_list(data_path)
         slope_hor, dist_hor = data[0]
         slope_ver, dist_ver = data[1]
         points = np.asarray(data[2])
