@@ -468,3 +468,29 @@ To summarize, only a small amount of code is required to calibrate the camera, a
     # img_corr = util.unwarp_image_backward_cv2(img0, xcenter, ycenter, list_bfact, pad=400)
     losa.save_image(output_base + "/corrected_img.jpg", img_corr)
 
+
+Using other types of calibration images
+---------------------------------------
+
+Other types of calibration images can also be used and are straightforward to process using the Discorpy API.
+The following shows the results of using a chessboard image. Both the `image <https://github.com/DiamondLightSource/discorpy/tree/master/data/fisheye>`__
+and the `code <https://github.com/DiamondLightSource/discorpy/tree/master/examples>`__
+are available on the Discorpy GitHub page. As can be seen, the calibration image clearly has perspective
+distortion, but this is no longer a problem with the latest developments.
+
+.. figure:: figs/fisheye_correction/fig13.jpg
+    :name: fisheye_fig_13
+    :figwidth: 100 %
+    :align: center
+    :figclass: align-center
+
+Radial distortion calibration using a chessboard image: (a) Before correction. (b) After correction.
+
+
+.. figure:: figs/fisheye_correction/fig14.jpg
+    :name: fisheye_fig_14
+    :figwidth: 100 %
+    :align: center
+    :figclass: align-center
+
+Radial distortion calibration using a dot-pattern image: (a) Before correction. (b) After correction.

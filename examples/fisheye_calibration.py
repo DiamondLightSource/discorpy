@@ -1,6 +1,6 @@
-#============================================================================
-# Demonstration on how to calibrate a fisheye camera.
-# ============================================================================
+#==============================================================================
+# Demonstration on how to calibrate a fisheye camera using a line-pattern image
+# =============================================================================
 
 import discorpy.losa.loadersaver as losa
 import discorpy.prep.preprocessing as prep
@@ -9,7 +9,7 @@ import discorpy.proc.processing as proc
 import discorpy.post.postprocessing as post
 import discorpy.util.utility as util
 
-file_path = "../data/GoPro8_line_pattern.jpg"
+file_path = "../data/fisheye/GoPro8_line_pattern.jpg"
 output_base = "E:/fisheye_correction"
 num_factor = 5
 
