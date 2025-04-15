@@ -79,10 +79,11 @@ It is important to be aware that different methods may use different coordinate 
 In the image coordinate system, the origin is at the top-left corner of the image.
 For example, the `center-of-mass <https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.center_of_mass.html>`__
 of an object refers to this origin. In the `plotting <https://matplotlib.org/stable/tutorials/introductory/pyplot.html>`__
-coordinate system, the origin is at the bottom-left. The parabolic fits of
-horizontal lines refers to the bottom-left origin, however the one of vertical
-lines refers to the top-left origin with coordinates swapped. This is necessary
-to avoid the numerical problem of fitting lines nearly perpendicular to the axis.
+coordinate system, the origin is at the bottom-left. When overlaying reference points on a calibration image using
+Matplotlib, be aware of this difference.
+
+The coordinates of reference points extracted from a calibration image refer to the image coordinate system
+(top-left origin). The values for the center of distortion are also referenced from this origin.
 
 Demonstrations
 --------------
