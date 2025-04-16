@@ -473,8 +473,9 @@ Using other types of calibration images
 ---------------------------------------
 
 Other types of calibration images can also be used and are straightforward to process using the Discorpy API.
-The following shows the results of using a chessboard image. Both the `image <https://github.com/DiamondLightSource/discorpy/tree/master/data/fisheye>`__
-and the `code <https://github.com/DiamondLightSource/discorpy/tree/master/examples>`__
+The following shows the results of using a chessboard image and a dot-pattern image.
+Both the `images <https://github.com/DiamondLightSource/discorpy/tree/master/data/fisheye>`__
+and the `codes <https://github.com/DiamondLightSource/discorpy/tree/master/examples>`__
 are available on the Discorpy GitHub page. As can be seen, the calibration image clearly has perspective
 distortion, but this is no longer a problem with the latest developments.
 

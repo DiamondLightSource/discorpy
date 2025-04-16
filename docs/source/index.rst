@@ -4,7 +4,7 @@ Discorpy's documentation
 Discorpy is an open-source Python package implementing methods for calibrating and correcting distortion
 in lens-based imaging systems :cite:`Vo:2015` :cite:`Vo:2025`. Unlike existing approaches that require multiple calibration
 images or iterative optimization, Discorpy and its algorithms can independently characterize both radial and
-perspective distortion with high accuracy across a wide range of distortion strengths—using only a single calibration
+perspective distortion with high accuracy across a wide range of distortion strengths - using only a single calibration
 image and direct computation. This makes the software a practical tool for a wide range of imaging applications.
 
 To support different experimental conditions and enable fully automated workflows, Discorpy offers flexibility in
