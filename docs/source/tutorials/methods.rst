@@ -632,4 +632,4 @@ distortion can be determined independently by using grid lines of reference poin
 calibration image. This makes Discorpy a practical tool for a wide range of imaging applications. Details
 on how to use Discorpy to process real data are provided in :ref:`section 3 <usage>`.
 New developments :cite:`Vo:2025` introduced in Discorpy 1.7 for calibrating strong radial distortion (i.e., fisheye distortion)
-in the presence of perspective distortion using only a single calibration image are presented in section 4.
+in the presence of perspective distortion using only a single calibration image are presented in :ref:`section 4 <fisheye>`.

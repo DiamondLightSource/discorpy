@@ -39,4 +39,5 @@ Contents
     usage
     notes
     api
+    updates
     credit
