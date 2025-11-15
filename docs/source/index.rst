@@ -23,8 +23,11 @@ as well as to correct fisheye distortion in large-field-of-view cameras.
     :width: 100 %
     :align: center
 
+|
+
 **Source code:** https://github.com/DiamondLightSource/discorpy
-**examples** https://github.com/DiamondLightSource/discorpy/tree/master/examples
+
+**Examples:** https://github.com/DiamondLightSource/discorpy/tree/master/examples
 
 **Author:** Nghia T. Vo - NSLS-II, Brookhaven National Laboratory, US; Diamond Light Source, UK.
 
