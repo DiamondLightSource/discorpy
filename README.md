@@ -1,6 +1,8 @@
 # Discorpy
 (**Dis**)tortion (**Cor**)rection (**Py**)thon-package
 
+![logo](logo_small.png)
+
 *Camera calibration and distortion correction software for lens-based detector systems*
 
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/DiamondLightSource/discorpy/discorpy_ga.yml) 
