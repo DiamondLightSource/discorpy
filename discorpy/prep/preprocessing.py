@@ -39,7 +39,7 @@ Module of pre-processing methods:
 import numpy as np
 from scipy import ndimage as ndi
 from scipy.fftpack import fft2, ifft2
-from scipy.ndimage.measurements import center_of_mass
+from scipy.ndimage import center_of_mass
 from skimage.filters import threshold_otsu
 from skimage.segmentation import clear_border
 import skimage.morphology as morph
@@ -380,8 +380,8 @@ def _check_axes_ratio(mat, ratio):
     (height, width) = mat.shape
     if (height < 2) or (width < 2):
         return check
-    minor_axis = meas.regionprops(mat)[0].minor_axis_length
-    major_axis = meas.regionprops(mat)[0].major_axis_length
+    minor_axis = meas.regionprops(mat)[0].axis_minor_length
+    major_axis = meas.regionprops(mat)[0].axis_major_length
     if (height > 1) and (width > 1):
         val = np.abs(major_axis / minor_axis - 1.0)
         if val < ratio:

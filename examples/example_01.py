@@ -1,26 +1,3 @@
-#============================================================================
-# Copyright (c) 2018 Diamond Light Source Ltd. All rights reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#============================================================================
-# Author: Nghia T. Vo
-# E-mail:
-# Description: Usage demonstration
-# Publication date: 10th July 2018
-# ============================================================================
-# Contributors:
-# ============================================================================
-
 import timeit
 import numpy as np
 import discorpy.losa.loadersaver as losa
@@ -40,7 +17,7 @@ file_path = "../data/dot_pattern_03.jpg"
 output_base = "E:/correction/"
 num_coef = 5  # Number of polynomial coefficients
 norm = False  # Correct non-uniform background if True
-perspective = False # Correct perspective distortion if True
+perspective = True # Correct perspective distortion if True
 # -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------
 
@@ -135,23 +112,28 @@ if (not check1) and (not check2):
     print("!!! Distortion is not significant !!!")
 
 
-# Optional: correct perspective effect. Only available from Discorpy 1.4
+# Optional: correct perspective distortion
 if perspective is True:
     try:
-        list_hor_lines, list_ver_lines = proc.regenerate_grid_points_parabola(
-                            list_hor_lines, list_ver_lines, perspective=True)
+        # Find center of distortion
+        xcenter, ycenter = proc.find_center_based_vanishing_points_iteration(
+            list_hor_lines, list_ver_lines, iteration=2)
+        print(f"Center of distortion: X-center {xcenter}. Y-center {ycenter}")
+
+        # Correct perspective distortion
+        list_hor_lines, list_ver_lines = proc.correct_perspective_effect(
+            list_hor_lines, list_ver_lines, xcenter, ycenter)
     except AttributeError:
-        raise ValueError("Perspective correction only available from Discorpy 1.4!!!")
+        raise ValueError(
+            "Robust perspective correction only available from Discorpy 1.7!!!")
 
 # Calculate the center of distortion. xcenter is the center from the left
 # of the image. ycenter is the center from the top of the image.
-(xcenter, ycenter) = proc.find_cod_coarse(list_hor_lines, list_ver_lines)
-print("\nCenter of distortion:\nx-center (from the left of the image): "
-      "{0}\ny-center (from the top of the image): {1}\n".format(
-        xcenter, ycenter))
-# Note: Use fine-search if there's no perspective distortion
-# (xcenter, ycenter) = proc.find_cod_fine(
-#     list_hor_lines, list_ver_lines, xcenter, ycenter, dot_dist)
+if not perspective:
+    (xcenter, ycenter) = proc.find_cod_coarse(list_hor_lines, list_ver_lines)
+    print("\nCenter of distortion:\nx-center (from the left of the image): "
+          "{0}\ny-center (from the top of the image): {1}\n".format(
+            xcenter, ycenter))
 
 # -----------------------------------------------------------------------------
 # Calculate distortion coefficients of a backward model.
@@ -248,7 +230,7 @@ corrected_mat = post.unwarp_image_backward(
     mat0, xcenter, ycenter, list_bfact)
 losa.save_image(output_base + "/corrected_image_bwfw.tif", corrected_mat)
 losa.save_image(output_base + "/diff_corrected_image_bwfw.tif",
-              np.abs(corrected_mat - mat0))
+              np.float32(np.abs(corrected_mat - mat0)))
 losa.save_metadata_txt(
     output_base + "/coefficients_bwfw.txt", xcenter, ycenter, list_bfact)
 # losa.save_metadata_json(

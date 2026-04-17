@@ -3,7 +3,7 @@ import setuptools
 import sys
 
 dependencies = [
-    "scikit-image",
+    "scikit-image>=0.19",
     "scipy",
     "h5py",
     "pillow",
